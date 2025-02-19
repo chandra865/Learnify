@@ -5,7 +5,8 @@ config({
 
 
 import connectDB from "./db/connection.js";
-import {app} from './app.js'
+import {app} from './app.js';
+
 
 //Database connection and server start
 connectDB()
@@ -17,3 +18,5 @@ connectDB()
 .catch((error) =>{
     console.log("MongoDb Connnection failed !!!", err);
 })
+
+
