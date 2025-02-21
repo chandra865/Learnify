@@ -1,6 +1,6 @@
 import mongoose, {Schema} from "mongoose";
 
-const lessonSchema = new Schema({
+const lectureSchema = new Schema({
 
     course:{
         type:Schema.Types.ObjectId,
@@ -27,4 +27,4 @@ const lessonSchema = new Schema({
     }
 })
 
-export const Lesson = mongoose.model('Lesson', lessonSchema);
+export const Lecture = mongoose.model('Lecture', lectureSchema);

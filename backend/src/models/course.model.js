@@ -22,16 +22,16 @@ const courseSchema = new Schema(
       default: 0,
     },
 
-    instruector: {
+    instructor: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
 
-    lessons: [
+    lecture: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Lesson",
+        ref: "Lecture",
       },
     ],
 

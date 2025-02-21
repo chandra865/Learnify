@@ -19,12 +19,12 @@ app.use(cookieParser());//for performing operation on cookie
 //routes
 
 import userRouter from "./routes/user.routes.js"
-
+import courseRouter from "./routes/course.routes.js"
 
 
 //routes declaration
 app.use("/api/v1/user", userRouter);
-
+app.use("/api/v1/course",courseRouter);
 
 
 

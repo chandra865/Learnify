@@ -53,7 +53,7 @@ const registerUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
-  if (createdUser) {
+  if (!createdUser) {
     throw new ApiError(500, "something went wrong while registering the user");
   }
 
@@ -148,7 +148,6 @@ const logoutUser = asyncHandler(async(req, res) =>{
     .clearCookie("refreshToken", options)
     .json(new ApiResponse(200, {}, "User logged Out"))
 })
-
 
 
 const refreshAccessToken = asyncHandler(async(req, res) =>{
