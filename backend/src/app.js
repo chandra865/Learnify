@@ -1,7 +1,12 @@
 import express from "express"
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import fileUpload from "express-fileupload";
 import errorHandler from "./middlewares/errorHandler.js";
+import {config} from "dotenv";
+config({
+    path : "./.env"   
+})
 
 const app = express();
 
@@ -10,10 +15,17 @@ app.use(cors({
     credentials: true
 }))
 
+
+app.use(fileUpload({
+    useTempFiles : true,
+    tempFileDir : "/tmp/"
+}));
 app.use(express.json({limit:"16kb"})); // when data coming in json formate 
 app.use(express.urlencoded({extended:true, limit:"16kb"})) //when data coming from url
 app.use(express.static("public")) //public folder adding file
 app.use(cookieParser());//for performing operation on cookie  
+
+
 
 
 //routes

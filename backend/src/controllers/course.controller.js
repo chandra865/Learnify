@@ -4,106 +4,241 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { uploadToCloudinary } from "../utils/cloudinary.js";
+import { uploadVideo } from "../utils/cloudinary.js";
+import { getVideoDuration } from "../utils/getVideoDuration.js";
 
-const createCourse = asyncHandler(async (req, res) =>{
-    const {title, description, category, price} = req.body;
+const createCourse = asyncHandler(async (req, res) => {
+  const { 
+    title, 
+    description, 
+    category, 
+    price, 
+    whatYouWillLearn, 
+    courseIncludes, 
+    language 
+  } = req.body;
 
-    if(!title || !description || !category || !price){
-        throw new ApiError(400, "All field are required");
-    }
-    //instuctor id
-    const instructor = req.user._id;
-    const course = await Course.create({
-        title,
-        description,
-        category,
-        price,
-        instructor,
-    })
+  // console.log(req.body);
+  // console.log(req.files);
 
-    const createdCourse = await Course.find(course._id);
+  if (!title || !description || !category || !price || !language) {
+    throw new ApiError(400, "All fields are required");
+  }
 
-    if(!createdCourse){
-        throw new ApiError(500, "something went wrong while creating course");
-    }
+  // Instructor ID from logged-in user
+  const instructor = req.user._id;
 
-    //pushing info about that, this instructor create this course
-    const user = await User.findById(req.user._id);
+  // Handle Thumbnail Upload
+  let thumbnailData = null;
+  if (req.files && req.files.thumbnail) {
+    thumbnailData = await uploadToCloudinary(req.files.thumbnail, "Course_Thumbnails");
+  } else {
+    throw new ApiError(400, "Course thumbnail is required.");
+  }
+
+  if (!req.files || !req.files.videoFile) {
+    throw new ApiError(400, "Please upload a video file");
+  }
+
+  const previewData = await uploadVideo(req.files.videoFile.tempFilePath);
+  // Create Course with Thumbnail
+  const course = await Course.create({
+    title,
+    description,
+    category,
+    price,
+    instructor,
+    whatYouWillLearn: whatYouWillLearn ? whatYouWillLearn.split(",") : [],
+    courseIncludes: courseIncludes ? courseIncludes.split(",") : [],
+    language,
+    thumbnail: thumbnailData, // Save thumbnail object
+    preview: previewData,
+  });
+
+  if (!course) {
+    throw new ApiError(500, "Something went wrong while creating the course.");
+  }
+
+  // Associate course with the instructor
+  const user = await User.findById(instructor);
+  if (user) {
     user.createdCourses.push(course._id);
     await user.save();
-   
-    return res
+  }
+
+  return res.status(201).json(new ApiResponse(201, course, "Course Created Successfully"));
+});
+
+const getCourse = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+
+  const course = await Course.findById(courseId);
+  if (!course) throw new ApiError(404, "course not found");
+
+  return res
     .status(201)
-    .json(new ApiResponse(200, createdCourse, "Course Created Successfully"));
-})
+    .json(new ApiResponse(200, course, "Course fetched successfully"));
+});
 
-const addLecture = asyncHandler(async (req, res) =>{
+const addLecture = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  const { title, isFree } = req.body; // Added isFree field
+  // Check if course exists
+  const course = await Course.findById(courseId);
+  if (!course) throw new ApiError(404, "Course not found");
 
-    const {courseId} = req.params;
-    
-    const {title, videoUrl, content, duration } = req.body;
+  // console.log(req.files);
+  // console.log(req.files.videoFile);
 
-    // Check if course exists
-    const course = await Course.findById(courseId);
-    if (!course) {
-        throw new ApiError(404, "Course not found");
-    }
+  // Ensure a file is uploaded
+  if (!req.files || !req.files.videoFile) {
+    throw new ApiError(400, "Please upload a video file");
+  }
 
-    // Create new lecture
-    const newLecture = await Lecture.create({ course: courseId, title, videoUrl, content, duration });
+  const videoFile = req.files.videoFile;
 
-    // Add lecture to course
-    course.lecture.push(newLecture._id);
-    await course.save();
+  // Upload video to Cloudinary
+  const videoData = await uploadVideo(videoFile.tempFilePath); // Returns { publicId, url }
 
-    return res
+  // Create new lecture
+  const newLecture = await Lecture.create({
+    course: courseId,
+    title,
+    videoUrl: videoData, // Stores { publicId, url }
+    isFree: isFree ?? false, // Default to false if not provided
+  });
+
+  // Add lecture to course
+  course.lecture.push(newLecture._id);
+  await course.save();
+
+  return res
     .status(201)
-    .json(new ApiResponse(200, {course, newLecture}, "Lecture added successfully"));
+    .json(
+      new ApiResponse(201, { course, newLecture }, "Lecture added successfully")
+    );
+});
 
-})
+const instructorCourses = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).populate("createdCourses");
 
+  if (!user) throw new ApiError(404, "User not found");
 
-const instructorCourses = asyncHandler(async (req, res)=>{
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, user.createdCourses, "Courses fetched successfully")
+    );
+});
 
-    const user = await User.findById(req.user._id);
-    if(!user)  throw new ApiError(404, "user not found");
-    const myCourses = user.createdCourses;
-    return res
-    .status(201)
-    .json(new ApiResponse(200, myCourses, "Courses fetched successfully"));
+const courseEnrollment = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
 
-})
-
-const courseEnrollment = asyncHandler(async (req, res)=>{
-
-    const {courseId} = req.params;
-
-    const course = await Course.findById(courseId);
-    if(!course)  throw new ApiError(404, "course not found");
-    course.enrolledStudents.push(req.user._id);
-    await course.save();
+  const course = await Course.findById(courseId);
+  if (!course) throw new ApiError(404, "course not found");
 
 
-    const user = await User.findById(req.user._id);
-    if(!user)  throw new ApiError(404, "user not found");
-    user.enrolledCourses.push(courseId);
-    await user.save();
+  if (course.enrolledStudents.includes(req.user._id)) {
+    throw new ApiError(400, "You are already enrolled in this course");
+  }
 
-    return res
+
+  course.enrolledStudents.push(req.user._id);
+  await course.save();
+
+  const user = await User.findById(req.user._id);
+  if (!user) throw new ApiError(404, "user not found");
+  user.enrolledCourses.push(courseId);
+  await user.save();
+
+  return res
     .status(201)
     .json(new ApiResponse(200, course, "Course enrollment successfully"));
-    
-})
+});
 
+const stuCourses = asyncHandler(async (req, res) => {
+  // Fetch user and populate enrolledCourses with full course details
+  const user = await User.findById(req.user._id).populate("enrolledCourses");
 
-const stuCourses = asyncHandler(async(req, res)=>{
+  if (!user) throw new ApiError(404, "User not found");
 
-    const user = await User.findById(req.user._id);
-    if(!user)  throw new ApiError(404, "user not found");
-    const myCourses = user.enrolledCourses;
-    return res
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, user.enrolledCourses, "Courses fetched successfully")
+    );
+});
+
+const getAllCourses = asyncHandler(async (req, res) => {
+  const course = await Course.find({});
+
+  if (!course) throw new ApiError(404, "failed to fetch course");
+  return res
     .status(201)
-    .json(new ApiResponse(200, myCourses, "Courses fetched successfully"));
-})
+    .json(new ApiResponse(200, course, "Courses fetched successfully"));
+});
 
-export {createCourse, addLecture, instructorCourses, courseEnrollment, stuCourses};
+const getLectures = async (req, res, next) => {
+  try {
+    const { courseId } = req.params;
+
+    const course = await Course.findById(courseId).populate("lecture");
+
+    if (!course) {
+      return next(new ApiError(404, "Course not found"));
+    }
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { lectures: course.lecture },
+          "Lectures fetched successfully"
+        )
+      );
+  } catch (error) {
+    next(new ApiError(500, error.message || "Server Error"));
+  }
+};
+
+const publishCourse = async (req, res, next) => {
+  try {
+    const { courseId } = req.params;
+
+    const course = await Course.findById(courseId);
+
+    if (!course) {
+      return next(new ApiError(404, "Course not found"));
+    }
+
+    // Toggle publish status
+    course.published = !course.published;
+    await course.save();
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { published: course.published },
+          "Course publish status updated successfully"
+        )
+      );
+  } catch (error) {
+    next(new ApiError(500, error.message || "Internal Server Error"));
+  }
+};
+
+export {
+  createCourse,
+  addLecture,
+  instructorCourses,
+  courseEnrollment,
+  stuCourses,
+  getAllCourses,
+  getCourse,
+  getLectures,
+  publishCourse
+};

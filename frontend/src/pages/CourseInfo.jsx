@@ -1,0 +1,272 @@
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useSelector } from "react-redux";
+
+const CourseInfo = () => {
+  const { course_id } = useParams();
+  const navigate = useNavigate();
+  const [course, setCourse] = useState(null);
+  const [lectures, setLectures] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+
+  const handlePreviewClick = () => {
+    setShowPreview(true);
+  };
+
+  const user = useSelector((state) => state.user.userData);
+
+  useEffect(() => {
+    if (user?.enrolledCourses?.includes(course_id)) {
+      setIsEnrolled(true);
+    } else {
+      setIsEnrolled(false);
+    }
+  }, [user, course_id]);
+
+  useEffect(() => {
+    const fetchCourse = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/api/v1/course/fetchcourse/${course_id}`,
+          { withCredentials: true }
+        );
+        setCourse(response.data.data);
+      } catch (err) {
+        setError("Failed to fetch course details");
+      }
+    };
+
+    const fetchLectures = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/api/v1/course/lectures/${course_id}`,
+          { withCredentials: true }
+        );
+        setLectures(response.data.data.lectures);
+      } catch (err) {
+        console.error("Error fetching lectures:", err);
+      }
+    };
+
+    fetchCourse();
+    fetchLectures();
+    setLoading(false);
+  }, [course_id]);
+
+  const handleEnroll = async () => {
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/v1/course/enrolle/${course_id}`,
+        {},
+        { withCredentials: true }
+      );
+      alert(response.data.message || "Successfully Enrolled!");
+      setIsEnrolled(true);
+    } catch (error) {
+      // console.log(error.response?.data);
+      alert(error.response?.data?.message || "Failed to enroll");
+    }
+  };
+
+  if (loading) return <p className="text-center text-gray-600">Loading...</p>;
+  if (error) return <p className="text-center text-red-500">{error}</p>;
+
+  return (
+    <div className="bg-gray-300 min-h-screen py-10">
+      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
+        {/* Course Content */}
+        <div className="flex-1 bg-gray-900 text-white shadow-lg rounded-lg p-6">
+          {/* Course Title */}
+          <h1 className="text-4xl font-bold text-blue-400">{course?.title}</h1>
+
+          {/* Course Description */}
+          <p className="text-gray-300 mt-3 text-lg leading-relaxed">
+            {course?.description}
+          </p>
+
+          {/* Course Details */}
+          <div className="mt-6 space-y-3">
+            <p className="text-lg font-medium flex items-center gap-3">
+              <span className="text-green-400 text-xl">📚</span>
+              <span className="text-gray-300">
+                Category:{" "}
+                <span className="font-semibold text-white">
+                  {course?.category}
+                </span>
+              </span>
+            </p>
+
+            <p className="text-lg font-medium flex items-center gap-3">
+              <span className="text-yellow-400 text-xl">💰</span>
+              <span className="text-gray-300">
+                Price:{" "}
+                <span className="font-semibold text-white">
+                  ₹{course?.price}
+                </span>
+              </span>
+            </p>
+
+            <p className="text-lg font-medium flex items-center gap-3">
+              <span className="text-purple-400 text-xl">🌐</span>
+              <span className="text-gray-300">
+                Language:{" "}
+                <span className="font-semibold text-white">
+                  {course?.language}
+                </span>
+              </span>
+            </p>
+
+            <p className="text-lg font-medium flex items-center gap-3">
+              <span className="text-pink-400 text-xl">👨‍🏫</span>
+              <span className="text-gray-300">
+                Instructor:{" "}
+                <span className="font-semibold text-white">
+                  {course?.instructor?.name}
+                </span>
+              </span>
+            </p>
+          </div>
+
+          {/* What You Will Learn */}
+          <div className="mt-6">
+            <h2 className="text-2xl font-semibold text-gray-200">
+              🚀 What You'll Learn
+            </h2>
+            <ul className="mt-4 space-y-3">
+              {course?.whatYouWillLearn?.map((item, index) => (
+                <li
+                  key={index}
+                  className="flex items-center gap-3 p-3 bg-gray-800 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-700 transition duration-200"
+                >
+                  {/* Bullet Icon */}
+                  <span className="text-blue-400 text-lg">📌</span>
+
+                  {/* Learning Point */}
+                  <p className="text-lg">{item}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Course Includes */}
+          <div className="mt-6">
+            <h2 className="text-2xl font-semibold text-gray-200">
+              🎯 This Course Includes
+            </h2>
+            <ul className="mt-4 space-y-3">
+              {course?.courseIncludes?.map((item, index) => (
+                <li
+                  key={index}
+                  className="flex items-center gap-3 p-3 bg-gray-800 border border-gray-700 rounded-lg text-gray-300"
+                >
+                  {/* Check Icon */}
+                  <span className="text-green-400 text-lg">✔</span>
+
+                  {/* Item Text */}
+                  <p className="text-lg">{item}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Lectures List */}
+          <h2 className="mt-6 text-2xl font-bold text-gray-200">
+            📚 Course Lectures
+          </h2>
+          <ul className="mt-4 space-y-3">
+            {lectures.length > 0 ? (
+              lectures.map((lecture, index) => (
+                <li
+                  key={lecture._id}
+                  className="flex items-center gap-4 p-4 border border-gray-700 rounded-lg bg-gray-800 text-gray-200 hover:bg-gray-700 transition cursor-pointer"
+                  onClick={() =>
+                    navigate(`/media-player/${course_id}/${index}`)
+                  }
+                >
+                  {/* Lecture Number */}
+                  <span className="w-8 h-8 flex items-center justify-center font-semibold text-lg bg-blue-500 text-white rounded-full">
+                    {index + 1}
+                  </span>
+
+                  {/* Lecture Title */}
+                  <p className="flex-1 text-lg font-medium">{lecture.title}</p>
+
+                  {/* Play Icon */}
+                  <span className="text-gray-400 group-hover:text-white transition">
+                    ▶
+                  </span>
+                </li>
+              ))
+            ) : (
+              <p className="text-gray-500">No lectures available</p>
+            )}
+          </ul>
+        </div>
+
+        {/* Sidebar (Course Preview & Enroll) */}
+        <div className="w-full lg:w-1/3 bg-gray-900 text-white shadow-lg rounded-lg p-6 lg:sticky top-4 h-fit">
+          {/* Course Preview */}
+          <div className="relative">
+            {showPreview ? (
+             <div className="fixed inset-0 bg-gray-300 bg-opacity-30 backdrop-blur-sm flex items-center justify-center">
+
+
+              <div className="relative bg-gray-900 p-6 rounded-lg shadow-lg w-full max-w-4xl">
+                {/* Close Button */}
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="absolute top-0 right-0 bg-red-500 text-white p-2 rounded-full"
+                >
+                  ✖
+                </button>
+    
+                {/* Video Player */}
+                <video controls className="w-full rounded-lg">
+                  <source src={course?.preview?.url} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </div>
+            ) : (
+              <>
+                <img
+                  src={
+                    course?.thumbnail?.url || "https://via.placeholder.com/300"
+                  }
+                  alt="Course Thumbnail"
+                  className="rounded-lg w-full h-48 object-cover"
+                />
+                <button
+                  className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-80 text-white font-bold text-lg opacity-0 hover:opacity-100 transition"
+                  onClick={handlePreviewClick}
+                >
+                  ▶ How to Play
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Price & Enroll Button */}
+          <p className="text-xl font-bold text-white mt-4">₹{course?.price}</p>
+          <button
+            onClick={handleEnroll}
+            disabled={isEnrolled}
+            className={`w-full mt-4 py-3 text-lg font-semibold rounded-lg text-white transition ${
+              isEnrolled
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600 cursor-pointer"
+            }`}
+          >
+            {isEnrolled ? "Already Enrolled" : "Enroll Now"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CourseInfo;

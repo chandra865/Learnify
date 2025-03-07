@@ -20,6 +20,7 @@ const courseSchema = new Schema(
     price: {
       type: Number,
       default: 0,
+      required: true,
     },
 
     instructor: {
@@ -48,6 +49,40 @@ const courseSchema = new Schema(
         ref: "Review",
       },
     ],
+
+    thumbnail: {
+      public_id: { type: String, required: true },
+      url: { type: String, required: true },
+    },
+
+    whatYouWillLearn: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
+
+    courseIncludes: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
+
+    language: {
+      type: String,
+      required: true,
+    },
+
+    preview: {
+      publicId: { type: String, required: true }, 
+      url: { type: String, required: true },
+    },
+
+    published: { 
+      type: Boolean, 
+      default: false 
+    }
   },
   { timestamps: true }
 );
