@@ -23,7 +23,7 @@ const AddLecture = () => {
     const fetchCourses = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/v1/course/all-courses"
+          "http://localhost:8000/api/v1/course/inst-courses"
         );
         setCourses(response.data.data);
       } catch (error) {

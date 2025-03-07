@@ -79,7 +79,7 @@ const CreatedCourses = () => {
                   <p className="mt-4">Category:- {course.category}</p>
                   <button
                     className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-                    onClick={() => handleCourseSelect(course)}
+                    onClick={() => navigate(`/edit-course/${course._id}`)}
                   >
                     Edit Lecture
                   </button>

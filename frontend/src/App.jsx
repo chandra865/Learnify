@@ -18,6 +18,7 @@ import Logout from "./pages/Logout";
 import AddLecture from "./pages/AddLecture";
 import LectureForm from "./pages/LectureForm";
 import MediaPlayer from "./pages/MediaPlayer";
+import EditCourse from "./pages/EditCourse";
 
 
 function App() {
@@ -60,6 +61,7 @@ function App() {
       </Route>
       <Route path="/add-lecture/:courseId" element={<LectureForm/>} />
       <Route path="/media-player/:courseId/:index" element={<MediaPlayer />} />
+      <Route path="edit-course/:courseId" element={<EditCourse/>} />
       <Route path="/logout" element={<Logout/>} />
     </Routes>
     {/* Toast Notification Container */}

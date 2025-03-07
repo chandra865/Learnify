@@ -179,7 +179,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, course, "Courses fetched successfully"));
 });
 
-const getLectures = async (req, res, next) => {
+const getLectures = async (req, res) => {
   try {
     const { courseId } = req.params;
 
@@ -210,7 +210,7 @@ const publishCourse = async (req, res, next) => {
     const course = await Course.findById(courseId);
 
     if (!course) {
-      return next(new ApiError(404, "Course not found"));
+      throw new ApiError(404, "Course not found");
     }
 
     // Toggle publish status
@@ -231,6 +231,39 @@ const publishCourse = async (req, res, next) => {
   }
 };
 
+
+const updateCourse = async(req, res) => {
+      const { courseId } = req.params;
+      const { title, description, category, price, language, whatYouWillLearn, courseIncludes } = req.body;
+  
+      // Handle file uploads if present
+      let updatedFields = {
+        title,
+        description,
+        category,
+        price,
+        language,
+        whatYouWillLearn: whatYouWillLearn ? whatYouWillLearn.split(",") : [],
+        courseIncludes: courseIncludes ? courseIncludes.split(",") : [],
+      };
+  
+      if (req.files?.thumbnail) {
+        updatedFields.thumbnail = await uploadToCloudinary(req.files.thumbnail) // Assuming multer stores file paths
+      }
+      if (req.files?.videoFile) {
+        updatedFields.preview = await uploadVideo(req.files.videoFile.tempFilePath);
+      }
+  
+      // Find and update the course
+      const updatedCourse = await Course.findByIdAndUpdate(courseId, updatedFields, { new: true });
+  
+      if (!updatedCourse) {
+        throw new ApiError(404, "Course not found");
+      }
+  
+      return res.status(200).json(new ApiResponse(200, updatedCourse, "Course updated successfully"));
+}
+
 export {
   createCourse,
   addLecture,
@@ -240,5 +273,6 @@ export {
   getAllCourses,
   getCourse,
   getLectures,
-  publishCourse
+  publishCourse,
+  updateCourse
 };
