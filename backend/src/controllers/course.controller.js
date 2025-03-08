@@ -5,43 +5,44 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
-import { uploadVideo } from "../utils/cloudinary.js";
-import { getVideoDuration } from "../utils/getVideoDuration.js";
+import { Media } from "../models/media.model.js";
 
 const createCourse = asyncHandler(async (req, res) => {
-  const { 
-    title, 
-    description, 
-    category, 
-    price, 
-    whatYouWillLearn, 
-    courseIncludes, 
-    language 
+  const {
+    title,
+    description,
+    category,
+    price,
+    whatYouWillLearn,
+    courseIncludes,
+    language,
+    thumbnail,
+    videoFile,
   } = req.body;
 
   // console.log(req.body);
+  // console.log(thumbnail);
+  // console.log(videoFile);
   // console.log(req.files);
 
-  if (!title || !description || !category || !price || !language) {
+  if (
+    !title ||
+    !description ||
+    !category ||
+    !price ||
+    !language ||
+    !thumbnail ||
+    !videoFile
+  ) {
     throw new ApiError(400, "All fields are required");
   }
 
   // Instructor ID from logged-in user
   const instructor = req.user._id;
 
-  // Handle Thumbnail Upload
-  let thumbnailData = null;
-  if (req.files && req.files.thumbnail) {
-    thumbnailData = await uploadToCloudinary(req.files.thumbnail, "Course_Thumbnails");
-  } else {
-    throw new ApiError(400, "Course thumbnail is required.");
-  }
+  const thumbnailData = await JSON.parse(thumbnail);
+  const videoFileData = await JSON.parse(videoFile);
 
-  if (!req.files || !req.files.videoFile) {
-    throw new ApiError(400, "Please upload a video file");
-  }
-
-  const previewData = await uploadVideo(req.files.videoFile.tempFilePath);
   // Create Course with Thumbnail
   const course = await Course.create({
     title,
@@ -52,8 +53,8 @@ const createCourse = asyncHandler(async (req, res) => {
     whatYouWillLearn: whatYouWillLearn ? whatYouWillLearn.split(",") : [],
     courseIncludes: courseIncludes ? courseIncludes.split(",") : [],
     language,
-    thumbnail: thumbnailData, // Save thumbnail object
-    preview: previewData,
+    thumbnail: thumbnailData,
+    preview: videoFileData,
   });
 
   if (!course) {
@@ -67,7 +68,9 @@ const createCourse = asyncHandler(async (req, res) => {
     await user.save();
   }
 
-  return res.status(201).json(new ApiResponse(201, course, "Course Created Successfully"));
+  return res
+    .status(201)
+    .json(new ApiResponse(201, course, "Course Created Successfully"));
 });
 
 const getCourse = asyncHandler(async (req, res) => {
@@ -138,11 +141,9 @@ const courseEnrollment = asyncHandler(async (req, res) => {
   const course = await Course.findById(courseId);
   if (!course) throw new ApiError(404, "course not found");
 
-
   if (course.enrolledStudents.includes(req.user._id)) {
     throw new ApiError(400, "You are already enrolled in this course");
   }
-
 
   course.enrolledStudents.push(req.user._id);
   await course.save();
@@ -231,38 +232,72 @@ const publishCourse = async (req, res, next) => {
   }
 };
 
+const updateCourse = async (req, res) => {
+  const { courseId } = req.params;
 
-const updateCourse = async(req, res) => {
-      const { courseId } = req.params;
-      const { title, description, category, price, language, whatYouWillLearn, courseIncludes } = req.body;
-  
-      // Handle file uploads if present
-      let updatedFields = {
-        title,
-        description,
-        category,
-        price,
-        language,
-        whatYouWillLearn: whatYouWillLearn ? whatYouWillLearn.split(",") : [],
-        courseIncludes: courseIncludes ? courseIncludes.split(",") : [],
-      };
-  
-      if (req.files?.thumbnail) {
-        updatedFields.thumbnail = await uploadToCloudinary(req.files.thumbnail) // Assuming multer stores file paths
-      }
-      if (req.files?.videoFile) {
-        updatedFields.preview = await uploadVideo(req.files.videoFile.tempFilePath);
-      }
-  
-      // Find and update the course
-      const updatedCourse = await Course.findByIdAndUpdate(courseId, updatedFields, { new: true });
-  
-      if (!updatedCourse) {
-        throw new ApiError(404, "Course not found");
-      }
-  
-      return res.status(200).json(new ApiResponse(200, updatedCourse, "Course updated successfully"));
-}
+  const {
+    title,
+    description,
+    category,
+    price,
+    whatYouWillLearn,
+    courseIncludes,
+    language,
+    thumbnail,
+    videoFile,
+  } = req.body;
+
+  // console.log(req.body);
+  // console.log(thumbnail);
+  // console.log(videoFile);
+  // console.log(req.files);
+
+  if (
+    !title ||
+    !description ||
+    !category ||
+    !price ||
+    !language ||
+    !thumbnail ||
+    !videoFile
+  ) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+  const thumbnailData = await JSON.parse(thumbnail);
+  const videoFileData = await JSON.parse(videoFile);
+
+  console.log(thumbnailData);
+  console.log(videoFileData);
+
+  // Handle file uploads if present
+  let updatedFields = {
+    title,
+    description,
+    category,
+    price,
+    language,
+    whatYouWillLearn: whatYouWillLearn ? whatYouWillLearn.split(",") : [],
+    courseIncludes: courseIncludes ? courseIncludes.split(",") : [],
+    thumbnail: thumbnailData,
+    preview: videoFileData,
+  };
+
+  // Find and update the course
+  const updatedCourse = await Course.findByIdAndUpdate(
+    courseId,
+    updatedFields,
+    { new: true }
+  );
+
+  if (!updatedCourse) {
+    throw new ApiError(404, "Course not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedCourse, "Course updated successfully"));
+};
 
 export {
   createCourse,
@@ -274,5 +309,5 @@ export {
   getCourse,
   getLectures,
   publishCourse,
-  updateCourse
+  updateCourse,
 };

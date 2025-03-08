@@ -1,11 +1,8 @@
 import { v2 as cloudinary } from "cloudinary";
 import { ApiError } from "./ApiError.js";
-import fs from "fs";
-import {config} from "dotenv";
-config({
-    path : "./.env"   
-})
+import { config } from "dotenv";
 
+config({ path: "./.env" });
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -14,38 +11,29 @@ cloudinary.config({
 });
 
 // Upload File to Cloudinary
-export const uploadToCloudinary = async (file, folder) => {
+export const uploadToCloudinary = async (file, type) => {
   try {
-    const result = await cloudinary.uploader.upload(file.tempFilePath, {
-      folder,
-    });
+    if (!file || !file.tempFilePath) {
+      throw new ApiError(400, "Invalid file upload");
+    }
+
+    const options = {
+      resource_type: type === "video" ? "video" : "image", // Determine resource type
+      folder: type === "video" ? "lectures" : "Course_Thumbnails",
+    };
+
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(file.tempFilePath, options);
 
     if (!result || result.error) {
       throw new ApiError(500, "Cloudinary upload failed.");
     }
 
     return {
-      public_id: result.public_id,
-      url: result.secure_url,
-    };
-  } catch (error) {
-    console.error(error);
-    throw new ApiError(500, "Error uploading to Cloudinary.");
-  }
-};
-
-export const uploadVideo = async (filePath) => {
-  try {
-    const result = await cloudinary.uploader.upload(filePath, {
-      resource_type: "video",
-      folder: "lectures", // Change folder as needed
-    });
-
-    return {
       publicId: result.public_id,
       url: result.secure_url,
     };
   } catch (error) {
-    throw new Error("Video upload failed");
+    throw new ApiError(500, `Error while uploading ${type} to Cloudinary.`);
   }
 };

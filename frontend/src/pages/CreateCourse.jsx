@@ -2,8 +2,6 @@ import React, { useState, useRef } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 
-
-
 const CreateCourse = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -11,17 +9,17 @@ const CreateCourse = () => {
   const [customCategory, setCustomCategory] = useState("");
   const [price, setPrice] = useState(0);
   const [thumbnail, setThumbnail] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [imgPreview, setImgPreview] = useState(null);
   const [whatYouWillLearn, setWhatYouWillLearn] = useState([""]);
   const [courseIncludes, setCourseIncludes] = useState([""]);
   const [language, setLanguage] = useState("");
   const [videoFile, setVideoFile] = useState(null);
   const [disable, setDisable] = useState(false);
-
+  const [videoPreview, setVideoPreview] = useState(null);
+  const [progress, setProgress] = useState(0);
 
   const imageInputRef = useRef(null);
   const videoInputRef = useRef(null);
-
 
   const TITLE_LIMIT = 50;
   const DESCRIPTION_LIMIT = 80;
@@ -29,26 +27,84 @@ const CreateCourse = () => {
 
   const userId = useSelector((state) => state.user.userData?._id);
 
-  const handleThumbnailChange = (e) => {
-    const file = e.target.files[0];
-    setThumbnail(file);
-    setPreview(URL.createObjectURL(file));
-  };
-
   const handleDynamicFieldChange = (setter, index, value) => {
     setter((prev) => {
-      const newArray = [...prev];  // Copy the existing array
-      newArray[index] = value;     // Update the specific index
-      return newArray;             // Return the new state
+      const newArray = [...prev]; // Copy the existing array
+      newArray[index] = value; // Update the specific index
+      return newArray; // Return the new state
     });
   };
   const addField = (setter) => setter((prev) => [...prev, ""]);
   const removeField = (setter, index) =>
     setter((prev) => prev.filter((_, i) => i !== index));
 
-  const handleFileChange = (e) => {
-    setVideoFile(e.target.files[0]);
+  const uploadMedia = async (file, mediaType) => {
+    const formData = new FormData();
+    formData.append("media", file); // Attach the file
+    formData.append("mediaType", mediaType); // Specify media type ("thumbnail" or "video")
+
+    try {
+      setDisable(true);
+      const response = await axios.post(
+        "http://localhost:8000/api/v1/media/upload-media",
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data", // Important for file upload
+          },
+
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setProgress(percent);
+          },
+        }
+      );
+      setDisable(false);
+      setProgress(0);
+      console.log(`Upload ${mediaType} Success:`, response.data.data);
+      return response.data.data; // Contains { publicId, url }
+    } catch (error) {
+      console.error(`Upload ${mediaType} Failed:`, error.response.data);
+      throw error;
+    }
   };
+
+  const handleFileChange = async (event, mediaType) => {
+    const file = event.target.files[0]; // Get the selected file
+
+    if (!file) return console.error("No file selected");
+
+    try {
+      const mediaData = await uploadMedia(file, mediaType);
+      console.log(`${mediaType} Uploaded:`, mediaData);
+
+      // Store publicId & URL in state (for form submission)
+      if (mediaType === "thumbnail") {
+        setImgPreview(URL.createObjectURL(file));
+        setThumbnail(
+          JSON.stringify({
+            publicId: mediaData.thumbnail.publicId,
+            url: mediaData.thumbnail.url,
+          })
+        );
+      } else if (mediaType === "video") {
+        setVideoPreview(URL.createObjectURL(file));
+        setVideoFile(
+          JSON.stringify({
+            publicId: mediaData.video.publicId,
+            url: mediaData.video.url,
+          })
+        );
+      }
+
+      console.log("Thumbnail:", thumbnail);
+      console.log("Video:", videoFile);
+    } catch (error) {
+      console.error(`Error uploading ${mediaType}:`, error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     setDisable(true);
     e.preventDefault();
@@ -77,7 +133,7 @@ const CreateCourse = () => {
         }
       );
 
-      console.log(response.data);
+      console.log(response.data.data);
       alert("Course Created Successfully!");
 
       setTitle("");
@@ -86,16 +142,17 @@ const CreateCourse = () => {
       setCustomCategory("");
       setPrice(0);
       setThumbnail(null);
-      setPreview(null);
       setWhatYouWillLearn([""]);
       setCourseIncludes([""]);
       setLanguage("");
       setVideoFile(null);
       setDisable(false);
+      setImgPreview(null);
+      setVideoPreview(null);
+      setProgress(0);
 
       if (imageInputRef.current) imageInputRef.current.value = "";
       if (videoInputRef.current) videoInputRef.current.value = "";
-
     } catch (error) {
       setDisable(false);
       console.error("Error creating course", error.response.data);
@@ -223,7 +280,9 @@ const CreateCourse = () => {
         />
 
         <div>
-          <label className="block font-semibold text-white mt-4">Language</label>
+          <label className="block font-semibold text-white mt-4">
+            Language
+          </label>
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
@@ -320,34 +379,58 @@ const CreateCourse = () => {
         </div>
         <label className="block font-bold mt-4">Add Course Preview:</label>
         <input
-              type="file"
-              name="videoFile"
-              accept="video/*"
-              onChange={handleFileChange}
-              className="w-full p-2 border rounded mb-3"
-              ref={videoInputRef}
-              required
+          type="file"
+          name="media"
+          accept="video/*"
+          onChange={(e) => handleFileChange(e, "video")}
+          className="w-full p-2 border rounded mb-3"
+          ref={videoInputRef}
+          required
         />
+
+        {videoPreview && (
+          <video
+            src={videoPreview}
+            controls
+            className="mt-2 h-50 object-cover rounded"
+          />
+        )}
 
         <label className="block font-bold mt-4">Upload Course Thumbnail:</label>
         <input
           type="file"
+          name="media"
           accept="image/*"
-          onChange={handleThumbnailChange}
+          onChange={(e) => handleFileChange(e, "thumbnail")}
           className="block w-full p-2 border rounded mb-2"
           ref={imageInputRef}
         />
-        {preview && (
+        {imgPreview && (
           <img
-            src={preview}
+            src={imgPreview}
             alt="Thumbnail Preview"
             className="mt-2 w-80 h-full object-cover rounded"
           />
         )}
+
+        {progress > 0 && (
+          <div className="w-full bg-gray-200 rounded-full mt-2">
+            <div
+              className="bg-blue-500 text-xs font-medium text-white text-center p-1 leading-none rounded-full"
+              style={{ width: `${progress}%` }}
+            >
+              {progress}%
+            </div>
+          </div>
+        )}
         <div className="flex justify-center">
           <button
             type="submit"
-            className={`${disable ? "bg-gray-400 cursor-not-allowed":"bg-blue-500 hover:bg-blue-600 cursor-pointer"} text-white p-2 rounded mx-auto mt-4 `}
+            className={`${
+              disable
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600 cursor-pointer"
+            } text-white p-2 rounded mx-auto mt-4 `}
             disabled={disable}
           >
             Create Course
