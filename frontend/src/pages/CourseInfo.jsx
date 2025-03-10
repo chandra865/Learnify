@@ -19,6 +19,10 @@ const CourseInfo = () => {
 
   const user = useSelector((state) => state.user.userData);
 
+  // useEffect(() => {
+    
+  // }, [user, course_id]);
+
   useEffect(() => {
     if (user?.enrolledCourses?.includes(course_id)) {
       setIsEnrolled(true);
@@ -26,7 +30,7 @@ const CourseInfo = () => {
       setIsEnrolled(false);
     }
   }, [user, course_id]);
-
+  
   useEffect(() => {
     const fetchCourse = async () => {
       try {
@@ -39,7 +43,11 @@ const CourseInfo = () => {
         setError("Failed to fetch course details");
       }
     };
-
+  
+    fetchCourse();
+  }, [course_id]);
+  
+  useEffect(() => {
     const fetchLectures = async () => {
       try {
         const response = await axios.get(
@@ -48,6 +56,7 @@ const CourseInfo = () => {
         );
         const lectureData = response.data.data.lectures;
         if (isEnrolled) {
+          console.log("inside");
           setLectures(lectureData);
         } else {
           setLectures(lectureData.filter((lecture) => lecture.isFree === true));
@@ -56,11 +65,19 @@ const CourseInfo = () => {
         console.error("Error fetching lectures:", err);
       }
     };
-
-    fetchCourse();
-    fetchLectures();
+  
+    if (isEnrolled !== null) {
+      fetchLectures();
+    }
+  }, [isEnrolled, course_id]);
+  
+  useEffect(() => {
     setLoading(false);
-  }, [course_id]);
+  }, []);
+  
+  
+
+  
 
   const handleEnroll = async () => {
     try {
