@@ -7,6 +7,8 @@ const EnrolledCourses = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  
   const userId = useSelector((state) => state.user.userData?._id);
   const navigate = useNavigate();
 

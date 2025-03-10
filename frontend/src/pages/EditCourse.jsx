@@ -127,8 +127,8 @@ const EditCourse = () => {
         );
       }
 
-      console.log("Thumbnail:", thumbnail);
-      console.log("Video:", videoFile);
+      // console.log("Thumbnail:", thumbnail);
+      // console.log("Video:", videoFile);
     } catch (error) {
       console.error(`Error uploading ${mediaType}:`, error);
     }
@@ -146,6 +146,8 @@ const EditCourse = () => {
     setter((prev) => prev.filter((_, i) => i !== index));
 
   const handleSubmit = async (e) => {
+    // console.log("bthumbnail",thumbnail);
+    // console.log("bvideo",videoFile);
     setDisable(true);
     e.preventDefault();
     try {
@@ -159,12 +161,17 @@ const EditCourse = () => {
       formData.append("price", price);
       formData.append("language", language);
       if (thumbnail) {
-        formData.append("thumbnail",JSON.stringify(thumbnail));
+        const strThumbnail = typeof thumbnail === "string" ? thumbnail : JSON.stringify(thumbnail);
+        formData.append("thumbnail",strThumbnail);
+        // console.log("thumbnail",strThumbnail);
       }
       formData.append("whatYouWillLearn", whatYouWillLearn.join(","));
       formData.append("courseIncludes", courseIncludes.join(","));
       if (videoFile) {
-        formData.append("videoFile", JSON.stringify(videoFile));
+        const strVideoFile = typeof videoFile === "string" ? videoFile : JSON.stringify(videoFile);
+  
+        formData.append("videoFile", strVideoFile);
+        // console.log(strVideoFile);
       }
       
       const response = await axios.patch(

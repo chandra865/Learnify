@@ -16,6 +16,8 @@ const AddLecture = () => {
   const [disable, setDisable] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [videoPreview, setVideoPreview] = useState(null);
   const navigate = useNavigate();
 
   const videoInputRef = useRef(null);
@@ -23,8 +25,10 @@ const AddLecture = () => {
     const fetchCourses = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/v1/course/inst-courses"
+          "http://localhost:8000/api/v1/course/inst-courses",
+          { withCredentials: true }
         );
+        // console.log(response.data.data);
         setCourses(response.data.data);
       } catch (error) {
         console.error("Error fetching courses:", error.response?.data?.message);
@@ -45,8 +49,82 @@ const AddLecture = () => {
     }
   };
 
-  const handleFileChange = (e) => {
-    setLectureData({ ...lectureData, videoFile: e.target.files[0] });
+  // const handleFileChange = (e) => {
+  //   setLectureData({ ...lectureData, videoFile: e.target.files[0] });
+  // };
+
+  const uploadMedia = async (file, mediaType) => {
+    const formData = new FormData();
+    formData.append("media", file); // Attach the file
+    formData.append("mediaType", mediaType); // Specify media type ("thumbnail" or "video")
+
+    try {
+      setDisable(true);
+      const response = await axios.post(
+        "http://localhost:8000/api/v1/media/upload-media",
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data", // Important for file upload
+          },
+
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setProgress(percent);
+          },
+        }
+      );
+      setDisable(false);
+      setProgress(0);
+      console.log(`Upload ${mediaType} Success:`, response.data.data);
+      return response.data.data; // Contains { publicId, url }
+    } catch (error) {
+      console.error(`Upload ${mediaType} Failed:`, error.response.data);
+      throw error;
+    }
+  };
+
+  const handleFileChange = async (event, mediaType) => {
+    const file = event.target.files[0]; // Get the selected file
+
+    if (!file) return console.error("No file selected");
+
+    try {
+      const mediaData = await uploadMedia(file, mediaType);
+      console.log(`${mediaType} Uploaded:`, mediaData);
+
+      // Store publicId & URL in state (for form submission)
+      // if (mediaType === "thumbnail") {
+      //   setImgPreview(URL.createObjectURL(file));
+      //   setThumbnail(
+      //     JSON.stringify({
+      //       publicId: mediaData.thumbnail.publicId,
+      //       url: mediaData.thumbnail.url,
+      //     })
+      //   );
+      // } else if (mediaType === "video") {
+      //   setVideoPreview(URL.createObjectURL(file));
+      //   setVideoFile(
+      //     JSON.stringify({
+      //       publicId: mediaData.video.publicId,
+      //       url: mediaData.video.url,
+      //     })
+      //   );
+      // }
+      setVideoPreview(URL.createObjectURL(file));
+      setLectureData({
+        ...lectureData,
+        videoFile: JSON.stringify({
+          publicId: mediaData.video.publicId,
+          url: mediaData.video.url,
+        }),
+      });
+    } catch (error) {
+      console.error(`Error uploading ${mediaType}:`, error);
+    }
   };
 
   const handleAddLecture = async (e) => {
@@ -63,9 +141,6 @@ const AddLecture = () => {
     formData.append("videoFile", lectureData.videoFile);
     formData.append("isFree", lectureData.isFree || false);
 
-    setIsUploading(true);
-    setUploadProgress(0); // Reset progress before upload starts
-
     try {
       const response = await axios.post(
         `http://localhost:8000/api/v1/course/add-lecture/${selectedCourse._id}`,
@@ -74,9 +149,10 @@ const AddLecture = () => {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
         }
-      )
+      );
       setLectures([...lectures, response.data.data.newLecture]);
       setLectureData({ title: "", videoFile: null, isFree: false });
+      setVideoPreview(null);
       if (videoInputRef.current) videoInputRef.current.value = "";
       setDisable(false);
       toast.success("Lecture added successfully!");
@@ -93,9 +169,7 @@ const AddLecture = () => {
       {!selectedCourse ? (
         <div className="grid grid-cols-1 gap-6">
           {courses.length === 0 ? (
-            <p className="text-center text-gray-500">
-              No unpublished courses found.
-            </p>
+            <p className="text-center text-gray-500">No courses found.</p>
           ) : (
             courses.map((course) => (
               <div
@@ -175,11 +249,30 @@ const AddLecture = () => {
                 type="file"
                 name="videoFile"
                 accept="video/*"
-                onChange={handleFileChange}
+                onChange={(e) => handleFileChange(e, "video")}
                 className="w-full p-2 border rounded mb-3"
                 ref={videoInputRef}
                 required
               />
+
+              {videoPreview && (
+                <video
+                  src={videoPreview}
+                  controls
+                  className="mt-2 h-50 object-cover rounded"
+                />
+              )}
+
+              {progress > 0 && (
+                <div className="w-full bg-gray-200 rounded-full mt-2">
+                  <div
+                    className="bg-blue-500 text-xs font-medium text-white text-center p-1 leading-none rounded-full"
+                    style={{ width: `${progress}%` }}
+                  >
+                    {progress}%
+                  </div>
+                </div>
+              )}
 
               {/* Checkbox for Free/Paid Lecture */}
               <label className="flex items-center cursor-pointer mb-3">
@@ -206,9 +299,12 @@ const AddLecture = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className={`${disable ? "bg-gray-400 cursor-not-allowed":"bg-blue-500 hover:bg-blue-600 cursor-pointer"} text-white p-2 rounded mx-auto mt-4 `}
+                className={`${
+                  disable
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-600 cursor-pointer"
+                } text-white p-2 rounded mx-auto mt-4 `}
                 disabled={disable}
-                
               >
                 Add Lecture
               </button>

@@ -46,7 +46,12 @@ const CourseInfo = () => {
           `http://localhost:8000/api/v1/course/lectures/${course_id}`,
           { withCredentials: true }
         );
-        setLectures(response.data.data.lectures);
+        const lectureData = response.data.data.lectures;
+        if (isEnrolled) {
+          setLectures(lectureData);
+        } else {
+          setLectures(lectureData.filter((lecture) => lecture.isFree === true));
+        }
       } catch (err) {
         console.error("Error fetching lectures:", err);
       }
@@ -212,25 +217,23 @@ const CourseInfo = () => {
           {/* Course Preview */}
           <div className="relative">
             {showPreview ? (
-             <div className="fixed inset-0 bg-gray-300 bg-opacity-30 backdrop-blur-sm flex items-center justify-center">
+              <div className="fixed inset-0 bg-gray-300 bg-opacity-30 backdrop-blur-sm flex items-center justify-center">
+                <div className="relative bg-gray-900 p-6 rounded-lg shadow-lg w-full max-w-4xl">
+                  {/* Close Button */}
+                  <button
+                    onClick={() => setShowPreview(false)}
+                    className="absolute top-0 right-0 bg-red-500 text-white p-2 rounded-full"
+                  >
+                    ✖
+                  </button>
 
-
-              <div className="relative bg-gray-900 p-6 rounded-lg shadow-lg w-full max-w-4xl">
-                {/* Close Button */}
-                <button
-                  onClick={() => setShowPreview(false)}
-                  className="absolute top-0 right-0 bg-red-500 text-white p-2 rounded-full"
-                >
-                  ✖
-                </button>
-    
-                {/* Video Player */}
-                <video controls className="w-full rounded-lg">
-                  <source src={course?.preview?.url} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
+                  {/* Video Player */}
+                  <video controls className="w-full rounded-lg">
+                    <source src={course?.preview?.url} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
               </div>
-            </div>
             ) : (
               <>
                 <img

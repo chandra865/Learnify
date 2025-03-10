@@ -86,24 +86,13 @@ const getCourse = asyncHandler(async (req, res) => {
 
 const addLecture = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
-  const { title, isFree } = req.body; // Added isFree field
+  const { title, isFree, videoFile } = req.body; // Added isFree field
   // Check if course exists
   const course = await Course.findById(courseId);
   if (!course) throw new ApiError(404, "Course not found");
 
-  // console.log(req.files);
-  // console.log(req.files.videoFile);
-
-  // Ensure a file is uploaded
-  if (!req.files || !req.files.videoFile) {
-    throw new ApiError(400, "Please upload a video file");
-  }
-
-  const videoFile = req.files.videoFile;
-
-  // Upload video to Cloudinary
-  const videoData = await uploadVideo(videoFile.tempFilePath); // Returns { publicId, url }
-
+  const videoData = await JSON.parse(videoFile);
+  
   // Create new lecture
   const newLecture = await Lecture.create({
     course: courseId,
@@ -257,18 +246,19 @@ const updateCourse = async (req, res) => {
     !description ||
     !category ||
     !price ||
-    !language ||
-    !thumbnail ||
-    !videoFile
+    !language
   ) {
     throw new ApiError(400, "All fields are required");
   }
 
+  // console.log("nthumbnail:-", thumbnail);
+  // console.log("nvideo", videoFile);
+
   const thumbnailData = await JSON.parse(thumbnail);
   const videoFileData = await JSON.parse(videoFile);
 
-  console.log(thumbnailData);
-  console.log(videoFileData);
+  console.log("thumbnail:-", thumbnailData);
+  console.log("video:-",videoFileData);
 
   // Handle file uploads if present
   let updatedFields = {

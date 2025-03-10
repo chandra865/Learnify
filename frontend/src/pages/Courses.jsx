@@ -11,7 +11,10 @@ const Courses = () => {
     const fetchCourses = async () => {
       try {
         const response = await axios.get("http://localhost:8000/api/v1/course/all-courses");
-        setCourses(response.data.data);
+        const courseData = response.data.data;
+        const filteredCourses = courseData.filter((course) => course.published === true)
+        console.log(filteredCourses);
+        setCourses(filteredCourses);
       } catch (err) {
         setError("Failed to fetch courses");
       } finally {
