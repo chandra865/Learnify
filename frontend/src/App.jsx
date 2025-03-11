@@ -19,6 +19,7 @@ import AddLecture from "./pages/AddLecture";
 import LectureForm from "./pages/LectureForm";
 import MediaPlayer from "./pages/MediaPlayer";
 import EditCourse from "./pages/EditCourse";
+import InstructorProfile from "./pages/InstructorProfile"
 
 
 function App() {
@@ -53,7 +54,7 @@ function App() {
       <Route path="/login" element={<Login/>}/>
       <Route path="/course/enroll/:course_id" element={<CourseInfo/>}/>
       <Route path="/dashboard" element={<Dashboard />}>
-          <Route path="profile" element={<Profile />} />
+          <Route path="profile" element={<InstructorProfile />} />
           <Route path="enrolled" element={<EnrolledCourses />} />
           <Route path="created" element={<CreatedCourses />} />
           <Route path="create" element={<CreateCourse />} />

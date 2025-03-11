@@ -1,12 +1,24 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useSelector } from "react-redux";
 
 const MediaPlayer = () => {
   const { courseId, index } = useParams();
   const navigate = useNavigate();
   const [lectures, setLectures] = useState([]);
   const [currentLectureIndex, setCurrentLectureIndex] = useState(parseInt(index));
+  const [isEnrolled, setIsEnrolled] = useState(false);
+
+  const user = useSelector((state) => state.user.userData);
+
+  useEffect(() => {
+    if (user?.enrolledCourses?.includes(courseId)) {
+      setIsEnrolled(true);
+    } else {
+      setIsEnrolled(false);
+    }
+  }, [courseId]);
 
   useEffect(() => {
     const fetchLectures = async () => {
@@ -15,14 +27,22 @@ const MediaPlayer = () => {
           `http://localhost:8000/api/v1/course/lectures/${courseId}`,
           { withCredentials: true }
         );
-        setLectures(response.data.data.lectures);
+        const lectureData = response.data.data.lectures;
+        if (isEnrolled) {
+          console.log("inside");
+          setLectures(lectureData);
+        } else {
+          setLectures(lectureData.filter((lecture) => lecture.isFree === true));
+        }
       } catch (err) {
-        console.error("Error fetching lectures:", err.response?.data);
+        console.error("Error fetching lectures:", err);
       }
     };
-
-    fetchLectures();
-  }, [courseId]);
+  
+    if (isEnrolled !== null) {
+      fetchLectures();
+    }
+  }, [courseId, isEnrolled]);
 
   useEffect(() => {
     setCurrentLectureIndex(parseInt(index));
