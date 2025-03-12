@@ -26,8 +26,8 @@ const Register = () => {
           withCredentials: true, // Include credentials if needed
         }
       );
-      console.log(response.data); // Log only response data
-      toast.success(response.data.message);
+      //console.log(response.data); // Log only response data
+      toast.success(response?.data?.message || "Register Successfully");
       navigate("/");
     } catch (error) {
       console.error(error.response?.data || "Request failed"); // Handle errors properly

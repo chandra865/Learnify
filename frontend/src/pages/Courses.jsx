@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import Loading from "../component/Loading";
 
 const Courses = () => {
   const [courses, setCourses] = useState([]);
@@ -24,6 +25,7 @@ const Courses = () => {
     fetchCourses();
   }, []);
 
+  if(loading) return <Loading/>;
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="w-full max-w-6xl p-8 bg-white shadow-lg rounded-lg">

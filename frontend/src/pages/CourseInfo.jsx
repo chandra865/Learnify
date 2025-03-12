@@ -2,26 +2,23 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import Loading from "../component/Loading";
 
 const CourseInfo = () => {
   const { course_id } = useParams();
-  const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [lectures, setLectures] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+
+  const user = useSelector((state) => state.user.userData);
+  const navigate = useNavigate();
 
   const handlePreviewClick = () => {
     setShowPreview(true);
   };
-
-  const user = useSelector((state) => state.user.userData);
-
-  // useEffect(() => {
-    
-  // }, [user, course_id]);
 
   useEffect(() => {
     if (user?.enrolledCourses?.includes(course_id)) {
@@ -39,8 +36,9 @@ const CourseInfo = () => {
           { withCredentials: true }
         );
         setCourse(response.data.data);
-      } catch (err) {
-        setError("Failed to fetch course details");
+      } catch (error) {
+        const errorMessage = error.response?.data?.message || "something went wrong while fetching course"
+        alert(errorMessage);
       }
     };
   
@@ -56,13 +54,13 @@ const CourseInfo = () => {
         );
         const lectureData = response.data.data.lectures;
         if (isEnrolled) {
-          console.log("inside");
           setLectures(lectureData);
         } else {
           setLectures(lectureData.filter((lecture) => lecture.isFree === true));
         }
       } catch (err) {
-        console.error("Error fetching lectures:", err);
+        const errorMessage = error.response?.data?.message || "something went wrong while fetching course"
+        alert(errorMessage);
       }
     };
   
@@ -75,9 +73,6 @@ const CourseInfo = () => {
     setLoading(false);
   }, []);
   
-  
-
-  
 
   const handleEnroll = async () => {
     try {
@@ -86,16 +81,16 @@ const CourseInfo = () => {
         {},
         { withCredentials: true }
       );
-      alert(response.data.message || "Successfully Enrolled!");
       setIsEnrolled(true);
+      toast.success(response?.data?.message || "Enrollment Successfull")
     } catch (error) {
       // console.log(error.response?.data);
-      alert(error.response?.data?.message || "Failed to enroll");
+      const errorMessage = error.response?.data?.message || "Error in enrollment"
+      toast.error(errorMessage);
     }
   };
 
-  if (loading) return <p className="text-center text-gray-600">Loading...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
+  if (loading) return <Loading/>;
 
   return (
     <div className="bg-gray-300 min-h-screen py-10">

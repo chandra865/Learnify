@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 const CreateCourse = () => {
   const [title, setTitle] = useState("");
@@ -17,7 +18,7 @@ const CreateCourse = () => {
   const [disable, setDisable] = useState(false);
   const [videoPreview, setVideoPreview] = useState(null);
   const [progress, setProgress] = useState(0);
-
+  const progressRef = useRef(0);
   const imageInputRef = useRef(null);
   const videoInputRef = useRef(null);
 
@@ -55,17 +56,25 @@ const CreateCourse = () => {
           },
 
           onUploadProgress: (progressEvent) => {
-            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setProgress(percent);
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+
+            // Only update if there's a significant change
+            if (progressRef.current !== percent) {
+              progressRef.current = percent;
+              setProgress(percent);
+            }
           },
         }
       );
       setDisable(false);
       setProgress(0);
-      console.log(`Upload ${mediaType} Success:`, response.data.data);
+      // console.log(`Upload ${mediaType} Success:`, response.data.data);
+      toast.success(`${mediaType} Uploaded  Successfully`);
       return response.data.data; // Contains { publicId, url }
     } catch (error) {
-      console.error(`Upload ${mediaType} Failed:`, error.response.data);
+      // console.error(`Upload ${mediaType} Failed:`, error.response.data);
       throw error;
     }
   };
@@ -73,11 +82,14 @@ const CreateCourse = () => {
   const handleFileChange = async (event, mediaType) => {
     const file = event.target.files[0]; // Get the selected file
 
-    if (!file) return console.error("No file selected");
+    if (!file) {
+      alert("No file selected");
+      return;
+    }
 
     try {
       const mediaData = await uploadMedia(file, mediaType);
-      console.log(`${mediaType} Uploaded:`, mediaData);
+      // console.log(`${mediaType} Uploaded:`, mediaData);
 
       // Store publicId & URL in state (for form submission)
       if (mediaType === "thumbnail") {
@@ -98,10 +110,11 @@ const CreateCourse = () => {
         );
       }
 
-      console.log("Thumbnail:", thumbnail);
-      console.log("Video:", videoFile);
+      // console.log("Thumbnail:", thumbnail);
+      // console.log("Video:", videoFile);
     } catch (error) {
-      console.error(`Error uploading ${mediaType}:`, error);
+      // console.error(`Error uploading ${mediaType}:`, error);
+      toast.error(`Error while uploading ${mediaType}`);
     }
   };
 
@@ -133,8 +146,8 @@ const CreateCourse = () => {
         }
       );
 
-      console.log(response.data.data);
-      alert("Course Created Successfully!");
+      // console.log(response.data.data);
+      toast.success(response?.data?.message || "Course Created Successfully");
 
       setTitle("");
       setDescription("");
@@ -155,8 +168,9 @@ const CreateCourse = () => {
       if (videoInputRef.current) videoInputRef.current.value = "";
     } catch (error) {
       setDisable(false);
-      console.error("Error creating course", error.response.data);
-      alert("Failed to create course.");
+      // console.error("Error creating course", error.response.data);
+      // alert("Failed to create course.");
+      toast.error(error.response?.data?.message || "Some error occur while creating course");
     }
   };
 
@@ -418,6 +432,7 @@ const CreateCourse = () => {
             <div
               className="bg-blue-500 text-xs font-medium text-white text-center p-1 leading-none rounded-full"
               style={{ width: `${progress}%` }}
+              ref = {progressRef}
             >
               {progress}%
             </div>

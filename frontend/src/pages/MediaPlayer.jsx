@@ -29,13 +29,13 @@ const MediaPlayer = () => {
         );
         const lectureData = response.data.data.lectures;
         if (isEnrolled) {
-          console.log("inside");
           setLectures(lectureData);
         } else {
           setLectures(lectureData.filter((lecture) => lecture.isFree === true));
         }
       } catch (err) {
-        console.error("Error fetching lectures:", err);
+        // console.error("Error fetching lectures:", err);
+        alert(error.response?.data?.message || "Error fetching lectures");
       }
     };
   

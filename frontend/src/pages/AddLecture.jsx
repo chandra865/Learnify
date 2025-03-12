@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FaPlus, FaCheckCircle } from "react-icons/fa";
 import { toast } from "react-toastify";
+import Loading from "../component/Loading";
 
 const AddLecture = () => {
   const [courses, setCourses] = useState([]);
@@ -14,13 +14,13 @@ const AddLecture = () => {
     isFree: false,
   });
   const [disable, setDisable] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [videoPreview, setVideoPreview] = useState(null);
-  const navigate = useNavigate();
-
+  const [loading, setLoading] = useState(true);
+  const progressRef = useRef(0);
   const videoInputRef = useRef(null);
+
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -31,8 +31,13 @@ const AddLecture = () => {
         // console.log(response.data.data);
         setCourses(response.data.data);
       } catch (error) {
-        console.error("Error fetching courses:", error.response?.data?.message);
+        const errorMessage =
+          error.response?.data?.message ||
+          "Something went wrong! Please try again later.";
+
+        alert(errorMessage);
       }
+      setLoading(false);
     };
     fetchCourses();
   }, []);
@@ -45,13 +50,14 @@ const AddLecture = () => {
       );
       setLectures(response.data.data.lectures);
     } catch (error) {
-      console.error("Error fetching lectures:", error.response?.data?.message);
+      // console.error("Error fetching lectures:", error.response?.data?.message);
+      const errorMessage =
+        error.response?.data?.message ||
+        "Something went wrong! Please try again later.";
+
+      alert(errorMessage);
     }
   };
-
-  // const handleFileChange = (e) => {
-  //   setLectureData({ ...lectureData, videoFile: e.target.files[0] });
-  // };
 
   const uploadMedia = async (file, mediaType) => {
     const formData = new FormData();
@@ -73,47 +79,41 @@ const AddLecture = () => {
             const percent = Math.round(
               (progressEvent.loaded * 100) / progressEvent.total
             );
-            setProgress(percent);
+          
+            // Only update if there's a significant change
+            if (progressRef.current !== percent) {
+              progressRef.current = percent;
+              setProgress(percent);
+            }
           },
         }
       );
       setDisable(false);
       setProgress(0);
-      console.log(`Upload ${mediaType} Success:`, response.data.data);
+      // console.log(`Upload ${mediaType} Success:`, response.data.data);
+      toast.success(`${mediaType} Upload  Successfully`);
       return response.data.data; // Contains { publicId, url }
     } catch (error) {
-      console.error(`Upload ${mediaType} Failed:`, error.response.data);
-      throw error;
+      // console.error(`Upload ${mediaType} Failed:`, error.response.data);
+      const errorMessage =
+        error.response?.data?.message ||
+        "Something went wrong! Please try again later.";
+      throw errorMessage;
     }
   };
 
   const handleFileChange = async (event, mediaType) => {
     const file = event.target.files[0]; // Get the selected file
 
-    if (!file) return console.error("No file selected");
+    if (!file) {
+      alert("No file selected");
+      return;
+    }
 
     try {
       const mediaData = await uploadMedia(file, mediaType);
-      console.log(`${mediaType} Uploaded:`, mediaData);
+      // console.log(`${mediaType} Uploaded:`, mediaData);
 
-      // Store publicId & URL in state (for form submission)
-      // if (mediaType === "thumbnail") {
-      //   setImgPreview(URL.createObjectURL(file));
-      //   setThumbnail(
-      //     JSON.stringify({
-      //       publicId: mediaData.thumbnail.publicId,
-      //       url: mediaData.thumbnail.url,
-      //     })
-      //   );
-      // } else if (mediaType === "video") {
-      //   setVideoPreview(URL.createObjectURL(file));
-      //   setVideoFile(
-      //     JSON.stringify({
-      //       publicId: mediaData.video.publicId,
-      //       url: mediaData.video.url,
-      //     })
-      //   );
-      // }
       setVideoPreview(URL.createObjectURL(file));
       setLectureData({
         ...lectureData,
@@ -123,7 +123,8 @@ const AddLecture = () => {
         }),
       });
     } catch (error) {
-      console.error(`Error uploading ${mediaType}:`, error);
+      // console.error(`Error uploading ${mediaType}:`, error);
+      alert(`Error while uploading ${mediaType}:`)
     }
   };
 
@@ -158,12 +159,14 @@ const AddLecture = () => {
       toast.success("Lecture added successfully!");
     } catch (error) {
       setDisable(false);
-      console.error("Error adding lecture:", error.response?.data?.message);
-      toast.error("Failed to upload lecture.");
-      setIsUploading(false);
+      // console.error("Error adding lecture:", error.response?.data?.message);
+      const errorMessage = error.response?.data?.message || "Some error while adding lecture"
+      // console.log(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
+  if(loading) return <Loading/>;
   return (
     <div className="min-h-screen p-6 bg-gray-900">
       {!selectedCourse ? (
@@ -268,6 +271,7 @@ const AddLecture = () => {
                   <div
                     className="bg-blue-500 text-xs font-medium text-white text-center p-1 leading-none rounded-full"
                     style={{ width: `${progress}%` }}
+                    ref={progressRef}
                   >
                     {progress}%
                   </div>

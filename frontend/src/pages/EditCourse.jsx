@@ -22,7 +22,7 @@ const EditCourse = () => {
   const [videoPreview, setVideoPreview] = useState(null);
   const [disable, setDisable] = useState(false);
   const [progress, setProgress] = useState(0);
-
+  const progressRef = useRef(0);
   const imageInputRef = useRef(null);
   const videoInputRef = useRef(null);
 
@@ -56,9 +56,13 @@ const EditCourse = () => {
         setVideoFile(courseData.preview);
 
         setVideoPreview(courseData.preview.url);
-      } catch (err) {
-        console.log("Failed to fetch created courses");
-        console.error(err);
+      } catch (error) {
+        // console.log("Failed to fetch created courses");
+        // console.error(err);
+        alert(
+          error.response?.data?.message ||
+            "something went worng while fetching course"
+        );
       }
     };
     fetchCreatedCourses();
@@ -84,17 +88,22 @@ const EditCourse = () => {
             const percent = Math.round(
               (progressEvent.loaded * 100) / progressEvent.total
             );
-            setProgress(percent);
+
+            // Only update if there's a significant change
+            if (progressRef.current !== percent) {
+              progressRef.current = percent;
+              setProgress(percent);
+            }
           },
         }
       );
       setDisable(false);
       setProgress(0);
-      console.log(`Upload ${mediaType} Success:`, response.data.data);
+      // console.log(`Upload ${mediaType} Success:`, response.data.data);
       return response.data.data; // Contains { publicId, url }
     } catch (error) {
       setDisable(false);
-      console.error(`Upload ${mediaType} Failed:`, error.response.data);
+      // console.error(`Upload ${mediaType} Failed:`, error.response.data);
       throw error;
     }
   };
@@ -102,7 +111,10 @@ const EditCourse = () => {
   const handleFileChange = async (event, mediaType) => {
     const file = event.target.files[0]; // Get the selected file
 
-    if (!file) return console.error("No file selected");
+    if (!file) {
+      alert("No file found")
+      return;
+    }
 
     try {
       const mediaData = await uploadMedia(file, mediaType);
@@ -130,7 +142,8 @@ const EditCourse = () => {
       // console.log("Thumbnail:", thumbnail);
       // console.log("Video:", videoFile);
     } catch (error) {
-      console.error(`Error uploading ${mediaType}:`, error);
+      // console.error(`Error uploading ${mediaType}:`, error);
+      toast.error(`Error while uploading ${mediaType}`);
     }
   };
 
@@ -161,19 +174,21 @@ const EditCourse = () => {
       formData.append("price", price);
       formData.append("language", language);
       if (thumbnail) {
-        const strThumbnail = typeof thumbnail === "string" ? thumbnail : JSON.stringify(thumbnail);
-        formData.append("thumbnail",strThumbnail);
+        const strThumbnail =
+          typeof thumbnail === "string" ? thumbnail : JSON.stringify(thumbnail);
+        formData.append("thumbnail", strThumbnail);
         // console.log("thumbnail",strThumbnail);
       }
       formData.append("whatYouWillLearn", whatYouWillLearn.join(","));
       formData.append("courseIncludes", courseIncludes.join(","));
       if (videoFile) {
-        const strVideoFile = typeof videoFile === "string" ? videoFile : JSON.stringify(videoFile);
-  
+        const strVideoFile =
+          typeof videoFile === "string" ? videoFile : JSON.stringify(videoFile);
+
         formData.append("videoFile", strVideoFile);
         // console.log(strVideoFile);
       }
-      
+
       const response = await axios.patch(
         `http://localhost:8000/api/v1/course/update-course/${courseId}`,
         formData,
@@ -183,8 +198,8 @@ const EditCourse = () => {
         }
       );
 
-      console.log(response.data);
-      alert("Course Updated Successfully!");
+      // console.log(response.data);
+      toast.sucess(response?.data?.message || "Course Updated Successfully!");
 
       // setTitle("");
       // setDescription("");
@@ -205,8 +220,8 @@ const EditCourse = () => {
       if (videoInputRef.current) videoInputRef.current.value = "";
     } catch (error) {
       setDisable(false);
-      console.error("Error creating course", error.response.data);
-      alert("Failed to create course.");
+      // console.error("Error creating course", error.response.data);
+      toast.error(error.response?.data?.message || "Failed to create course.");
     }
   };
 
@@ -467,6 +482,7 @@ const EditCourse = () => {
             <div
               className="bg-blue-500 text-xs font-medium text-white text-center p-1 leading-none rounded-full"
               style={{ width: `${progress}%` }}
+              ref={progressRef}
             >
               {progress}%
             </div>
