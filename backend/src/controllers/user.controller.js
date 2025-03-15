@@ -2,7 +2,9 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { Education } from "../models/Education.js";
 import jwt from "jsonwebtoken";
+import { Experience } from "../models/Experience.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -67,17 +69,16 @@ const getCurrUser = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User not found");
   }
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        {
-          user: user
-        },
-        "User fetched Successfully"
-      )
-    );
+  const loggedInUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  );
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      loggedInUser,
+      "User fetched Successfully"
+    )
+  );
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -169,6 +170,139 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User logged Out"));
 });
 
+const addEducation = asyncHandler(async (req, res) => {
+  const userId = req.user._id; // Extract from JWT
+  const { degree, institution, startYear, endYear,cgpa } = req.body;
+
+
+  if(!degree || !institution || !startYear || !endYear || !cgpa){
+    throw new ApiError(400, "All field are required");
+  }
+  const education = await Education.create({
+    user: userId,
+    degree,
+    institution,
+    startYear,
+    endYear,
+    cgpa
+  });
+
+  if (!education) {
+    throw new ApiError(500, "something went worng while adding education");
+  }
+
+  const user = await User.findByIdAndUpdate(userId, {
+    $push: { education: education._id },
+  });
+
+  if (!user) {
+    throw new ApiError(500, "error while adding education in user");
+  }
+
+  const loggedInUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  );
+  return res
+    .status(201)
+    .json(new ApiResponse(201, loggedInUser, "Education Added Successfully"));
+});
+
+const addExperience = asyncHandler(async (req, res) => {
+  const userId = req.user._id; // Extract from JWT
+
+  const { jobTitle, company, startYear, endYear, description } = req.body;
+  
+  if(!jobTitle || !company || !startYear || !endYear){
+    throw new ApiError(400, "All field are required");
+  }
+
+  const experience = await Experience.create({
+    user: userId,
+    jobTitle,
+    company,
+    startYear,
+    endYear,
+    description,
+  });
+
+  if (!experience) {
+    throw new ApiError(500, "something went worng while adding education");
+  }
+
+  const user = await User.findByIdAndUpdate(userId, {
+    $push: { experience: experience._id },
+  });
+
+  if (!user) {
+    throw new ApiError(500, "error while adding education in user");
+  }
+
+  const loggedInUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  );
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, loggedInUser, "experience Added Successfully"));
+});
+
+const updateEducation = asyncHandler(async (req, res) => {
+  const { educationId } = req.params;
+  const { degree, institution, startYear, endYear,cgpa } = req.body;
+
+  if(!degree || !institution || !startYear || !endYear || !cgpa){
+    throw new ApiError(400, "All field are required");
+  }
+  const updatedEducation = await Education.findByIdAndUpdate(
+    educationId,
+    {
+      degree,
+      institution,
+      startYear,
+      endYear,
+      cgpa,
+    },
+    { new: true }
+  );
+
+  if (!updatedEducation) {
+    throw ApiError(404, "Education not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedEducation, "Education is updated"));
+});
+
+const updateExperience = asyncHandler(async (req, res) => {
+  const { experienceId } = req.params;
+
+  const { jobTitle, company, startYear, endYear, description} = req.body;
+
+  if(!jobTitle || !company || !startYear || !endYear){
+    throw new ApiError(400, "All field are required");
+  }
+  const updatedExperience = await Experience.findByIdAndUpdate(
+    experienceId,
+    {
+      jobTitle,
+      company,
+      startYear,
+      endYear,
+      description
+    },
+    { new: true }
+  );
+
+  if (!updatedExperience) {
+    throw ApiError(404, "Experience not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedExperience, "Experience is updated"));
+});
+
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies.refreshToken || req.body.refreshToken;
@@ -216,4 +350,52 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, getCurrUser };
+const updateProfile = asyncHandler(async(req, res)=>{
+    const userId = req.user.id; // Assuming user ID is extracted from JWT middleware
+    const { name, profilePicture, bio, socialLinks } = req.body;
+
+    const newProfilePicture = await JSON.parse(profilePicture);
+    const newSocialLinks = await JSON.parse(socialLinks);
+
+    console.log(newProfilePicture);
+    console.log(newSocialLinks);
+
+    // Update fields
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          name,
+          profilePicture: newProfilePicture,
+          bio,
+          socialLinks: newSocialLinks, 
+        },
+      },
+      { new: true, runValidators: true } // Return updated user & validate fields
+    );
+
+    if (!updatedUser) {
+      throw new ApiError(404, "User not found");
+    }
+
+    const loggedInUser = await User.findById(updatedUser._id).select(
+      "-password -refreshToken"
+    );
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, loggedInUser, "User Profile Updated Successfully"));
+});
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  getCurrUser,
+  addEducation,
+  addExperience,
+  updateEducation,
+  updateExperience,
+  updateProfile
+};

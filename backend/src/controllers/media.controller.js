@@ -7,6 +7,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 const uploadMedia = asyncHandler(async (req, res) => {
   const { mediaType } = req.body;
 
+  console.log(mediaType);
+
   if (!req.files || !req.files.media) {
     throw new ApiError(400, "No files found");
   }
@@ -14,7 +16,7 @@ const uploadMedia = asyncHandler(async (req, res) => {
   // Upload file to Cloudinary
   const { publicId, url } = await uploadToCloudinary(
     req.files.media,
-    mediaType
+    mediaType === "profilepic"?"thumbnail":mediaType
   );
 
   if (!publicId || !url) {
@@ -25,6 +27,7 @@ const uploadMedia = asyncHandler(async (req, res) => {
   const newMedia = await Media.create({
     thumbnail: mediaType === "thumbnail" ? { publicId, url } : { publicId: "", url: "" },
     video: mediaType === "video" ? { publicId, url } : { publicId: "", url: "" },
+    profilepic: mediaType === "profilepic" ?{ publicId, url } : { publicId: "", url: "" },
   });
 
   return res.status(201).json(new ApiResponse(201, newMedia, "Media uploaded successfully"));

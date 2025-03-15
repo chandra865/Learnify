@@ -11,6 +11,11 @@ const mediaSchema = new mongoose.Schema(
       publicId: { type: String, },
       url: { type: String,},
     },
+
+    profilepic: {
+      publicId: { type: String, },
+      url: { type: String,},
+    }
   },
   { timestamps: true }
 );

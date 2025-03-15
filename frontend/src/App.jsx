@@ -10,7 +10,6 @@ import { login } from "./store/slice/userSlice";
 import CourseInfo from "./pages/CourseInfo";
 import { ToastContainer } from "react-toastify";
 import Dashboard from "./pages/Dashboard";
-import Profile from "./pages/Profile";
 import EnrolledCourses from "./pages/EnrolledCourses";
 import CreatedCourses from "./pages/CreatedCourses";
 import CreateCourse from "./pages/CreateCourse";
@@ -20,6 +19,8 @@ import LectureForm from "./pages/LectureForm";
 import MediaPlayer from "./pages/MediaPlayer";
 import EditCourse from "./pages/EditCourse";
 import InstructorProfile from "./pages/InstructorProfile"
+import Profile from "./component/Profile";
+import EditProfile from "./pages/EditProfile";
 
 
 function App() {
@@ -36,7 +37,7 @@ function App() {
         );
         console.log(response.data); // Log only response data
         // console.log(response.data.data.user);
-        dispatch(login(response.data.data.user));
+        dispatch(login(response.data.data));
       } catch (error) {
         console.error(error.response?.data || "Request failed"); // Handle errors properly
       }
@@ -63,6 +64,7 @@ function App() {
       <Route path="/add-lecture/:courseId" element={<LectureForm/>} />
       <Route path="/media-player/:courseId/:index" element={<MediaPlayer />} />
       <Route path="edit-course/:courseId" element={<EditCourse/>} />
+      <Route path="/edit-profile" element={<EditProfile/>}/>
       <Route path="/logout" element={<Logout/>} />
     </Routes>
     {/* Toast Notification Container */}

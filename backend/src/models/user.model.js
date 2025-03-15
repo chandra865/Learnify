@@ -4,20 +4,25 @@ import jwt from "jsonwebtoken";
 
 const userSchema = new Schema(
   {
+    profilePicture: {
+      publicId: { type: String,}, 
+      url: { type: String,},
+    },
     name: {
       type: String,
       required: true,
     },
-
     email: {
       type: String,
       required: true,
       unique: true,
     },
-
     password: {
       type: String,
       required: true,
+    },
+    bio: {
+      type: String,
     },
 
     role: {
@@ -43,6 +48,17 @@ const userSchema = new Schema(
         ref: "Course",
       },
     ],
+
+    education: [{ type: mongoose.Schema.Types.ObjectId, ref: "Education" }],
+    experience: [{ type: mongoose.Schema.Types.ObjectId, ref: "Experience" }],
+
+    socialLinks: {
+      linkedin: String,
+      twitter: String,
+      website: String,
+      instagram: String,
+      youtube: String,
+    }
   },
   {
     timestamps: true,
