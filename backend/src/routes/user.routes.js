@@ -11,7 +11,9 @@ import {
   updateExperience,
   updateProfile,
   getEducation,
-  deleteEducation
+  deleteEducation,
+  getExperience,
+  deleteExperience
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -28,6 +30,12 @@ router.route("/update-experience/:experienceId").post(verifyJWT, updateExperienc
 router.route("/update-profile").post(verifyJWT, updateProfile);
 router.route("/get-education").get(verifyJWT,getEducation);
 router.route("/delete-education/:educationId").delete(verifyJWT,deleteEducation);
+
+router.route("/get-experience").get(verifyJWT,getExperience);
+router.route("/delete-experience/:experienceId").delete(verifyJWT,deleteExperience);
+
+
+
 router.route("/refresh-token").post(refreshAccessToken);
 
 export default router;

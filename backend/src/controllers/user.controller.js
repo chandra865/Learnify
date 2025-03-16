@@ -207,45 +207,6 @@ const addEducation = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, loggedInUser, "Education Added Successfully"));
 });
 
-const addExperience = asyncHandler(async (req, res) => {
-  const userId = req.user._id; // Extract from JWT
-
-  const { jobTitle, company, startYear, endYear, description } = req.body;
-  
-  if(!jobTitle || !company || !startYear || !endYear){
-    throw new ApiError(400, "All field are required");
-  }
-
-  const experience = await Experience.create({
-    user: userId,
-    jobTitle,
-    company,
-    startYear,
-    endYear,
-    description,
-  });
-
-  if (!experience) {
-    throw new ApiError(500, "something went worng while adding education");
-  }
-
-  const user = await User.findByIdAndUpdate(userId, {
-    $push: { experience: experience._id },
-  });
-
-  if (!user) {
-    throw new ApiError(500, "error while adding education in user");
-  }
-
-  const loggedInUser = await User.findById(user._id).select(
-    "-password -refreshToken"
-  );
-
-  return res
-    .status(201)
-    .json(new ApiResponse(201, loggedInUser, "experience Added Successfully"));
-});
-
 const updateEducation = asyncHandler(async (req, res) => {
   const { educationId } = req.params;
   const { degree, institution, startYear, endYear,cgpa } = req.body;
@@ -303,6 +264,59 @@ const deleteEducation = asyncHandler(async (req, res) => {
     
 });
 
+const getEducation = asyncHandler(async (req, res) => {
+
+  const userId = req.user._id; // Assuming authentication middleware sets req.user
+  const user = await User.findById(userId).populate("education");
+
+  if (!user) {
+    throw new ApiError(404,"Inside user education not found");
+  }
+
+  return res
+  .status(200)
+  .json(new ApiResponse(200,user.education,"Education fetched succesfully"));
+});
+
+const addExperience = asyncHandler(async (req, res) => {
+  const userId = req.user._id; // Extract from JWT
+
+  const { jobTitle, company, startYear, endYear, description } = req.body;
+  
+  if(!jobTitle || !company || !startYear || !endYear){
+    throw new ApiError(400, "All field are required");
+  }
+
+  const experience = await Experience.create({
+    user: userId,
+    jobTitle,
+    company,
+    startYear,
+    endYear,
+    description,
+  });
+
+  if (!experience) {
+    throw new ApiError(500, "something went worng while adding education");
+  }
+
+  const user = await User.findByIdAndUpdate(userId, {
+    $push: { experience: experience._id },
+  });
+
+  if (!user) {
+    throw new ApiError(500, "error while adding education in user");
+  }
+
+  const loggedInUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  );
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, loggedInUser, "experience Added Successfully"));
+});
+
 const updateExperience = asyncHandler(async (req, res) => {
   const { experienceId } = req.params;
 
@@ -332,19 +346,46 @@ const updateExperience = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, updatedExperience, "Experience is updated"));
 });
 
+const getExperience = asyncHandler( async (req, res) => {
+  const userId = req.user._id; // Assuming authentication middleware sets req.user
+  const user = await User.findById(userId).populate("experience");
 
-const getEducation = asyncHandler(async (req, res) => {
+  if (!user) {
+    throw new ApiError(404,"Inside user experience not found");
+  }
 
-    const userId = req.user._id; // Assuming authentication middleware sets req.user
-    const user = await User.findById(userId).populate("education");
+  return res
+  .status(200)
+  .json(new ApiResponse(200,user.experience,"Experience fetched succesfully"));
+});
 
-    if (!user) {
-      throw new ApiError(404,"Inside user education not found");
+// Delete Experience Controller
+const deleteExperience = asyncHandler( async (req, res) => {
+  const { experienceId } = req.params;
+    const userId = req.user._id; // Assuming authentication middleware sets `req.user`
+
+    // Find the experience record
+    const experience = await Experience.findById(experienceId);
+    if (!experience) {
+      throw new ApiError(404,"experience not found");
     }
+
+    // Check if the experience belongs to the logged-in user
+    if (experience.user.toString() !== userId.toString()) {
+      throw new ApiError(403,"not authorized to delete this experience");
+    }
+
+    // Delete experience record
+    await Experience.findByIdAndDelete(experienceId);
+
+    // Remove education reference from User model
+    await User.findByIdAndUpdate(userId, {
+      $pull: { experience: experienceId },
+    });
 
     return res
     .status(200)
-    .json(new ApiResponse(200,user.education,"Education fetched succesfully"));
+    .json(new ApiResponse(200,"","experience deleted successfully"));
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -443,5 +484,7 @@ export {
   updateExperience,
   updateProfile,
   getEducation,
-  deleteEducation
+  deleteEducation,
+  getExperience,
+  deleteExperience
 };
