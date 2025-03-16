@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { FaPlus, FaEdit } from "react-icons/fa";
 import Profile from "../component/Profile";
+import Education from "../component/Education";
 
 const InstructorProfile = () => {
   const instructor = useSelector((state) => state.user.userData);
@@ -45,7 +46,7 @@ const InstructorProfile = () => {
   return (
     <div className="max-w-7xl mx-auto p-6">
       <Profile />
-
+      <Education/>
       {/* Experience Section */}
       <div className="bg-gray-800 text-white rounded-lg shadow-md my-4 p-6">
         <h2 className="text-xl font-semibold mb-4">Experience</h2>
@@ -103,6 +104,7 @@ const InstructorProfile = () => {
           </button>
         )}
       </div>
+
     </div>
   );
 };

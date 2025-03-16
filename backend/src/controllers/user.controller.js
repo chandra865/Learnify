@@ -274,6 +274,35 @@ const updateEducation = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, updatedEducation, "Education is updated"));
 });
 
+const deleteEducation = asyncHandler(async (req, res) => {
+    const { educationId } = req.params;
+    const userId = req.user._id; // Assuming authentication middleware sets `req.user`
+
+    // Find the education record
+    const education = await Education.findById(educationId);
+    if (!education) {
+      throw new ApiError(404,"Education not found");
+    }
+
+    // Check if the education belongs to the logged-in user
+    if (education.user.toString() !== userId.toString()) {
+      throw new ApiError(403,"not authorized to delete this education");
+    }
+
+    // Delete education record
+    await Education.findByIdAndDelete(educationId);
+
+    // Remove education reference from User model
+    await User.findByIdAndUpdate(userId, {
+      $pull: { education: educationId },
+    });
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200,"","Education deleted successfully"));
+    
+});
+
 const updateExperience = asyncHandler(async (req, res) => {
   const { experienceId } = req.params;
 
@@ -301,6 +330,21 @@ const updateExperience = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, updatedExperience, "Experience is updated"));
+});
+
+
+const getEducation = asyncHandler(async (req, res) => {
+
+    const userId = req.user._id; // Assuming authentication middleware sets req.user
+    const user = await User.findById(userId).populate("education");
+
+    if (!user) {
+      throw new ApiError(404,"Inside user education not found");
+    }
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200,user.education,"Education fetched succesfully"));
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -397,5 +441,7 @@ export {
   addExperience,
   updateEducation,
   updateExperience,
-  updateProfile
+  updateProfile,
+  getEducation,
+  deleteEducation
 };
