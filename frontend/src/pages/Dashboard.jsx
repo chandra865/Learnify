@@ -7,6 +7,7 @@ import {
   FaChalkboardTeacher,
   FaPlusCircle,
   FaSignOutAlt,
+  FaDollarSign
 } from "react-icons/fa";
 
 const Dashboard = () => {
@@ -25,6 +26,7 @@ const Dashboard = () => {
         { title: "Created Courses", path: "/dashboard/created", icon: <FaBook /> },
         { title: "Create Course", path: "/dashboard/create", icon: <FaPlusCircle /> },
         { title: "Add Lectures", path: "/dashboard/AddLectures", icon: <FaPlusCircle /> },
+        { title: "Earning", path: "/dashboard/Earning", icon: <FaDollarSign /> },
         { title: "Logout", path: "/logout", icon: <FaSignOutAlt /> },
       ];
 

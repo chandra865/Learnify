@@ -49,6 +49,12 @@ const userSchema = new Schema(
       },
     ],
 
+    expertise:[
+      {
+        type: String,
+      }
+    ],
+
     education: [{ type: mongoose.Schema.Types.ObjectId, ref: "Education" }],
     experience: [{ type: mongoose.Schema.Types.ObjectId, ref: "Experience" }],
 

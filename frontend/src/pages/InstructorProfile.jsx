@@ -5,6 +5,7 @@ import { FaPlus, FaEdit } from "react-icons/fa";
 import Profile from "../component/Profile";
 import Education from "../component/Education";
 import Experience from "../component/Experience";
+import Expertise from "../component/Expertise";
 
 const InstructorProfile = () => {
   const instructor = useSelector((state) => state.user.userData);
@@ -47,9 +48,9 @@ const InstructorProfile = () => {
   return (
     <div className="max-w-7xl mx-auto p-6">
       <Profile />
-      <Education/>
+      <Expertise/>
       <Experience/>
-
+      <Education/>
     </div>
   );
 };

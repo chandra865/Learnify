@@ -4,6 +4,8 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import Loading from "../component/Loading";
+import CourseReviews from "../component/CourseReviews";
+import AddReview from "../component/AddReview";
 
 const CourseInfo = () => {
   const { course_id } = useParams();
@@ -12,6 +14,8 @@ const CourseInfo = () => {
   const [loading, setLoading] = useState(true);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [reviewRating, setReviewRating] = useState(null);
+  const [reviewComment, setReviewComment] = useState(null);
 
   const user = useSelector((state) => state.user.userData);
   const navigate = useNavigate();
@@ -27,7 +31,7 @@ const CourseInfo = () => {
       setIsEnrolled(false);
     }
   }, [user, course_id]);
-  
+
   useEffect(() => {
     const fetchCourse = async () => {
       try {
@@ -37,14 +41,16 @@ const CourseInfo = () => {
         );
         setCourse(response.data.data);
       } catch (error) {
-        const errorMessage = error.response?.data?.message || "something went wrong while fetching course"
+        const errorMessage =
+          error.response?.data?.message ||
+          "something went wrong while fetching course";
         alert(errorMessage);
       }
     };
-  
+
     fetchCourse();
   }, [course_id]);
-  
+
   useEffect(() => {
     const fetchLectures = async () => {
       try {
@@ -59,20 +65,21 @@ const CourseInfo = () => {
           setLectures(lectureData.filter((lecture) => lecture.isFree === true));
         }
       } catch (err) {
-        const errorMessage = error.response?.data?.message || "something went wrong while fetching course"
+        const errorMessage =
+          error.response?.data?.message ||
+          "something went wrong while fetching course";
         alert(errorMessage);
       }
     };
-  
+
     if (isEnrolled !== null) {
       fetchLectures();
     }
   }, [isEnrolled, course_id]);
-  
+
   useEffect(() => {
     setLoading(false);
   }, []);
-  
 
   const handleEnroll = async () => {
     try {
@@ -82,15 +89,20 @@ const CourseInfo = () => {
         { withCredentials: true }
       );
       setIsEnrolled(true);
-      toast.success(response?.data?.message || "Enrollment Successfull")
+      toast.success(response?.data?.message || "Enrollment Successfull");
     } catch (error) {
       // console.log(error.response?.data);
-      const errorMessage = error.response?.data?.message || "Error in enrollment"
+      const errorMessage =
+        error.response?.data?.message || "Error in enrollment";
       toast.error(errorMessage);
     }
   };
 
-  if (loading) return <Loading/>;
+  const handleReviewSubmit = (e) =>{
+    e.prevent.default();
+  }
+
+  if (loading) return <Loading />;
 
   return (
     <div className="bg-gray-300 min-h-screen py-10">
@@ -222,6 +234,12 @@ const CourseInfo = () => {
               <p className="text-gray-500">No lectures available</p>
             )}
           </ul>
+
+          {/* Reviews Section */}
+          {/* console.log(course_id); */}
+          <CourseReviews courseId={course_id}/>
+          {/* Add Review Section (Only if user is enrolled) */}
+          {isEnrolled && <AddReview courseId={course_id}/>}
         </div>
 
         {/* Sidebar (Course Preview & Enroll) */}

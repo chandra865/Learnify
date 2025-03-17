@@ -43,12 +43,9 @@ const courseSchema = new Schema(
       },
     ],
 
-    reviews: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Review",
-      },
-    ],
+    averageRating:{
+        type: Number
+    },
 
     thumbnail: {
       publicId: { type: String, required: true },

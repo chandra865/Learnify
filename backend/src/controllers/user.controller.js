@@ -442,8 +442,8 @@ const updateProfile = asyncHandler(async(req, res)=>{
     const newProfilePicture = await JSON.parse(profilePicture);
     const newSocialLinks = await JSON.parse(socialLinks);
 
-    console.log(newProfilePicture);
-    console.log(newSocialLinks);
+    // console.log(newProfilePicture);
+    // console.log(newSocialLinks);
 
     // Update fields
     const updatedUser = await User.findByIdAndUpdate(
@@ -472,6 +472,72 @@ const updateProfile = asyncHandler(async(req, res)=>{
     .json(new ApiResponse(200, loggedInUser, "User Profile Updated Successfully"));
 });
 
+
+// Add expertise
+const addExpertise = asyncHandler(async (req, res) => {
+    const { expertise } = req.body;
+    const userId = req.user._id;
+
+    if (!expertise) {
+      throw new ApiError(400,"expertise is required");
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new ApiError(404,"User not found");
+    }
+
+    if (user.expertise.includes(expertise)) {
+      throw new ApiError(400, "Skill already exits");
+    }
+
+    user.expertise.push(expertise);
+    await user.save();
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, user.expertise, "Expertise added successfully"));
+    
+});
+
+// Delete expertise
+const deleteExpertise = asyncHandler(async (req, res) => {
+
+    const { expertise } = req.query;
+    const userId = req.user._id;
+
+    // console.log(expertise);
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new ApiError(404,"User not found");
+    }
+
+    const expertiesIndex = user.expertise.indexOf(expertise);
+    if (expertiesIndex === -1) {
+      throw new ApiError(400, "Skill not found");
+    }
+
+    user.expertise.splice(expertiesIndex, 1);
+    await user.save();
+
+    return res
+    .status(200)
+    .json(new ApiError(200,user.expertise,"expertise removed successfully",))
+});
+
+// get experties
+
+const getExperties = asyncHandler( async (req, res) => {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      throw new ApiError(404,"User not found");
+    }
+    res
+    .status(200)
+    .json(new ApiResponse(200, user.expertise, "exprtise fetched successfully"));
+    res.json({ skills: user.skills });
+});
+
 export {
   registerUser,
   loginUser,
@@ -486,5 +552,8 @@ export {
   getEducation,
   deleteEducation,
   getExperience,
-  deleteExperience
+  deleteExperience,
+  addExpertise,
+  deleteExpertise,
+  getExperties
 };
