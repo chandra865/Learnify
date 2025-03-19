@@ -11,6 +11,7 @@ import {
   getLectures,
   publishCourse,
   updateCourse,
+  courseRecommend,
 } from "../controllers/course.controller.js";
 
 const router = Router();
@@ -45,5 +46,8 @@ router
 router
     .route("/update-course/:courseId")
     .patch(verifyJWT, isAuthorized("instructor"), updateCourse);
+  
+router
+    .route("/recommend/:courseId").get(courseRecommend);
 
 export default router;

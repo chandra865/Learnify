@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import Loading from "../component/Loading";
 import CourseReviews from "../component/CourseReviews";
 import AddReview from "../component/AddReview";
+import Recommendation from "../component/Recommendation";
 
 const CourseInfo = () => {
   const { course_id } = useParams();
@@ -234,6 +235,7 @@ const CourseInfo = () => {
               <p className="text-gray-500">No lectures available</p>
             )}
           </ul>
+          <Recommendation courseId={course_id}/>
 
           {/* Reviews Section */}
           {/* console.log(course_id); */}

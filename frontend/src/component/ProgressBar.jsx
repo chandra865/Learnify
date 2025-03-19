@@ -12,7 +12,7 @@ const ProgressBar = ({ userId, courseId }) => {
             withCredentials:true
           }
         );
-        console.log(response.data.data);
+        // console.log(response.data.data);
         setProgress(response.data.data.progressPercentage || 0); // Ensure default value
       } catch (error) {
         console.error("Error fetching progress:", error);

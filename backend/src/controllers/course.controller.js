@@ -45,7 +45,7 @@ const createCourse = asyncHandler(async (req, res) => {
   const videoFileData = await JSON.parse(videoFile);
 
   const videoIdUrl = {
-    publidId : videoFileData.publicId,
+    publicId : videoFileData.publicId,
     url : videoFileData.url
   };
   // Create Course with Thumbnail
@@ -300,6 +300,28 @@ const updateCourse = async (req, res) => {
     .json(new ApiResponse(200, updatedCourse, "Course updated successfully"));
 };
 
+const courseRecommend = asyncHandler(async (req, res) =>{
+
+  const course = await Course.findById(req.params.courseId);
+  if (!course) {
+    throw new ApiError(404, "Course not found");
+  }
+  console.log("first");
+  // Find courses with similar categories or tags
+  const recommendedCourses = await Course.find({
+    _id: { $ne: course._id }, // Exclude the selected course
+    $or: [
+      { category: course.category },
+    ],
+  }).limit(5); // Limit recommendations
+
+  // { tags: { $in: course.tags } },
+
+  return res
+  .status(200)
+  .json(new ApiResponse(201,recommendedCourses, "recommeded course fetched successfully"));
+});
+
 export {
   createCourse,
   addLecture,
@@ -311,4 +333,5 @@ export {
   getLectures,
   publishCourse,
   updateCourse,
+  courseRecommend
 };
