@@ -72,8 +72,8 @@ const courseSchema = new Schema(
     },
 
     preview: {
-      publicId: { type: String, required: true }, 
-      url: { type: String, required: true },
+      publicId: { type: String, required: true}, 
+      url: { type: String, required:true},
     },
 
     published: { 

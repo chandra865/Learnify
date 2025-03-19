@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import StarRating from "./StarRating";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -66,6 +67,7 @@ const Testimonials = ({ courseId }) => {
                   </div>
                 </div>
                 {/* Star Rating */}
+                {/* <StarRating rating={rating|| 0} /> */}
                 <div className="flex justify-center mb-3">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <span key={i} className={`text-yellow-400 text-xl ${i < rating ? "" : "opacity-30"}`}>

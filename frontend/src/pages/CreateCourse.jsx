@@ -106,6 +106,7 @@ const CreateCourse = () => {
           JSON.stringify({
             publicId: mediaData.video.publicId,
             url: mediaData.video.url,
+            duration:mediaData.video.duration,
           })
         );
       }

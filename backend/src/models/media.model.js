@@ -10,6 +10,10 @@ const mediaSchema = new mongoose.Schema(
     video: {
       publicId: { type: String, },
       url: { type: String,},
+      duration : {
+        type:Number,
+        default:0
+      }
     },
 
     profilepic: {

@@ -24,15 +24,15 @@ const AddReview = ({ courseId }) => {
   };
 
   return (
-    <div className="bg-gray-800 text-white p-6 rounded-lg shadow-lg mt-6">
-      <h3 className="text-2xl font-bold mb-4 text-gray-200">Add a Review</h3>
+    <div className="bg-gray-800 text-white p-4 rounded-lg shadow-lg mt-4">
+      <h3 className="text-xl font-bold mb-2 text-gray-200">Add a Review</h3>
 
       {/* Star Rating */}
-      <div className="flex gap-1 mb-4">
+      <div className="flex gap-1 mb-2">
         {[1, 2, 3, 4, 5].map((num) => (
           <FaStar
             key={num}
-            className={`cursor-pointer text-3xl transition duration-200 ${
+            className={`cursor-pointer text-2xl transition duration-200 ${
               (hover || rating) >= num ? "text-yellow-400" : "text-gray-500"
             }`}
             onClick={() => setRating(num)}
@@ -52,7 +52,7 @@ const AddReview = ({ courseId }) => {
 
       {/* Submit Button */}
       <button
-        className="bg-blue-500 px-6 py-2 mt-4 rounded-lg text-white font-semibold hover:bg-blue-600 transition"
+        className="bg-blue-500 px-6 py-2 mt-2 rounded-lg text-white font-semibold hover:bg-blue-600 transition"
         onClick={submitReview}
       >
         Submit Review

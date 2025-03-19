@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import VideoPlayer from "../component/VideoPlayer";
 
 const MediaPlayer = () => {
   const { courseId, index } = useParams();
@@ -58,9 +59,9 @@ const MediaPlayer = () => {
     <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center text-white p-6">
       {lectures.length > 0 ? (
         <div className="w-full max-w-7xl flex flex-col md:flex-row gap-6">
-          
+          <p className="text-white">{lectures[currentLectureIndex]?.duration}</p>
           {/* Video Player Section */}
-          <div className="flex-1 bg-gray-800 p-6 rounded-lg shadow-lg">
+          {/* <div className="flex-1 bg-gray-800 p-6 rounded-lg shadow-lg">
             <h1 className="text-2xl font-bold mb-4 text-blue-400">{lectures[currentLectureIndex]?.title}</h1>
             <video
               key={lectures[currentLectureIndex]?.videoUrl.url}
@@ -79,7 +80,9 @@ const MediaPlayer = () => {
             >
               Next Lecture →
             </button>
-          </div>
+          </div> */}
+
+          <VideoPlayer userId={user._id} courseId={courseId} lectureId={lectures[currentLectureIndex]?._id} videoUrl={lectures[currentLectureIndex]?.videoUrl.url}/>
 
           {/* Sticky Sidebar for Lecture List */}
           <div className="w-full md:w-1/3 bg-gray-800 p-4 rounded-lg shadow-lg h-[500px] overflow-y-auto sticky top-6">

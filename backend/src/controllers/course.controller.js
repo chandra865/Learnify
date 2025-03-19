@@ -6,6 +6,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
 import { Media } from "../models/media.model.js";
+import { getVideoDuration } from "../utils/cloudinary.js";
 
 const createCourse = asyncHandler(async (req, res) => {
   const {
@@ -43,6 +44,10 @@ const createCourse = asyncHandler(async (req, res) => {
   const thumbnailData = await JSON.parse(thumbnail);
   const videoFileData = await JSON.parse(videoFile);
 
+  const videoIdUrl = {
+    publidId : videoFileData.publicId,
+    url : videoFileData.url
+  };
   // Create Course with Thumbnail
   const course = await Course.create({
     title,
@@ -54,7 +59,7 @@ const createCourse = asyncHandler(async (req, res) => {
     courseIncludes: courseIncludes ? courseIncludes.split(",") : [],
     language,
     thumbnail: thumbnailData,
-    preview: videoFileData,
+    preview: videoIdUrl,
   });
 
   if (!course) {
@@ -92,18 +97,30 @@ const addLecture = asyncHandler(async (req, res) => {
   if (!course) throw new ApiError(404, "Course not found");
 
   const videoData = await JSON.parse(videoFile);
-  
+
+  const videoIdUrl = {
+    publicId : videoData.publicId,
+    url : videoData.url
+  }
+
+  const videoDuration = videoData.duration;
   // Create new lecture
   const newLecture = await Lecture.create({
     course: courseId,
     title,
-    videoUrl: videoData, // Stores { publicId, url }
+    videoUrl: videoIdUrl, // Stores { publicId, url }
     isFree: isFree ?? false, // Default to false if not provided
+    duration: videoDuration,
   });
+  // console.log(newLecture);
+  await Course.findByIdAndUpdate(
+    courseId,
+    { $push: { lecture: newLecture._id } },
+    { new: true }
+  );
 
-  // Add lecture to course
-  course.lecture.push(newLecture._id);
-  await course.save();
+    // // Add lecture to course
+    // course.lecture.push(newLecture._id), await course.save({ validateBeforeSave: false });
 
   return res
     .status(201)
@@ -241,13 +258,7 @@ const updateCourse = async (req, res) => {
   // console.log(videoFile);
   // console.log(req.files);
 
-  if (
-    !title ||
-    !description ||
-    !category ||
-    !price ||
-    !language
-  ) {
+  if (!title || !description || !category || !price || !language) {
     throw new ApiError(400, "All fields are required");
   }
 
@@ -258,7 +269,7 @@ const updateCourse = async (req, res) => {
   const videoFileData = await JSON.parse(videoFile);
 
   console.log("thumbnail:-", thumbnailData);
-  console.log("video:-",videoFileData);
+  console.log("video:-", videoFileData);
 
   // Handle file uploads if present
   let updatedFields = {

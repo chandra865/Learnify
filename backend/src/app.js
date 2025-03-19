@@ -34,12 +34,14 @@ import userRouter from "./routes/user.routes.js"
 import courseRouter from "./routes/course.routes.js"
 import mediaRouter from "./routes/media.routes.js"
 import reviewRouter from "./routes/review.routes.js"
+import progressRouter from "./routes/progress.routes.js"
 
 //routes declaration
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/course",courseRouter);
 app.use("/api/v1/media",mediaRouter);
 app.use("/api/v1/review",reviewRouter);
+app.use("/api/v1/progress",progressRouter);
 
 
 
