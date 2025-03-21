@@ -2,6 +2,7 @@ import { Progress } from "../models/progress.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { Course } from "../models/course.model.js";
 
 const updateProgress = asyncHandler(async (req, res) => {
   const { userId, courseId, lectureId, watchTime, totalDuration } = req.body;
@@ -22,8 +23,13 @@ const updateProgress = asyncHandler(async (req, res) => {
   ) {
     progress.completedLectures.push(lectureId);
   }
+  const course = await Course.findById(courseId);
+  if(!course){
+    throw new ApiError(404,"Course Not found");
+  }
 
-  progress.progressPercentage = (progress.completedLectures.length / 10) * 100;
+  const totalLecture = course.lecture.length;
+  progress.progressPercentage = (progress.completedLectures.length / totalLecture) * 100;
   await progress.save();
 
   return res

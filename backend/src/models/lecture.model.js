@@ -8,7 +8,11 @@ const lectureSchema = new Schema(
       required: true,
       index: true, // Faster queries
     },
-
+    quiz: {
+      type: Schema.Types.ObjectId,
+      ref: "Quiz",
+      required: true,
+    },
     title: {
       type: String,
       required: true,

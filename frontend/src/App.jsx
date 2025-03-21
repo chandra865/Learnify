@@ -21,7 +21,8 @@ import EditCourse from "./pages/EditCourse";
 import SetProfile from "./component/SetProfile";
 import EditProfile from "./pages/EditProfile";
 import Earning from "./pages/Earning";
-
+import LectureManage from "./component/LectureManage";
+import CreateQuiz from "./component/CreateQuiz";
 
 function App() {
   const dispatch = useDispatch();
@@ -66,6 +67,8 @@ function App() {
       <Route path="/media-player/:courseId/:index" element={<MediaPlayer />} />
       <Route path="edit-course/:courseId" element={<EditCourse/>} />
       <Route path="/edit-profile" element={<EditProfile/>}/>
+      <Route path="/manage-lecture/:courseId/:lectureId" element={<LectureManage/>}/>
+      <Route path="/create-quiz/:courseId/:lectureId" element={<CreateQuiz />} />
       <Route path="/logout" element={<Logout/>} />
     </Routes>
     {/* Toast Notification Container */}

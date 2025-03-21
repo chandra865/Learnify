@@ -79,7 +79,7 @@ const AddLecture = () => {
             const percent = Math.round(
               (progressEvent.loaded * 100) / progressEvent.total
             );
-          
+
             // Only update if there's a significant change
             if (progressRef.current !== percent) {
               progressRef.current = percent;
@@ -120,12 +120,12 @@ const AddLecture = () => {
         videoFile: JSON.stringify({
           publicId: mediaData.video.publicId,
           url: mediaData.video.url,
-          duration:mediaData.video.duration,
+          duration: mediaData.video.duration,
         }),
       });
     } catch (error) {
       // console.error(`Error uploading ${mediaType}:`, error);
-      alert(`Error while uploading ${mediaType}:`)
+      alert(`Error while uploading ${mediaType}:`);
     }
   };
 
@@ -161,13 +161,14 @@ const AddLecture = () => {
     } catch (error) {
       setDisable(false);
       // console.error("Error adding lecture:", error.response?.data?.message);
-      const errorMessage = error.response?.data?.message || "Some error while adding lecture"
+      const errorMessage =
+        error.response?.data?.message || "Some error while adding lecture";
       // console.log(errorMessage);
       toast.error(errorMessage);
     }
   };
 
-  if(loading) return <Loading/>;
+  if (loading) return <Loading />;
   return (
     <div className="min-h-screen p-6 bg-gray-900">
       {!selectedCourse ? (
@@ -223,6 +224,17 @@ const AddLecture = () => {
                   {/* Lecture Title */}
                   <p className="flex-1 text-lg font-medium">{lecture?.title}</p>
 
+                  <button
+                    className="bg-blue-500 hover:bg-blue-600 cursor-pointer
+                 text-white py-2 px-4 rounded "
+                 onClick={(e) => {
+                  e.stopPropagation(); 
+                  navigate(`/manage-lecture/${selectedCourse._id}/${lecture._id}`)
+                 }
+                }
+                  >
+                    Manage
+                  </button>
                   {/* Play Icon */}
                   <span className="text-gray-400 group-hover:text-white transition">
                     ▶
