@@ -151,8 +151,9 @@ const courseEnrollment = asyncHandler(async (req, res) => {
     throw new ApiError(400, "You are already enrolled in this course");
   }
 
-  course.enrolledStudents.push(req.user._id);
-  await course.save();
+  await Course.findByIdAndUpdate(courseId, { 
+    $push: { enrolledStudents: req.user._id } 
+  }, { new: true, runValidators: false });
 
   const user = await User.findById(req.user._id);
   if (!user) throw new ApiError(404, "user not found");

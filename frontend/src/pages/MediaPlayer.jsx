@@ -3,14 +3,14 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import VideoPlayer from "../component/VideoPlayer";
-
+import GiveQuiz from "../component/GiveQuiz";
 const MediaPlayer = () => {
   const { courseId, index } = useParams();
   const navigate = useNavigate();
   const [lectures, setLectures] = useState([]);
   const [currentLectureIndex, setCurrentLectureIndex] = useState(parseInt(index));
   const [isEnrolled, setIsEnrolled] = useState(false);
-
+  
   const user = useSelector((state) => state.user.userData);
 
   useEffect(() => {
@@ -83,7 +83,7 @@ const MediaPlayer = () => {
           </div> */}
 
           <VideoPlayer userId={user._id} courseId={courseId} lectureId={lectures[currentLectureIndex]?._id} videoUrl={lectures[currentLectureIndex]?.videoUrl.url}/>
-
+            
           {/* Sticky Sidebar for Lecture List */}
           <div className="w-full md:w-1/3 bg-gray-800 p-4 rounded-lg shadow-lg h-[500px] overflow-y-auto sticky top-6">
             <h2 className="text-lg font-semibold mb-3 text-green-400">Upcoming Lectures</h2>
