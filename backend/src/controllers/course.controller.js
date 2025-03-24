@@ -45,8 +45,8 @@ const createCourse = asyncHandler(async (req, res) => {
   const videoFileData = await JSON.parse(videoFile);
 
   const videoIdUrl = {
-    publicId : videoFileData.publicId,
-    url : videoFileData.url
+    publicId: videoFileData.publicId,
+    url: videoFileData.url,
   };
   // Create Course with Thumbnail
   const course = await Course.create({
@@ -99,9 +99,9 @@ const addLecture = asyncHandler(async (req, res) => {
   const videoData = await JSON.parse(videoFile);
 
   const videoIdUrl = {
-    publicId : videoData.publicId,
-    url : videoData.url
-  }
+    publicId: videoData.publicId,
+    url: videoData.url,
+  };
 
   const videoDuration = videoData.duration;
   // Create new lecture
@@ -119,8 +119,8 @@ const addLecture = asyncHandler(async (req, res) => {
     { new: true }
   );
 
-    // // Add lecture to course
-    // course.lecture.push(newLecture._id), await course.save({ validateBeforeSave: false });
+  // // Add lecture to course
+  // course.lecture.push(newLecture._id), await course.save({ validateBeforeSave: false });
 
   return res
     .status(201)
@@ -151,9 +151,13 @@ const courseEnrollment = asyncHandler(async (req, res) => {
     throw new ApiError(400, "You are already enrolled in this course");
   }
 
-  await Course.findByIdAndUpdate(courseId, { 
-    $push: { enrolledStudents: req.user._id } 
-  }, { new: true, runValidators: false });
+  await Course.findByIdAndUpdate(
+    courseId,
+    {
+      $push: { enrolledStudents: req.user._id },
+    },
+    { new: true, runValidators: false }
+  );
 
   const user = await User.findById(req.user._id);
   if (!user) throw new ApiError(404, "user not found");
@@ -301,8 +305,7 @@ const updateCourse = async (req, res) => {
     .json(new ApiResponse(200, updatedCourse, "Course updated successfully"));
 };
 
-const courseRecommend = asyncHandler(async (req, res) =>{
-
+const courseRecommend = asyncHandler(async (req, res) => {
   const course = await Course.findById(req.params.courseId);
   if (!course) {
     throw new ApiError(404, "Course not found");
@@ -311,17 +314,49 @@ const courseRecommend = asyncHandler(async (req, res) =>{
   // Find courses with similar categories or tags
   const recommendedCourses = await Course.find({
     _id: { $ne: course._id }, // Exclude the selected course
-    $or: [
-      { category: course.category },
-    ],
+    $or: [{ category: course.category }],
   }).limit(5); // Limit recommendations
 
   // { tags: { $in: course.tags } },
 
   return res
-  .status(200)
-  .json(new ApiResponse(201,recommendedCourses, "recommeded course fetched successfully"));
+    .status(200)
+    .json(
+      new ApiResponse(
+        201,
+        recommendedCourses,
+        "recommeded course fetched successfully"
+      )
+    );
 });
+
+const courseSearch = asyncHandler(async (req, res) => {
+  const { title, category, rating, price, language } = req.query;
+  //let query = { published: true };
+  let query = {}
+
+  if (category) query.category = category;
+  if (language) query.language = language;
+  if (rating) query.averageRating = { $gte: Number(rating) };
+  if (price) query.price = { $gte: Number(price) };
+
+  // OR condition only for title
+  if (title) {
+    query.$or = [{ title: { $regex: `.*${title}.*`, $options: "i" } }];
+  }
+
+  const courses = await Course.find(query);
+
+  if (!courses.length) {
+    throw new ApiError(404, "Courses Not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, courses, "Courses fetched successfully"));
+});
+
+
 
 export {
   createCourse,
@@ -334,5 +369,6 @@ export {
   getLectures,
   publishCourse,
   updateCourse,
-  courseRecommend
+  courseRecommend,
+  courseSearch,
 };

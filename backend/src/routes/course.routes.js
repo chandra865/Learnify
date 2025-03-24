@@ -12,6 +12,7 @@ import {
   publishCourse,
   updateCourse,
   courseRecommend,
+  courseSearch
 } from "../controllers/course.controller.js";
 
 const router = Router();
@@ -49,5 +50,7 @@ router
   
 router
     .route("/recommend/:courseId").get(courseRecommend);
+router
+    .route("/course-search").get(courseSearch);
 
 export default router;

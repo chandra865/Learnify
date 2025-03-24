@@ -23,6 +23,8 @@ import EditProfile from "./pages/EditProfile";
 import Earning from "./pages/Earning";
 import LectureManage from "./component/LectureManage";
 import CreateQuiz from "./component/CreateQuiz";
+import Footer from "./component/Footer";
+import SearchPage from "./pages/SearchPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -69,8 +71,10 @@ function App() {
       <Route path="/edit-profile" element={<EditProfile/>}/>
       <Route path="/manage-lecture/:courseId/:lectureId" element={<LectureManage/>}/>
       <Route path="/create-quiz/:courseId/:lectureId" element={<CreateQuiz />} />
+      <Route path="/search" element={<SearchPage/>} />
       <Route path="/logout" element={<Logout/>} />
     </Routes>
+    { !location.pathname.startsWith("/dashboard") && <Footer /> }
     {/* Toast Notification Container */}
     <ToastContainer position="top-right" autoClose={3000} />
    
