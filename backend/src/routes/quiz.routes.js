@@ -6,7 +6,7 @@ const router = Router();
 
 router.route("/create-quiz").post(verifyJWT, createQuiz)
 router.route("/delete-quiz/:quizId").delete(verifyJWT, deleteQuiz)
-router.route("/get-all-quiz/:lectureId").get(verifyJWT, getAllQuizzes)
+router.route("/get-all-quiz/:Id").get(verifyJWT, getAllQuizzes)
 
 
 export default router;

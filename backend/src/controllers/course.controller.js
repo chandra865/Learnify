@@ -19,6 +19,7 @@ const createCourse = asyncHandler(async (req, res) => {
     language,
     thumbnail,
     videoFile,
+    certificateOption 
   } = req.body;
 
   // console.log(req.body);
@@ -33,7 +34,8 @@ const createCourse = asyncHandler(async (req, res) => {
     !price ||
     !language ||
     !thumbnail ||
-    !videoFile
+    !videoFile ||
+    !certificateOption
   ) {
     throw new ApiError(400, "All fields are required");
   }
@@ -48,6 +50,8 @@ const createCourse = asyncHandler(async (req, res) => {
     publicId: videoFileData.publicId,
     url: videoFileData.url,
   };
+
+
   // Create Course with Thumbnail
   const course = await Course.create({
     title,
@@ -60,6 +64,7 @@ const createCourse = asyncHandler(async (req, res) => {
     language,
     thumbnail: thumbnailData,
     preview: videoIdUrl,
+    certificateOption,
   });
 
   if (!course) {
@@ -243,7 +248,7 @@ const publishCourse = async (req, res, next) => {
   }
 };
 
-const updateCourse = async (req, res) => {
+const updateCourse = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
 
   const {
@@ -256,6 +261,7 @@ const updateCourse = async (req, res) => {
     language,
     thumbnail,
     videoFile,
+    certificateOption
   } = req.body;
 
   // console.log(req.body);
@@ -263,7 +269,7 @@ const updateCourse = async (req, res) => {
   // console.log(videoFile);
   // console.log(req.files);
 
-  if (!title || !description || !category || !price || !language) {
+  if (!title || !description || !category || !price || !language ||!certificateOption) {
     throw new ApiError(400, "All fields are required");
   }
 
@@ -287,6 +293,7 @@ const updateCourse = async (req, res) => {
     courseIncludes: courseIncludes ? courseIncludes.split(",") : [],
     thumbnail: thumbnailData,
     preview: videoFileData,
+    certificateOption
   };
 
   // Find and update the course
@@ -303,7 +310,7 @@ const updateCourse = async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, updatedCourse, "Course updated successfully"));
-};
+});
 
 const courseRecommend = asyncHandler(async (req, res) => {
   const course = await Course.findById(req.params.courseId);
@@ -332,8 +339,7 @@ const courseRecommend = asyncHandler(async (req, res) => {
 
 const courseSearch = asyncHandler(async (req, res) => {
   const { title, category, rating, price, language } = req.query;
-  //let query = { published: true };
-  let query = {}
+  let query = {};
 
   if (category) query.category = category;
   if (language) query.language = language;
@@ -345,7 +351,9 @@ const courseSearch = asyncHandler(async (req, res) => {
     query.$or = [{ title: { $regex: `.*${title}.*`, $options: "i" } }];
   }
 
-  const courses = await Course.find(query);
+  const courses = await Course.find(query)
+    .populate("instructor", "name") // Populate only the name field from User model
+    .exec();
 
   if (!courses.length) {
     throw new ApiError(404, "Courses Not found");
@@ -355,6 +363,7 @@ const courseSearch = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, courses, "Courses fetched successfully"));
 });
+
 
 
 

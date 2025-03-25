@@ -23,14 +23,14 @@ const ProgressBar = ({ userId, courseId }) => {
   }, [userId, courseId]);
 
   return (
-    <div className="mb-4">
-      <p className="text-sm">Progress: {progress}%</p>
-      <div className="w-full bg-gray-600 h-2 rounded">
+    <div className="mb-4 w-full">
+      <div className="relative w-full bg-gray-700 h-3 rounded-full overflow-hidden">
         <div
-          className="bg-blue-500 h-2 rounded transition-all duration-500"
+          className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-500"
           style={{ width: `${progress}%` }}
         ></div>
       </div>
+      <p className="text-sm text-white-300 text-center mt-2">{Math.round(progress)}%</p>
     </div>
   );
 };

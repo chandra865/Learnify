@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const CreateQuiz = () => {
-  const { courseId, lectureId } = useParams();
+  const { courseId, lectureId, type } = useParams();
   const navigate = useNavigate();
   const [quizTitle, setQuizTitle] = useState("");
   const [questions, setQuestions] = useState([
@@ -56,17 +56,23 @@ const CreateQuiz = () => {
       correctAnswer: q.options[q.correctAnswerIndex],
     }));
 
-    const quizData = { title:quizTitle, lecture: lectureId, questions: formattedQuestions, passingScore: 50 };
-    
+    const quizData = { title:quizTitle, lectureId: lectureId, courseId:courseId, questions: formattedQuestions, passingScore: 50 };
+    console.log(quizData);
     try {
-      await axios.post("http://localhost:8000/api/v1/quiz/create-quiz", quizData,
+      const response = await axios.post(`http://localhost:8000/api/v1/quiz/create-quiz?quizFor=${type}`, quizData,
         {
             withCredentials:true,
         }
       );
+      console.log(response.data.data);
       alert("Quiz created successfully!");
-      navigate(`/manage-lecture/${courseId}/${lectureId}`);
-    } catch (error) {
+      if(type === "lecture"){
+        navigate(`/manage-lecture/${courseId}/${lectureId}`);
+      }else{
+        navigate(`/dashboard/created`);
+      }
+      
+    } catch (error) { 
       console.error("Error creating quiz:", error);
       alert("Failed to create quiz");
     }

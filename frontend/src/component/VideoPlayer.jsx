@@ -50,7 +50,7 @@ const VideoPlayer = ({ userId, courseId, lectureId, videoUrl }) => {
   return (
     <div>
       <video ref={videoRef} src={videoUrl} controls className="w-full" />
-      {isEnrolled && <GiveQuiz lectureId={lectureId}/>}
+      {isEnrolled && <GiveQuiz Id={lectureId} type={"lecture"}/>}
     </div>
   );
 };

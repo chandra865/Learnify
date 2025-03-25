@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios from "axios";
-import CourseCard from "../component/CourseCart";
+import CourseCard from "../component/CourseCard";
 
 const SearchPage = () => {
   const [searchParams] = useSearchParams();

@@ -179,7 +179,7 @@ const LectureManage = () => {
         <h3 className="text-xl font-medium">📝 Quizzes</h3>
         <button
           className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md"
-          onClick={() => navigate(`/create-quiz/${courseId}/${lectureId}`)}
+          onClick={() => navigate(`/create-quiz/${courseId}/${lectureId}/${"lecture"}`)}
         >
           Add Quiz
         </button>

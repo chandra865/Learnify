@@ -70,11 +70,11 @@ function App() {
       <Route path="edit-course/:courseId" element={<EditCourse/>} />
       <Route path="/edit-profile" element={<EditProfile/>}/>
       <Route path="/manage-lecture/:courseId/:lectureId" element={<LectureManage/>}/>
-      <Route path="/create-quiz/:courseId/:lectureId" element={<CreateQuiz />} />
+      <Route path="/create-quiz/:courseId/:lectureId/:type" element={<CreateQuiz />} />
       <Route path="/search" element={<SearchPage/>} />
       <Route path="/logout" element={<Logout/>} />
     </Routes>
-    { !location.pathname.startsWith("/dashboard") && <Footer /> }
+    {/* { !location.pathname.startsWith("/dashboard") && <Footer /> } */}
     {/* Toast Notification Container */}
     <ToastContainer position="top-right" autoClose={3000} />
    

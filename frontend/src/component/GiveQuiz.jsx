@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const GiveQuiz = ({ lectureId }) => {
+const GiveQuiz = ({Id,type}) => {
   const [quizzes, setQuizzes] = useState([]);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [userAnswers, setUserAnswers] = useState({});
@@ -11,7 +11,7 @@ const GiveQuiz = ({ lectureId }) => {
     const fetchQuizzes = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/quiz/get-all-quiz/${lectureId}`,
+          `http://localhost:8000/api/v1/quiz/get-all-quiz/${Id}?quizFor=${type}`,
           {
             withCredentials: true,
           }
@@ -25,7 +25,7 @@ const GiveQuiz = ({ lectureId }) => {
       }
     };
     fetchQuizzes();
-  }, [lectureId]);
+  }, [Id]);
 
   const handleQuizSelection = (quiz) => {
     setSelectedQuiz(quiz);

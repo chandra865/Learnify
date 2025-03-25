@@ -18,6 +18,7 @@ const CreateCourse = () => {
   const [disable, setDisable] = useState(false);
   const [videoPreview, setVideoPreview] = useState(null);
   const [progress, setProgress] = useState(0);
+  const [certificateOption, setCertificateOption] = useState("");
   const progressRef = useRef(0);
   const imageInputRef = useRef(null);
   const videoInputRef = useRef(null);
@@ -138,6 +139,7 @@ const CreateCourse = () => {
       formData.append("whatYouWillLearn", whatYouWillLearn.join(","));
       formData.append("courseIncludes", courseIncludes.join(","));
       formData.append("videoFile", videoFile);
+      formData.append("certificateOption", certificateOption);
       const response = await axios.post(
         "http://localhost:8000/api/v1/course/Add-course",
         formData,
@@ -147,7 +149,7 @@ const CreateCourse = () => {
         }
       );
 
-      // console.log(response.data.data);
+      console.log(response.data.data);
       toast.success(response?.data?.message || "Course Created Successfully");
 
       setTitle("");
@@ -164,6 +166,7 @@ const CreateCourse = () => {
       setImgPreview(null);
       setVideoPreview(null);
       setProgress(0);
+      setCertificateOption("");
 
       if (imageInputRef.current) imageInputRef.current.value = "";
       if (videoInputRef.current) videoInputRef.current.value = "";
@@ -316,6 +319,24 @@ const CreateCourse = () => {
             <option value="Other">Other</option>
           </select>
         </div>
+        
+
+        <div className="mb-3">
+        <label className="block font-semibold text-white mt-4">Choose Certificate Type:</label>
+        <select
+          value={certificateOption}
+          onChange={(e)=>setCertificateOption(e.target.value)}
+          className="w-full p-2 border rounded-md  bg-gray-900 text-white"
+        >
+          <option value="" disabled>
+              Select certificate type
+            </option>
+          <option value="direct">Direct Certificate</option>
+          <option value="quiz">Certificate After Quiz</option>
+        </select>
+      </div>
+
+
 
         <div>
           <label className="block font-semibold text-white mt-4">

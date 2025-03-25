@@ -3,7 +3,7 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-
+import { toast } from "react-toastify";
 const EditCourse = () => {
   const navigate = useNavigate();
   const { courseId } = useParams();
@@ -22,6 +22,8 @@ const EditCourse = () => {
   const [videoPreview, setVideoPreview] = useState(null);
   const [disable, setDisable] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [certificateOption, setCertificateOption] = useState("");
+
   const progressRef = useRef(0);
   const imageInputRef = useRef(null);
   const videoInputRef = useRef(null);
@@ -54,7 +56,7 @@ const EditCourse = () => {
         setThumbnail(courseData.thumbnail);
         setImgPreview(courseData.thumbnail.url);
         setVideoFile(courseData.preview);
-
+        setCertificateOption(courseData.certificateOption);
         setVideoPreview(courseData.preview.url);
       } catch (error) {
         // console.log("Failed to fetch created courses");
@@ -112,7 +114,7 @@ const EditCourse = () => {
     const file = event.target.files[0]; // Get the selected file
 
     if (!file) {
-      alert("No file found")
+      alert("No file found");
       return;
     }
 
@@ -181,6 +183,7 @@ const EditCourse = () => {
       }
       formData.append("whatYouWillLearn", whatYouWillLearn.join(","));
       formData.append("courseIncludes", courseIncludes.join(","));
+      formData.append("certificateOption",certificateOption);
       if (videoFile) {
         const strVideoFile =
           typeof videoFile === "string" ? videoFile : JSON.stringify(videoFile);
@@ -199,7 +202,7 @@ const EditCourse = () => {
       );
 
       // console.log(response.data);
-      toast.sucess(response?.data?.message || "Course Updated Successfully!");
+      toast.success(response?.data?.message || "Course Updated Successfully!");
 
       // setTitle("");
       // setDescription("");
@@ -366,6 +369,22 @@ const EditCourse = () => {
             <option value="Other">Other</option>
           </select>
         </div>
+
+
+        <div className="mb-3">
+        <label className="block font-semibold text-white mt-4">Choose Certificate Type:</label>
+        <select
+          value={certificateOption}
+          onChange={(e)=>setCertificateOption(e.target.value)}
+          className="w-full p-2 border rounded-md  bg-gray-900 text-white"
+        >
+          <option value="" disabled>
+              Select certificate type
+            </option>
+          <option value="direct">Direct Certificate</option>
+          <option value="quiz">Certificate After Quiz</option>
+        </select>
+      </div>
 
         <div>
           <label className="block font-semibold text-white mt-4">

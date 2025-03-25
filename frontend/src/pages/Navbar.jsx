@@ -11,6 +11,7 @@ const Navbar = () => {
   // Handle search submit on Enter
   const handleSearch = (e) => {
     if (e.key === "Enter" && searchQuery.trim() !== "") {
+      setSearchQuery("");
       navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
     }
   };

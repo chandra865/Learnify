@@ -33,17 +33,23 @@ const CreatedCourses = () => {
     fetchCreatedCourses();
   }, [userId, loading]);
 
-  const handleCoursePublish = async (courseId) => {
+  const handleCoursePublish = async (course) => {
     // console.log(courseId);
+    if (!course.quiz) {
+      alert("First, Add a quiz");
+      return;
+    }
     try {
       const response = await axios.patch(
-        `http://localhost:8000/api/v1/course/publish/${courseId}`,
+        `http://localhost:8000/api/v1/course/publish/${course._id}`,
         null,
         {
           withCredentials: true,
         }
       );
-      toast.success(response?.data?.message || "Course published successfully!");
+      toast.success(
+        response?.data?.message || "Course published successfully!"
+      );
       setDisable(true);
       setLoading(true);
     } catch (error) {
@@ -52,7 +58,7 @@ const CreatedCourses = () => {
     }
   };
 
-  if (loading) return <Loading/>;
+  if (loading) return <Loading />;
 
   return (
     <div className="min-h-screen p-6 bg-gray-900">
@@ -92,10 +98,20 @@ const CreatedCourses = () => {
                       : "bg-blue-500 hover:bg-blue-600 cursor-pointer"
                   } text-white px-4 py-2 rounded-lg  mx-4   `}
                   disabled={course.published}
-                  onClick={() => handleCoursePublish(course._id)}
+                  onClick={() => handleCoursePublish(course)}
                 >
                   Publish Lecture
                 </button>
+
+                {/* Show "Add Quiz" button if quiz is not added */}
+                {!course.quiz && (
+                  <button
+                    className="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                    onClick={() => navigate(`/create-quiz/${course._id}/${"lecture"}/${"course"}`)}
+                  >
+                    Add Quiz
+                  </button>
+                )}
               </div>
             </div>
           ))

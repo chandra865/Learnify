@@ -6,7 +6,8 @@ const quizSchema = new mongoose.Schema(
         type:String,
         required: true
     },
-    lecture: { type: mongoose.Schema.Types.ObjectId, ref: "Lecture", required: true },
+    lecture: { type: mongoose.Schema.Types.ObjectId, ref: "Lecture", default:null },
+    course :{type:mongoose.Schema.Types.ObjectId, ref:"Course", default:null},
     questions: [
       {
         questionText: { type: String, required: true },

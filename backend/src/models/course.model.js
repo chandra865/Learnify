@@ -43,8 +43,8 @@ const courseSchema = new Schema(
       },
     ],
 
-    averageRating:{
-        type: Number
+    averageRating: {
+      type: Number,
     },
 
     thumbnail: {
@@ -66,20 +66,30 @@ const courseSchema = new Schema(
       },
     ],
 
+    certificateOption: {
+      type: String,
+      enum: ["direct", "quiz"],
+      default: "direct",
+    }, 
+    quiz: {
+      type: Schema.Types.ObjectId,
+      ref: "Quiz",
+    },
+
     language: {
       type: String,
       required: true,
     },
 
     preview: {
-      publicId: { type: String, required: true}, 
-      url: { type: String, required:true},
+      publicId: { type: String, required: true },
+      url: { type: String, required: true },
     },
 
-    published: { 
-      type: Boolean, 
-      default: false 
-    }
+    published: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
