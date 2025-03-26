@@ -18,13 +18,17 @@ const CourseInfo = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [reviewRating, setReviewRating] = useState(null);
   const [reviewComment, setReviewComment] = useState(null);
+  const [courseProgress, setCourseProgress] = useState(false);
 
   const user = useSelector((state) => state.user.userData);
   const navigate = useNavigate();
 
+
+
   const handlePreviewClick = () => {
     setShowPreview(true);
   };
+
 
   useEffect(() => {
     if (user?.enrolledCourses?.includes(course_id)) {
@@ -81,7 +85,28 @@ const CourseInfo = () => {
 
   useEffect(() => {
     setLoading(false);
-  }, []);
+  }, []); 
+
+  useEffect(() => {
+    const fetchProgress = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/api/v1/progress/get-progress/${user._id}/${course_id}`,
+          {
+            withCredentials:true
+          }
+        );
+
+        const progress = response.data.data;
+        // console.log(progress.progressPercentage);
+        setCourseProgress(progress.progressPercentage === 100);
+      } catch (error) {
+        console.error("Error while fetching progress:", error?.response?.data?.message);
+      }
+    };
+
+    fetchProgress();
+  }, [user._id, course_id]);
 
   const handleEnroll = async () => {
     try {
@@ -237,7 +262,7 @@ const CourseInfo = () => {
             )}
           </ul>
           
-          <GiveQuiz Id={course_id}/>
+          {courseProgress && <GiveQuiz Id={course_id}/>}
           <Recommendation courseId={course_id}/>
 
           {/* Reviews Section */}

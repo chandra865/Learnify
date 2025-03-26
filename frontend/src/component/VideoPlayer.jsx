@@ -23,9 +23,10 @@ const VideoPlayer = ({ userId, courseId, lectureId, videoUrl }) => {
 
   useEffect(() => {
     const video = videoRef.current;
-
+    console.log("vido useeffect");
     const saveProgress = () => {
-      axios
+      try{
+        const response = axios
         .post("http://localhost:8000/api/v1/progress/update-progress", {
           userId,
           courseId,
@@ -33,7 +34,10 @@ const VideoPlayer = ({ userId, courseId, lectureId, videoUrl }) => {
           watchTime: video.currentTime,
           totalDuration: video.duration,
         })
-        .catch((err) => console.log(err));
+        console.log(response.data.data);
+      }catch(err){
+        console.log(err);
+      }
     };
 
     video.addEventListener("pause", saveProgress);
