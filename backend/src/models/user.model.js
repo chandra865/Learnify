@@ -30,7 +30,6 @@ const userSchema = new Schema(
       enum: ["student", "instructor", "admin"],
       required: true,
     },
-
     refreshToken: {
       type: String,
     },

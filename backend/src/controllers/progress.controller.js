@@ -3,6 +3,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Course } from "../models/course.model.js";
+import { User } from "../models/user.model.js";
+import PDFDocument from 'pdfkit';
 
 const updateProgress = asyncHandler(async (req, res) => {
   const { userId, courseId, lectureId, watchTime, totalDuration } = req.body;
@@ -12,10 +14,10 @@ const updateProgress = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Course Not Found");
   }
 
-  const totalLecture = course.lecture.length;
+  const totalLectures = course.lecture.length;
 
-  // Find or create progress document
-  const progress = await Progress.findOneAndUpdate(
+
+  let progress = await Progress.findOneAndUpdate(
     { userId, courseId },
     {
       ...(watchTime / totalDuration >= 0.9
@@ -25,31 +27,95 @@ const updateProgress = asyncHandler(async (req, res) => {
     { new: true, upsert: true }
   );
 
-  // Recalculate progress percentage after update
-  const updatedProgress = await Progress.findOne({ userId, courseId });
-  updatedProgress.progressPercentage =
-    (updatedProgress.completedLectures.length / totalLecture) * 100;
-  await updatedProgress.save();
+  // Recalculate progress percentage
+  progress.progressPercentage =
+    (progress.completedLectures.length / totalLectures) * 100;
 
-  return res.status(201).json(new ApiResponse(200, updatedProgress, "Progress Updated Successfully"));
+  // Mark course as completed if progress reaches 100%
+  if (progress.progressPercentage === 100 && !progress.courseCompleted) {
+    progress.courseCompleted = true;
+  }
+
+  await progress.save();
+
+  return res.status(200).json(
+    new ApiResponse(200, progress, "Progress Updated Successfully")
+  );
 });
 
 
 const getProgress = asyncHandler(async (req, res) => {
   const { userId, courseId } = req.params;
 
-    const progress = await Progress.findOne({ userId, courseId });
+  const progress = await Progress.findOne({ userId, courseId });
 
-    if (!progress) {
-      throw new ApiError(404,"progress not found");
-    }
-
-    return res
+  if (!progress) {
+    throw new ApiError(404, "progress not found");
+  }
+  return res
     .status(201)
-    .json(new ApiResponse(200,progress,"progress fetched successfully"));
-
+    .json(new ApiResponse(200, progress, "progress fetched successfully"));
 });
 
 
+const getCertificate = asyncHandler(async (req, res) => {
+  const { userId, courseId } = req.params;
 
-export { updateProgress, getProgress };
+  const user = await User.findById(userId);
+  const course = await Course.findById(courseId);
+
+  if (!user) throw new ApiError(404, "User not found");
+  if (!course) throw new ApiError(404, "Course not found");
+
+  const doc = new PDFDocument({ size: "A4", layout: "landscape", margin: 30 });
+
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename=${user.name}_${course.title}.pdf`
+  );
+  res.setHeader("Content-Type", "application/pdf");
+
+  doc.pipe(res);
+
+  // Certificate Border
+  doc.rect(10, 10, doc.page.width - 20, doc.page.height - 20).stroke();
+
+  // Title
+  doc
+    .fontSize(30)
+    .font("Helvetica-Bold")
+    .text("Certificate of Completion", { align: "center" })
+    .moveDown(1.5);
+
+  // Subtitle
+  doc.fontSize(14).font("Helvetica").text("This is to certify that", {
+    align: "center",
+  }).moveDown(1.5);
+
+  // Student Name
+  doc
+    .fontSize(22)
+    .font("Helvetica-Bold")
+    .text(user.name, { align: "center", underline: true })
+    .moveDown(1.5);
+
+  // Completion Statement
+  doc.fontSize(14).text("has successfully completed the course", {
+    align: "center",
+  }).moveDown(1.5);
+
+  // Course Title
+  doc.fontSize(18).fillColor("#C70039").text(course.title, { align: "center" }).moveDown(1.5);
+
+  // Completion Date
+  doc
+    .moveDown(1)
+    .fillColor("black")
+    .fontSize(12)
+    .text(`Date: ${new Date().toLocaleDateString()}`, { align: "center" }).moveDown(1.5);
+
+  doc.end();
+});
+
+
+export { updateProgress, getProgress, getCertificate};

@@ -19,16 +19,33 @@ const CourseInfo = () => {
   const [reviewRating, setReviewRating] = useState(null);
   const [reviewComment, setReviewComment] = useState(null);
   const [courseProgress, setCourseProgress] = useState(false);
+  const [isCourseCompleted, setIsCourseCompleted] = useState(false);
 
   const user = useSelector((state) => state.user.userData);
   const navigate = useNavigate();
-
-
 
   const handlePreviewClick = () => {
     setShowPreview(true);
   };
 
+  useEffect(() => {
+    const fetchProgress = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/api/v1/progress/get-progress/${user._id}/${course_id}`
+        );
+        const progress = response.data.data;
+        console.log(progress.progressPercentage);
+        if (progress.progressPercentage === 100) {
+          setIsCourseCompleted(true); 
+        }
+      } catch (error) {
+        console.error("Error fetching progress:", error);
+      }
+    };
+
+    fetchProgress();
+  }, [user, course_id]);
 
   useEffect(() => {
     if (user?.enrolledCourses?.includes(course_id)) {
@@ -85,7 +102,7 @@ const CourseInfo = () => {
 
   useEffect(() => {
     setLoading(false);
-  }, []); 
+  }, []);
 
   useEffect(() => {
     const fetchProgress = async () => {
@@ -93,7 +110,7 @@ const CourseInfo = () => {
         const response = await axios.get(
           `http://localhost:8000/api/v1/progress/get-progress/${user._id}/${course_id}`,
           {
-            withCredentials:true
+            withCredentials: true,
           }
         );
 
@@ -101,7 +118,10 @@ const CourseInfo = () => {
         // console.log(progress.progressPercentage);
         setCourseProgress(progress.progressPercentage === 100);
       } catch (error) {
-        console.error("Error while fetching progress:", error?.response?.data?.message);
+        console.error(
+          "Error while fetching progress:",
+          error?.response?.data?.message
+        );
       }
     };
 
@@ -125,9 +145,31 @@ const CourseInfo = () => {
     }
   };
 
-  const handleReviewSubmit = (e) =>{
+  const handleDownloadCertificate = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/v1/progress/get-certificate/${user._id}/${course._id}`,
+        {
+          withCredentials: true,
+          responseType: "blob",
+        } // Important for handling PDFs
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${user.name}_${course._id}_certificate.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.log("Error downloading certificate:", error);
+    }
+  };
+
+  const handleReviewSubmit = (e) => {
     e.prevent.default();
-  }
+  };
 
   if (loading) return <Loading />;
 
@@ -261,15 +303,23 @@ const CourseInfo = () => {
               <p className="text-gray-500">No lectures available</p>
             )}
           </ul>
-          
-          {courseProgress && <GiveQuiz Id={course_id}/>}
-          <Recommendation courseId={course_id}/>
+
+          {courseProgress && <GiveQuiz Id={course_id} />}
+          {isCourseCompleted && isEnrolled && (
+            <button
+              onClick={handleDownloadCertificate}
+              className="mt-4 bg-blue-500 text-white px-4 py-2 mx-2 rounded"
+            >
+              Get Certificate
+            </button>
+          )}
+          <Recommendation courseId={course_id} />
 
           {/* Reviews Section */}
           {/* console.log(course_id); */}
-          <CourseReviews courseId={course_id}/>
+          <CourseReviews courseId={course_id} />
           {/* Add Review Section (Only if user is enrolled) */}
-          {isEnrolled && <AddReview courseId={course_id}/>}
+          {isEnrolled && <AddReview courseId={course_id} />}
         </div>
 
         {/* Sidebar (Course Preview & Enroll) */}
