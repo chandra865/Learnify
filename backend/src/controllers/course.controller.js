@@ -11,8 +11,11 @@ import { getVideoDuration } from "../utils/cloudinary.js";
 const createCourse = asyncHandler(async (req, res) => {
   const {
     title,
+    subtitle,
     description,
     category,
+    subcategory,
+    level,
     price,
     whatYouWillLearn,
     courseIncludes,
@@ -29,8 +32,11 @@ const createCourse = asyncHandler(async (req, res) => {
 
   if (
     !title ||
+    !subtitle ||
     !description ||
     !category ||
+    !subcategory ||
+    !level ||
     !price ||
     !language ||
     !thumbnail ||
@@ -55,6 +61,7 @@ const createCourse = asyncHandler(async (req, res) => {
   // Create Course with Thumbnail
   const course = await Course.create({
     title,
+    subtitle,
     description,
     category,
     price,
@@ -62,6 +69,8 @@ const createCourse = asyncHandler(async (req, res) => {
     whatYouWillLearn: whatYouWillLearn ? whatYouWillLearn.split(",") : [],
     courseIncludes: courseIncludes ? courseIncludes.split(",") : [],
     language,
+    subcategory,
+    level,
     thumbnail: thumbnailData,
     preview: videoIdUrl,
     certificateOption,
@@ -220,7 +229,7 @@ const getLectures = async (req, res) => {
   }
 };
 
-const publishCourse = async (req, res, next) => {
+const changePublishStatus = async (req, res, next) => {
   try {
     const { courseId } = req.params;
 
@@ -247,6 +256,7 @@ const publishCourse = async (req, res, next) => {
     next(new ApiError(500, error.message || "Internal Server Error"));
   }
 };
+
 
 const updateCourse = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
@@ -317,14 +327,12 @@ const courseRecommend = asyncHandler(async (req, res) => {
   if (!course) {
     throw new ApiError(404, "Course not found");
   }
-  console.log("first");
   // Find courses with similar categories or tags
   const recommendedCourses = await Course.find({
     _id: { $ne: course._id }, // Exclude the selected course
-    $or: [{ category: course.category }],
-  }).limit(5); // Limit recommendations
-
-  // { tags: { $in: course.tags } },
+    published:true,
+    $or: [{ category: course.category }, { subcategory: course.subcategory }],
+  }).limit(8); // Limit recommendations
 
   return res
     .status(200)
@@ -376,7 +384,7 @@ export {
   getAllCourses,
   getCourse,
   getLectures,
-  publishCourse,
+  changePublishStatus,
   updateCourse,
   courseRecommend,
   courseSearch,

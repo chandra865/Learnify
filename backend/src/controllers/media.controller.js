@@ -7,7 +7,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 const uploadMedia = asyncHandler(async (req, res) => {
   const { mediaType } = req.body;
 
-  console.log(mediaType);
+  // console.log(mediaType);
 
   if (!req.files || !req.files.media) {
     throw new ApiError(400, "No files found");

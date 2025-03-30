@@ -1,60 +1,83 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Loading from "../component/Loading";
+import StarRating from "../component/StarRating";
+import EditCourse from "./EditCourse";
+import PublishCourse from "../component/PublishCourse";
+import AddResources from "../component/AddResources";
+import AddLecture from "./AddLecture";
+import CourseAnalytics from "../component/CourseAnalytics";
+import CommentsFeedback from "../component/CommentsFeedback";
+import { useDispatch } from "react-redux";
+import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
+import { FaArrowLeft } from "react-icons/fa";
+
 
 const CreatedCourses = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [disable, setDisable] = useState(false);
 
+  const [selected, setSelected] = useState(false);
+  const [chossenCourse, setChossenCourse] = useState(null);
+  const [activeTab, setActiveTab] = useState("edit");
   const userId = useSelector((state) => state.user.userData?._id);
-  const navigate = useNavigate();
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchCreatedCourses = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/course/inst-courses`,
+          "http://localhost:8000/api/v1/course/inst-courses",
           { withCredentials: true }
         );
         setCourses(response.data.data);
       } catch (err) {
-        // setError("Failed to fetch created courses");
-        // console.error(err);
-        alert("Failed to fetch courses");
+        toast.error("Failed to fetch courses");
       } finally {
         setLoading(false);
       }
     };
     fetchCreatedCourses();
-  }, [userId, loading]);
+  }, [userId]);
 
-  const handleCoursePublish = async (course) => {
-    // console.log(courseId);
-    if (!course.quiz) {
-      alert("First, Add a quiz");
-      return;
-    }
-    try {
-      const response = await axios.patch(
-        `http://localhost:8000/api/v1/course/publish/${course._id}`,
-        null,
-        {
-          withCredentials: true,
-        }
-      );
-      toast.success(
-        response?.data?.message || "Course published successfully!"
-      );
-      setDisable(true);
-      setLoading(true);
-    } catch (error) {
-      // console.error("Error publishing course:", error.response?.data?.message);
-      toast.error(error.response?.data?.message || "Failed to publish course.");
+  
+
+  const tabs = [
+    { key: "edit", label: "Edit Course" },
+    { key: "lecture", label: "Add Lecture" },
+    { key: "resources", label: "Add Resources" },
+    { key: "publish", label: "Publish Course" },
+    { key: "analytics", label: "Course Analytics" },
+    { key: "feedback", label: "Comments & Feedback" },
+  ];  
+
+
+  const handleCourseSelection = (course) => {
+    dispatch(setSelectedCourse(course));
+    setChossenCourse(course);
+    setSelected(true);
+    setActiveTab("edit");
+  };
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "edit":
+        return <EditCourse/>;
+      case "publish":
+        return <PublishCourse/>;
+      case "resources":
+        return <AddResources/>;
+      case "lecture":
+        return <AddLecture/>;
+      case "analytics":
+        return <CourseAnalytics/>;
+      case "feedback":
+        return <CommentsFeedback/>;
+      default:
+        return <EditCourse/>;
     }
   };
 
@@ -62,85 +85,73 @@ const CreatedCourses = () => {
 
   return (
     <div className="min-h-screen p-6 bg-gray-900">
-      <h2 className="text-2xl font-bold text-center mb-6 text-white">
-        Created Courses
-      </h2>
+      <h2 className="text-2xl font-extrabold text-center mb-2 text-white">Created Courses</h2>
 
-      <div className="grid grid-cols-1 gap-6">
-        {courses.length === 0 ? (
-          <p className="text-center text-gray-500">No courses found.</p>
+      <div className="flex-1 p-6">
+        {!selected ? (
+          <div>
+            {courses.length === 0 ? (
+              <p className="text-center text-gray-500">No courses found.</p>
+            ) : (
+              courses.map((course) => (
+                <div
+                  key={course._id}
+                  onClick={() => handleCourseSelection(course)}
+                  className="flex py-4 px-2 border-b-2 text-white hover:bg-gray-700 transform transition duration-300 hover:scale-102 cursor-pointer"
+                >
+                  <div className="w-70 h-40 flex-shrink-0">
+                    <img
+                      src={course.thumbnail?.url}
+                      alt={course.title}
+                      className="w-full h-full object-cover rounded"
+                    />
+                  </div>
+                  <div className="flex flex-row w-full px-4">
+                    <div className="w-full">
+                      <h1 className="text-xl font-extrabold">{course.title}</h1>
+                      <p className="text-white">{course.description}</p>
+                      <p className="text-gray-400 text-sm my-1">
+                        {course?.instructor?.name || "Unknown Instructor"}
+                      </p>
+                      <StarRating rating={course.averageRating || 0} />
+                      <p className="text-gray-400 text-sm my-1">
+                        {course.lecture?.length || 0} Lectures
+                      </p>
+                    </div>
+                    <div className="flex flex-col justify-between">
+                      <p className="px-10 text-xl font-extrabold">₹{course.price}</p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         ) : (
-          courses.map((course) => (
-            <div
-              key={course._id}
-              className="p-6 bg-gray-800 text-white shadow-lg rounded-lg flex"
-            >
-              <img
-                src={course.thumbnail?.url}
-                alt={course.title}
-                className="w-80 h-50 object-cover rounded-lg mr-4"
-              />
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold">{course.title}</h1>
-                <p className="mt-2">{course.description}</p>
-                <p className="mt-4">Category:- {course.category}</p>
-                <button
-                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-                  onClick={() => navigate(`/edit-course/${course._id}`)}
-                >
-                  Edit Lecture
-                </button>
+          <div>
 
-                <button
-                  className={`${
-                    course.published
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-blue-500 hover:bg-blue-600 cursor-pointer"
-                  } text-white px-4 py-2 rounded-lg  mx-4   `}
-                  disabled={course.published}
-                  onClick={() => handleCoursePublish(course)}
-                >
-                  Publish Lecture
-                </button>
-
-                {/* Show "Add Quiz" button if quiz is not added */}
-                {!course.quiz && (
-                  <button
-                    className="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
-                    onClick={() => navigate(`/create-quiz/${course._id}/${"lecture"}/${"course"}`)}
-                  >
-                    Add Quiz
-                  </button>
-                )}
-              </div>
+            <div className="flex flex-row gap-2 mb-2">
+            <button className="flex items-center cursor-pointer text-white" onClick={() => setSelected(false)}>
+              <FaArrowLeft className="mr-2" />
+            </button>
+            <h1 className=" text-2xl font-extrabold text-white ">{chossenCourse.title}</h1>
             </div>
-          ))
+            <div className="flex border-b border-gray-700 text-white">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  className={`p-2 mx-2 cursor-pointer ${
+                    activeTab === tab.key ? "border-b-2 border-blue-400" : "text-gray-400"
+                  }`}
+                  onClick={() => setActiveTab(tab.key)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <div className="p-4 bg-gray-800 mt-4 rounded">{renderTabContent()}</div>
+          </div>
         )}
       </div>
-
-      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {courses.length > 0 ? (
-          courses.map((course) => (
-            <div key={course._id} className="p-6 bg-white shadow-lg rounded-lg">
-              <h3 className="text-lg font-semibold">{course.title}</h3>
-              <p className="text-gray-700">{course.description}</p>
-              <p className="text-blue-600 font-medium">Category: {course.category}</p>
-              <p className="text-green-600 font-medium">Price: ₹{course.price}</p>
-              
-              <div className="mt-4">
-                <button
-                  onClick={() => navigate(`/course/edit/${course._id}`)}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg transition duration-300 w-full"
-                >
-                  Edit Course
-                </button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-center text-gray-400">No created courses found.</p>
-        )}
-      </div> */}
     </div>
   );
 };

@@ -7,7 +7,7 @@ import { use, useEffect } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { login } from "./store/slice/userSlice";
-import CourseInfo from "./pages/CourseInfo";
+import CourseInfo from "./pages/CourseLandingPage";
 import { ToastContainer } from "react-toastify";
 import Dashboard from "./pages/Dashboard";
 import EnrolledCourses from "./pages/EnrolledCourses";
@@ -21,10 +21,10 @@ import EditCourse from "./pages/EditCourse";
 import SetProfile from "./component/SetProfile";
 import EditProfile from "./pages/EditProfile";
 import Earning from "./pages/Earning";
-import LectureManage from "./component/LectureManage";
-import CreateQuiz from "./component/CreateQuiz";
 import Footer from "./component/Footer";
 import SearchPage from "./pages/SearchPage";
+import CourseManagment from "./pages/CourseManagment";
+import CourseLandingPage from "./pages/CourseLandingPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -56,21 +56,21 @@ function App() {
       <Route path="/" element={<Home/>}/>
       <Route path="/register" element={<Register/>}/>
       <Route path="/login" element={<Login/>}/>
-      <Route path="/course/enroll/:course_id" element={<CourseInfo/>}/>
+      <Route path="/course/enroll/:course_id" element={<CourseLandingPage/>}/>
       <Route path="/dashboard" element={<Dashboard />}>
           <Route path="profile" element={<SetProfile/>} />
           <Route path="enrolled" element={<EnrolledCourses />} />
-          <Route path="created" element={<CreatedCourses />} />
+          <Route path="created" element={<CreatedCourses />} >
+            <Route path="course-managment/:courseId" element={<CourseManagment/>} />
+          </Route>
           <Route path="create" element={<CreateCourse />} />
           <Route path="AddLectures" element={<AddLecture/>} />
           <Route path="Earning" element={<Earning/>}/>
+          
       </Route>
       <Route path="/add-lecture/:courseId" element={<LectureForm/>} />
       <Route path="/media-player/:courseId/:index" element={<MediaPlayer />} />
-      <Route path="edit-course/:courseId" element={<EditCourse/>} />
       <Route path="/edit-profile" element={<EditProfile/>}/>
-      <Route path="/manage-lecture/:courseId/:lectureId" element={<LectureManage/>}/>
-      <Route path="/create-quiz/:courseId/:lectureId/:type" element={<CreateQuiz />} />
       <Route path="/search" element={<SearchPage/>} />
       <Route path="/logout" element={<Logout/>} />
     </Routes>

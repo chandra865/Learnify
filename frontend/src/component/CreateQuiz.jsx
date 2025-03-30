@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const CreateQuiz = () => {
-  const { courseId, lectureId, type } = useParams();
+const CreateQuiz = ({ courseId, lectureId, type }) => {
   const navigate = useNavigate();
   const [quizTitle, setQuizTitle] = useState("");
   const [questions, setQuestions] = useState([
@@ -66,11 +65,11 @@ const CreateQuiz = () => {
       );
       console.log(response.data.data);
       alert("Quiz created successfully!");
-      if(type === "lecture"){
-        navigate(`/manage-lecture/${courseId}/${lectureId}`);
-      }else{
-        navigate(`/dashboard/created`);
-      }
+      // if(type === "lecture"){
+      //   navigate(`/manage-lecture/${courseId}/${lectureId}`);
+      // }else{
+      //   navigate(`/dashboard/created`);
+      // }
       
     } catch (error) { 
       console.error("Error creating quiz:", error);

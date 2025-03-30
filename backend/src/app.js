@@ -20,8 +20,8 @@ app.use(fileUpload({
     useTempFiles : true,
     tempFileDir : "/tmp/"
 }));
-app.use(express.json({limit:"16kb"})); // when data coming in json formate 
-app.use(express.urlencoded({extended:true, limit:"16kb"})) //when data coming from url
+app.use(express.json({limit:"36kb"})); // when data coming in json formate 
+app.use(express.urlencoded({extended:true, limit:"36kb"})) //when data coming from url
 app.use(express.static("public")) //public folder adding file
 app.use(cookieParser());//for performing operation on cookie  
 
@@ -36,6 +36,7 @@ import mediaRouter from "./routes/media.routes.js"
 import reviewRouter from "./routes/review.routes.js"
 import progressRouter from "./routes/progress.routes.js"
 import quizRouter from "./routes/quiz.routes.js"
+import category from "./routes/category.routes.js"
 
 //routes declaration
 app.use("/api/v1/user", userRouter);
@@ -44,7 +45,7 @@ app.use("/api/v1/media",mediaRouter);
 app.use("/api/v1/review",reviewRouter);
 app.use("/api/v1/progress",progressRouter);
 app.use("/api/v1/quiz",quizRouter);
-
+app.use("/api/v1/category",category);
 
 
 

@@ -3,10 +3,14 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Loading from "../component/Loading";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
+
+import LectureManage from "../component/LectureManage";
 
 const AddLecture = () => {
-  const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [chossenCourse, setChossenCourse] = useState(null);
   const [lectures, setLectures] = useState([]);
   const [lectureData, setLectureData] = useState({
     title: "",
@@ -17,36 +21,38 @@ const AddLecture = () => {
   const [progress, setProgress] = useState(0);
   const [videoPreview, setVideoPreview] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [lectureVisible, setLectureVisible] = useState(true);
+  const [lectureId, setLectureId] = useState(null);
   const progressRef = useRef(0);
   const videoInputRef = useRef(null);
 
   const navigate = useNavigate();
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:8000/api/v1/course/inst-courses",
-          { withCredentials: true }
-        );
-        // console.log(response.data.data);
-        setCourses(response.data.data);
-      } catch (error) {
-        const errorMessage =
-          error.response?.data?.message ||
-          "Something went wrong! Please try again later.";
+  const courseId = useSelector((state) => state.course.selectedCourse._id);
+  const dispatch = useDispatch();
 
-        alert(errorMessage);
-      }
-      setLoading(false);
-    };
-    fetchCourses();
-  }, []);
-
-  const handleCourseSelect = async (course) => {
-    setSelectedCourse(course);
+  const fetchCourse = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/course/lectures/${course._id}`
+        `http://localhost:8000/api/v1/course/fetchcourse/${courseId}`,
+        { withCredentials: true }
+      );
+      // console.log(response.data.data);
+      setChossenCourse(response.data.data);
+      dispatch(setSelectedCourse(response.data.data));
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        "Something went wrong! Please try again later.";
+
+      alert(errorMessage);
+    }
+    setLoading(false);
+  };
+
+  const fecthLectures = async (course) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/v1/course/lectures/${courseId}`
       );
       setLectures(response.data.data.lectures);
     } catch (error) {
@@ -58,6 +64,11 @@ const AddLecture = () => {
       alert(errorMessage);
     }
   };
+
+  useEffect(() => {
+    fetchCourse();
+    fecthLectures();
+  }, [courseId]);
 
   const uploadMedia = async (file, mediaType) => {
     const formData = new FormData();
@@ -145,7 +156,7 @@ const AddLecture = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/v1/course/add-lecture/${selectedCourse._id}`,
+        `http://localhost:8000/api/v1/course/add-lecture/${chossenCourse._id}`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -158,54 +169,21 @@ const AddLecture = () => {
       if (videoInputRef.current) videoInputRef.current.value = "";
       setDisable(false);
       toast.success("Lecture added successfully!");
+      fetchCourse(); // Refresh the lectures list
     } catch (error) {
       setDisable(false);
       // console.error("Error adding lecture:", error.response?.data?.message);
-      const errorMessage =
-        error.response?.data?.message || "Some error while adding lecture";
-      // console.log(errorMessage);
-      toast.error(errorMessage);
+      // const errorMessage =
+      //   error.response?.data?.message || "Some error while adding lecture";
+      console.log(error);
     }
   };
 
   if (loading) return <Loading />;
   return (
-    <div className="min-h-screen p-6 bg-gray-900">
-      {!selectedCourse ? (
-        <div className="grid grid-cols-1 gap-6">
-          {courses.length === 0 ? (
-            <p className="text-center text-gray-500">No courses found.</p>
-          ) : (
-            courses.map((course) => (
-              <div
-                key={course._id}
-                className="p-6 bg-gray-800 text-white shadow-lg rounded-lg flex"
-              >
-                <img
-                  src={course.thumbnail?.url}
-                  alt={course.title}
-                  className="w-80 h-50 object-cover rounded-lg mr-4"
-                />
-                <div className="flex-1">
-                  <h2 className="text-lg font-semibold">{course.title}</h2>
-                  <p className="mt-2">{course.description}</p>
-                  <p className="mt-4">Category:- {course.category}</p>
-                  <button
-                    className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-                    onClick={() => handleCourseSelect(course)}
-                  >
-                    Manage Lectures
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      ) : (
-        <>
-          <h3 className="text-3xl text-white font-bold">
-            {selectedCourse.title}
-          </h3>
+    <>
+      {lectureVisible ? (
+        <div className="min-h-screen p-6 bg-gray-900">
           <ul className="my-2 space-y-3">
             {lectures.length > 0 ? (
               lectures.map((lecture, index) => (
@@ -213,7 +191,7 @@ const AddLecture = () => {
                   key={lecture._id}
                   className="flex items-center gap-4 p-4 border border-gray-700 rounded-lg bg-gray-800 text-gray-200 hover:bg-gray-700 transition cursor-pointer"
                   onClick={() =>
-                    navigate(`/media-player/${selectedCourse._id}/${index}`)
+                    navigate(`/media-player/${chossenCourse._id}/${index}`)
                   }
                 >
                   {/* Lecture Number
@@ -227,11 +205,11 @@ const AddLecture = () => {
                   <button
                     className="bg-blue-500 hover:bg-blue-600 cursor-pointer
                  text-white py-2 px-4 rounded "
-                 onClick={(e) => {
-                  e.stopPropagation(); 
-                  navigate(`/manage-lecture/${selectedCourse._id}/${lecture._id}`)
-                 }
-                }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLectureId(lecture._id);
+                      setLectureVisible(false);
+                    }}
                   >
                     Manage
                   </button>
@@ -334,16 +312,16 @@ const AddLecture = () => {
             <FaCheckCircle /> <span>Publish Course</span>
           </button> */}
           </div>
-
-          <button
-            onClick={() => setSelectedCourse(null)}
-            className="bg-blue-500 text-white px-4 py-2 my-4 mx-4 rounded-lg hover:bg-blue-600"
-          >
-            Back
-          </button>
-        </>
+        </div>
+      ) : (
+        <div>
+          <LectureManage lectureId={lectureId} />
+          <button className="bg-blue-400 px-6 py-2 rounded cursor-pointer"
+            onClick={()=>{setLectureVisible(true)}}
+          >back</button>
+        </div>
       )}
-    </div>
+    </>
   );
 };
 

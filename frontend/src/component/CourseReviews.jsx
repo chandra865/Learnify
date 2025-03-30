@@ -26,13 +26,13 @@ const Testimonials = ({ courseId }) => {
   }, [courseId]);
 
   return (
-    <div className="max-w-5xl mt-20 w-[700px]">
-      <h3 className="text-3xl font-bold text-center mb-8">Testimonials</h3>
+    <div className="max-w-5xl my-20 w-[700px]">
+      <h3 className="text-2xl font-bold mb-8">Testimonials</h3>
 
       {reviews?.length > 0 ? (
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
-          spaceBetween={30}
+          spaceBetween={20}
           slidesPerView={1} // On mobile, show 1 review
           breakpoints={{
             640: { slidesPerView: 1 }, // Small screens
@@ -45,43 +45,40 @@ const Testimonials = ({ courseId }) => {
           loop={true}
           className="w-full"
         >
-            
           {reviews.map(({ _id, userId, rating, comment }) => (
-
-
-
             <SwiperSlide key={_id}>
-              <div className="p-6  bg-gray-700 rounded-xl shadow-lg h-[300px]  border-gray-200 text-center">
-                
+              <div className="p-6 bg-gray-800  h-[200px] w-[200] text-center flex flex-col ">
                 {/* User Info */}
-                <div className="flex flex-col justify-center items-center w-full my-2">
+                <div className="flex items-center gap-2">
+                  {/* User Avatar */}
                   <img
-                    src={userId?.profilePicture?.url || "/default-avatar.png"}
+                    src={userId?.profilePicture?.url ||"https://cdn-icons-png.flaticon.com/512/149/149071.png"}
                     alt="User"
-                    className="w-15 h-15 rounded-full border-2 border-white-400"
+                    className="w-12 h-12 rounded-full border-2 border-white shadow-md"
                   />
 
-                  <div className="text-white my-2">
-                    <p className="font-semibold">{userId?.name}</p>
-                    {/* <p className="text-sm">{userId?.designation || "Student"}</p> */}
+                  {/* User Name & Rating */}
+                  <div className="text-white text-left">
+                    <span className="text-sm font-bold">
+                      {userId?.name}
+                    </span>
+                    <div className="flex">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <span
+                          key={i}
+                          className={`text-yellow-400 text-xl ${
+                            i < rating ? "" : "opacity-30"
+                          }`}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                {/* Star Rating */}
-                {/* <StarRating rating={rating|| 0} /> */}
-                <div className="flex justify-center mb-3">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span key={i} className={`text-yellow-400 text-xl ${i < rating ? "" : "opacity-30"}`}>
-                      ★
-                    </span>
-                  ))}
-                </div>
 
-                
-
-                {/* Review Comment */}
-                <p className="text-lg mb-4 italic">"{comment}"</p>
-
-                
+                {/* User Comment */}
+                <p className="italic mt-4 text-left text-sm">"{comment}"</p>
               </div>
             </SwiperSlide>
           ))}

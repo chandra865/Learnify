@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom"; // ✅ Import useNavigate
 import { Search } from "lucide-react";
+import CategoryMenu from "../component/CategoryMenu";
 
 const Navbar = () => {
   const { status } = useSelector((state) => state.user);
@@ -23,6 +24,7 @@ const Navbar = () => {
         <Link to="/" className="text-2xl font-bold text-white">
           MyApp
         </Link>
+
 
         {/* Search Bar */}
         <div className="flex items-center bg-gray-700 rounded-lg px-3 py-2 w-80">

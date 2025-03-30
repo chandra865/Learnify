@@ -1,19 +1,22 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useSelector } from "react-redux";
+import CreateQuiz from "./CreateQuiz";
 
-const LectureManage = () => {
-  const { courseId, lectureId } = useParams();
+const LectureManage = ({lectureId}) => {
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const fileInputRef = useRef(null);
   const [file, setFile] = useState(null);
+  const [isFormVisible, setIsFormVisible] = useState(true);
+  const courseId = useSelector((state) => state.course.selectedCourse._id);
 
   const fetchQuizzes = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/v1/quiz/get-all-quiz/${lectureId}`, {
+      const response = await axios.get(`http://localhost:8000/api/v1/quiz/get-all-quiz/${lectureId}?quizFor=${"lecture"}`, {
         withCredentials: true
       });
       setQuizzes(response.data.data);
@@ -171,15 +174,17 @@ const LectureManage = () => {
   };
 
   return (
+    <>{isFormVisible ?
+     (
     <div className="max-w-4xl mx-auto mt-6 p-6 bg-gray-900 text-white rounded-lg">
       <h2 className="text-2xl font-semibold">Lecture Quizzes & Assignments</h2>
 
-      {/* 📝 Quiz Management */}
+      {/*  Quiz Management */}
       <div className="mt-6">
         <h3 className="text-xl font-medium">📝 Quizzes</h3>
         <button
           className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md"
-          onClick={() => navigate(`/create-quiz/${courseId}/${lectureId}/${"lecture"}`)}
+          onClick={() => setIsFormVisible(false)}
         >
           Add Quiz
         </button>
@@ -241,7 +246,13 @@ const LectureManage = () => {
           ))
         )}
       </div>
+
     </div>
+    ) : (
+      <CreateQuiz courseId={courseId} lectureId={lectureId} type={"lecture"}/>
+      
+    )}
+    </>
   );
 };
 

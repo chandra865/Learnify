@@ -11,7 +11,6 @@ const lectureSchema = new Schema(
     quiz: {
       type: Schema.Types.ObjectId,
       ref: "Quiz",
-      required: true,
     },
     title: {
       type: String,

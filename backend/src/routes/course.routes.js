@@ -9,7 +9,7 @@ import {
   getAllCourses,
   getCourse,
   getLectures,
-  publishCourse,
+  changePublishStatus,
   updateCourse,
   courseRecommend,
   courseSearch
@@ -41,8 +41,8 @@ router.route("/all-courses").get(getAllCourses);
 router.route("/fetchcourse/:courseId").get(getCourse);
 router.route("/lectures/:courseId").get(getLectures);
 router
-  .route("/publish/:courseId")
-  .patch(verifyJWT, isAuthorized("instructor"), publishCourse);
+  .route("/change-publish-status/:courseId")
+  .patch(verifyJWT, isAuthorized("instructor"), changePublishStatus);
 
 router
     .route("/update-course/:courseId")

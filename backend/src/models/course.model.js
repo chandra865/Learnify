@@ -7,6 +7,11 @@ const courseSchema = new Schema(
       required: true,
     },
 
+    subtitle: {
+      type: String,
+      required: true,
+    },
+
     description: {
       type: String,
       required: true,
@@ -14,6 +19,18 @@ const courseSchema = new Schema(
 
     category: {
       type: String,
+      required: true,
+    },
+
+    subcategory: {
+      type: String,
+      required: true,
+    },
+
+    level: {
+      type: String,
+      enum: ["Beginner", "Intermediate", "Advanced", "AllLevels"],
+      default: "Beginner",
       required: true,
     },
 
