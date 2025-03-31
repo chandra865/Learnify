@@ -9,6 +9,7 @@ import StarRating from "../component/StarRating";
 import Recommendation from "../component/Recommendation";
 import CourseReviews from "../component/CourseReviews";
 import AddReview from "../component/AddReview";
+import { useDispatch } from "react-redux";
 
 import {
   FaTimes,
@@ -18,10 +19,12 @@ import {
   FaCalendarAlt,
   FaGlobe,
 } from "react-icons/fa";
+import { setSelectedLecture } from "../store/slice/selectedLectureSlice";
 
 const CourseLandingPage = () => {
   const user = useSelector((state) => state.user.userData);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const { course_id } = useParams();
   const [course, setCourse] = useState(null);
@@ -126,14 +129,14 @@ const CourseLandingPage = () => {
             {/* Course subtitle */}
             <h2 className="mt-3 text-xl leading-relaxed">{course?.subtitle}</h2>
 
-            <p className="mt-4 flex items-center text-lg">
+            <p className="mt-4 flex items-center text-sm">
               <FaUser className="text-white mr-2" /> Created by Shekhar
             </p>
-            <p className="flex items-center text-lg">
+            <p className="flex items-center text-sm">
               <FaCalendarAlt className="text-white mr-2" /> Last update{" "}
               {formattedDate}
             </p>
-            <p className="flex items-center text-lg">
+            <p className="flex items-center text-sm">
               <FaGlobe className="text-white mr-2" /> {course?.language}
             </p>
           
@@ -144,9 +147,9 @@ const CourseLandingPage = () => {
               </h2>
               <ul className="mt-2">
                 {course?.whatYouWillLearn?.map((item, index) => (
-                  <li key={index} className="flex items-center text-white">
+                  <li key={index} className="flex items-center text-white text-sm">
                     <span className="text-gray-500 mr-3">
-                      <FaCheck size={15} />
+                      <FaCheck size={12} />
                     </span>
                     {item}
                   </li>
@@ -155,15 +158,15 @@ const CourseLandingPage = () => {
             </div>
 
             {/* Course Includes */}
-            <div className="mt-6 bg-gray-800 p-8 rounded-lg shadow-md">
+            <div className="mt-6 bg-gray-800 p-8 ">
               <h2 className="text-2xl font-bold text-white mb-4">
                 This Course Includes
               </h2>
               <ul className="mt-2">
                 {course?.courseIncludes?.map((item, index) => (
-                  <li key={index} className="flex items-center text-white">
+                  <li key={index} className="flex text-sm items-center text-white">
                     <span className="text-gray-500 mr-3">
-                      <FaCheck size={15} />
+                      <FaCheck size={12} />
                     </span>
                     {item}
                   </li>
@@ -185,8 +188,11 @@ const CourseLandingPage = () => {
                   <li
                     key={lecture._id}
                     className="flex items-center px-4 py-4 border-white border-2  hover:bg-gray-700 transition cursor-pointer"
-                    onClick={() =>
-                      navigate(`/media-player/${course_id}/${index}`)
+                    onClick={() =>{
+                      navigate(`/media-player/${course_id}/${index}`);
+                      dispatch(setSelectedLecture(lecture));
+                    }
+                      
                     }
                   >
                     {/* Lecture Title */}

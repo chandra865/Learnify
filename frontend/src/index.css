@@ -1,1 +1,14 @@
 @import "tailwindcss";
+
+/* Custom Checkbox Styling */
+input[type="checkbox"]:checked::after {
+    content: "✔";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #2d2d2d; /* Dark Gray */
+    font-size: 14px;
+    font-weight: bold;
+  }
+  

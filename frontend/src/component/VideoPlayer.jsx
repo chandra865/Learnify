@@ -105,6 +105,8 @@ const VideoPlayer = ({ userId, courseId, lectureId, videoUrl }) => {
   return (
     <div>
       <video ref={videoRef} src={videoUrl} controls className="w-full" />
+
+      
       {isEnrolled && <GiveQuiz Id={lectureId} type={"lecture"} />}
 
       {/* Pop-up Modal */}

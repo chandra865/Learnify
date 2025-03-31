@@ -1,10 +1,18 @@
 import { Link } from "react-router-dom";
 import StarRating from "./StarRating";
+import { useDispatch } from "react-redux";
+import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 
 const CourseCard = ({ course, layout = "horizontal" }) => {
+
+  const dispatch = useDispatch();
+  
+
   return layout === "horizontal" ? (
     // Horizontal Card
-    <Link to={`/course/enroll/${course._id}`}>
+    <Link 
+    onClick={()=>dispatch(setSelectedCourse(course))}
+    to={`/course/enroll/${course._id}`}>
       <div className="flex py-4 px-2 border-b-2 hover:bg-gray-700 transform transition duration-300 hover:scale-102">
         {/* Course Image */}
         <div className="w-70 h-40 flex-shrink-0">
@@ -41,7 +49,9 @@ const CourseCard = ({ course, layout = "horizontal" }) => {
     </Link>
   ) : (
     // Vertical Card
-    <Link to={`/course/enroll/${course._id}`}>
+    <Link 
+    onClick={()=>dispatch(setSelectedCourse(course))}
+    to={`/course/enroll/${course._id}`}>
       <div className=" rounded-lg hover:bg-gray-700 transition transform hover:scale-105">
         {/* Course Image */}
         <div className="h-40 object-cover">
