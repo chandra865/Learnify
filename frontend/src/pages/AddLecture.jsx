@@ -51,6 +51,7 @@ const AddLecture = () => {
 
   const fecthLectures = async (course) => {
     try {
+      // console.log("courseId ", courseId);
       const response = await axios.get(
         `http://localhost:8000/api/v1/course/lectures/${courseId}`
       );
@@ -66,9 +67,18 @@ const AddLecture = () => {
   };
 
   useEffect(() => {
-    fetchCourse();
-    fecthLectures();
+    if(courseId){
+      fetchCourse();
+    }
+   
   }, [courseId]);
+
+  useEffect(()=>{
+    if(courseId){
+      fecthLectures();
+    }
+   
+  },[courseId])
 
   const uploadMedia = async (file, mediaType) => {
     const formData = new FormData();

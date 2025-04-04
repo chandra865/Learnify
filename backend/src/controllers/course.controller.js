@@ -205,14 +205,13 @@ const getAllCourses = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, course, "Courses fetched successfully"));
 });
 
-const getLectures = async (req, res) => {
-  try {
+const getLectures = asyncHandler (async (req, res) => {
     const { courseId } = req.params;
 
     const course = await Course.findById(courseId).populate("lecture");
 
     if (!course) {
-      return next(new ApiError(404, "Course not found"));
+      throw new ApiError(404, "Course not found");
     }
 
     return res
@@ -224,13 +223,10 @@ const getLectures = async (req, res) => {
           "Lectures fetched successfully"
         )
       );
-  } catch (error) {
-    next(new ApiError(500, error.message || "Server Error"));
-  }
-};
+});
 
-const changePublishStatus = async (req, res, next) => {
-  try {
+const changePublishStatus = asyncHandler( async (req, res, next) => {
+
     const { courseId } = req.params;
 
     const course = await Course.findById(courseId);
@@ -252,10 +248,8 @@ const changePublishStatus = async (req, res, next) => {
           "Course publish status updated successfully"
         )
       );
-  } catch (error) {
-    next(new ApiError(500, error.message || "Internal Server Error"));
-  }
-};
+  
+});
 
 
 const updateCourse = asyncHandler(async (req, res) => {

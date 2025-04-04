@@ -117,6 +117,27 @@ const CourseLandingPage = () => {
     }
   };
 
+  const handleCart = async (price) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/v1/cart/add-cart`,
+        {
+          userId : user._id, 
+          courseId: course_id,
+          price: price,
+        },
+        { withCredentials: true }
+      );
+      // console.log(response.data.data);
+      toast.success(response?.data?.message || "Added to cart successfully");
+    }
+    catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Error adding to cart";
+      toast.error(errorMessage);
+    }
+  }
+
   return (
     <div className="min-h-screen overflow-y-auto bg-gray-900">
       <div className="h-[300px] bg-gray-700 bg-gradient-to-t from-black via-black/50 to-black/0 transition-opacity">
@@ -289,7 +310,10 @@ const CourseLandingPage = () => {
               <p className="text-2xl font-bold text-white mt-4 mb-4">
                 ₹{course?.price}
               </p>
-              <button className="text-lg w-full px-6 py-3 border-1 rounded-[5px] font-bold cursor-pointer hover:bg-gray-600">
+              <button 
+              className="text-lg w-full px-6 py-3 border-1 rounded-[5px] font-bold cursor-pointer hover:bg-gray-600"
+              onClick={() =>handleCart(course?.price)}
+              >
                 Add to cart
               </button>
               <button

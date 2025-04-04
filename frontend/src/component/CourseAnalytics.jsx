@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 const CourseAnalytics = () => {
   const course = useSelector((state)=>state.course.selectedCourse);
 
-  const learners = course.enrolledStudents;
+  const learners = course.enrolledStudents.length;
   const revenue = learners*course.price;
   const avgRating = course.averageRating;
 

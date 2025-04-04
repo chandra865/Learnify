@@ -40,7 +40,7 @@ const EditCourse = () => {
 
   const courseId = useSelector((state) => state.course.selectedCourse._id);
   const dispatch = useDispatch();
-  console.log("courseId", courseId);
+  // console.log("courseId", courseId);
 
   const TITLE_LIMIT = 50;
   const SUBTITLE_LIMIT = 120;
@@ -309,7 +309,7 @@ const EditCourse = () => {
          {/* subtitle */}
          <div>
           <label className="block font-bold">
-            Course SubTitle ({SUBTITLE_LIMIT - subtitle.length} chars left)
+            Course SubTitle ({SUBTITLE_LIMIT - subtitle?.length} chars left)
           </label>
           <input
             type="text"

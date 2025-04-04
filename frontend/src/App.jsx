@@ -25,6 +25,7 @@ import Footer from "./component/Footer";
 import SearchPage from "./pages/SearchPage";
 import CourseManagment from "./pages/CourseManagment";
 import CourseLandingPage from "./pages/CourseLandingPage";
+import Cart from "./component/Cart";
 
 function App() {
   const dispatch = useDispatch();
@@ -63,6 +64,7 @@ function App() {
           <Route path="created" element={<CreatedCourses />} >
             <Route path="course-managment/:courseId" element={<CourseManagment/>} />
           </Route>
+          <Route path="cart" element={<Cart/>}/>
           <Route path="create" element={<CreateCourse />} />
           <Route path="AddLectures" element={<AddLecture/>} />
           <Route path="Earning" element={<Earning/>}/>

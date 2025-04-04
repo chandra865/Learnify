@@ -7,6 +7,7 @@ import CreateQuiz from "./CreateQuiz";
 
 const AddResources = () => {
   const course = useSelector((state) => state.course.selectedCourse);
+  // console.log("course", course)
   const dispatch = useDispatch();
 
   const [isFormVisible, setIsFormVisible] = useState(true);
@@ -24,7 +25,6 @@ const AddResources = () => {
         }
       );
       setQuizzes(response.data.data);
-      dispatch(setSelectedCourse(response.data.data));
     } catch (error) {
       console.error("Error fetching quizzes:", error);
     } finally {
@@ -35,6 +35,7 @@ const AddResources = () => {
   useEffect(() => { 
     fetchQuizzes();
 }, [course._id]);
+
   const handleAddQuiz = () => {
     // Logic to add a quiz
 

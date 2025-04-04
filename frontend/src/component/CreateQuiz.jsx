@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 import axios from "axios";
 
 const CreateQuiz = ({ courseId, lectureId, type }) => {
@@ -8,6 +10,28 @@ const CreateQuiz = ({ courseId, lectureId, type }) => {
   const [questions, setQuestions] = useState([
     { questionText: "", options: ["", "", "", ""], correctAnswerIndex: 0 },
   ]);
+
+  const dispatch = useDispatch();
+
+  
+  const fetchCourse = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/v1/course/fetchcourse/${courseId}`,
+        { withCredentials: true }
+      );
+      // console.log(response.data.data);
+      setChossenCourse(response.data.data);
+      dispatch(setSelectedCourse(response.data.data));
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        "Something went wrong! Please try again later.";
+
+      alert(errorMessage);
+    }
+    setLoading(false);
+  };
 
   //Handle question text change
   const handleQuestionChange = (index, value) => {
@@ -56,15 +80,16 @@ const CreateQuiz = ({ courseId, lectureId, type }) => {
     }));
 
     const quizData = { title:quizTitle, lectureId: lectureId, courseId:courseId, questions: formattedQuestions, passingScore: 50 };
-    console.log(quizData);
+    // console.log(quizData);
     try {
       const response = await axios.post(`http://localhost:8000/api/v1/quiz/create-quiz?quizFor=${type}`, quizData,
         {
             withCredentials:true,
         }
       );
-      console.log(response.data.data);
+      // console.log(response.data.data);
       alert("Quiz created successfully!");
+      fetchCourse();
       // if(type === "lecture"){
       //   navigate(`/manage-lecture/${courseId}/${lectureId}`);
       // }else{
