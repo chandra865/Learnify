@@ -155,6 +155,7 @@ const instructorCourses = asyncHandler(async (req, res) => {
     );
 });
 
+//not using because we do this is payment
 const courseEnrollment = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
 

@@ -3,6 +3,7 @@ import EditCourse from "./EditCourse";
 // import PublishCourse from "./PublishCourse";
 // import AddResources from "./AddResources";
 import AddLecture from "./AddLecture";
+// import Coupon from "./Coupon";
 // import CourseAnalytics from "./CourseAnalytics";
 // import CommentsFeedback from "./CommentsFeedback";
 
@@ -21,6 +22,7 @@ const CourseManagment = () => {
     { key: "publish", label: "Publish Course" },
     { key: "resources", label: "Add Resources" },
     { key: "lecture", label: "Add Lecture" },
+    { key: "coupon", label: "Add Coupon" },
     { key: "analytics", label: "Course Analytics" },
     { key: "feedback", label: "Comments & Feedback" },
   ];
@@ -35,6 +37,9 @@ const CourseManagment = () => {
         return <AddResources />;
       case "lecture":
         return <AddLecture />;
+      case "coupon":
+        return <Coupon />;
+      // Uncomment the following lines if you have these components
       case "analytics":
         return <CourseAnalytics />;
       case "feedback":

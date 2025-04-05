@@ -13,6 +13,7 @@ import CommentsFeedback from "../component/CommentsFeedback";
 import { useDispatch } from "react-redux";
 import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 import { FaArrowLeft } from "react-icons/fa";
+import Coupon from "../component/Coupon";
 
 
 const CreatedCourses = () => {
@@ -49,6 +50,7 @@ const CreatedCourses = () => {
     { key: "edit", label: "Edit Course" },
     { key: "lecture", label: "Add Lecture" },
     { key: "resources", label: "Add Resources" },
+    { key: "coupon", label: "Add Coupon" },
     { key: "publish", label: "Publish Course" },
     { key: "analytics", label: "Course Analytics" },
     { key: "feedback", label: "Comments & Feedback" },
@@ -72,6 +74,8 @@ const CreatedCourses = () => {
         return <AddResources/>;
       case "lecture":
         return <AddLecture/>;
+      case "coupon":
+        return <Coupon/>;
       case "analytics":
         return <CourseAnalytics/>;
       case "feedback":

@@ -11,6 +11,7 @@ import CourseReviews from "../component/CourseReviews";
 import AddReview from "../component/AddReview";
 import { useDispatch } from "react-redux";
 
+
 import {
   FaTimes,
   FaPlay,
@@ -36,6 +37,8 @@ const CourseLandingPage = () => {
   const [reviewComment, setReviewComment] = useState(null);
   const [courseProgress, setCourseProgress] = useState(false);
   const [isCourseCompleted, setIsCourseCompleted] = useState(false);
+
+  console.log(isEnrolled);
 
   const date = new Date(course?.updatedAt);
   const formattedDate = date.toLocaleDateString("en-US", {
@@ -70,6 +73,7 @@ const CourseLandingPage = () => {
     fetchCourse();
   }, [course_id]);
 
+
   useEffect(() => {
     const fetchLectures = async () => {
       try {
@@ -100,22 +104,23 @@ const CourseLandingPage = () => {
     setShowPreview(true);
   };
 
-  const handleEnroll = async () => {
-    try {
-      const response = await axios.post(
-        `http://localhost:8000/api/v1/course/enrolle/${course_id}`,
-        {},
-        { withCredentials: true }
-      );
-      setIsEnrolled(true);
-      toast.success(response?.data?.message || "Enrollment Successfull");
-    } catch (error) {
-      // console.log(error.response?.data);
-      const errorMessage =
-        error.response?.data?.message || "Error in enrollment";
-      toast.error(errorMessage);
-    }
-  };
+  // const handleEnroll = async () => {
+  //   // try {
+  //   //   const response = await axios.post(
+  //   //     `http://localhost:8000/api/v1/course/enrolle/${course_id}`,
+  //   //     {},
+  //   //     { withCredentials: true }
+  //   //   );
+  //   //   setIsEnrolled(true);
+  //   //   toast.success(response?.data?.message || "Enrollment Successfull");
+  //   // } catch (error) {
+  //   //   // console.log(error.response?.data);
+  //   //   const errorMessage =
+  //   //     error.response?.data?.message || "Error in enrollment";
+  //   //   toast.error(errorMessage);
+  //   // }
+
+  // };
 
   const handleCart = async (price) => {
     try {
@@ -317,7 +322,9 @@ const CourseLandingPage = () => {
                 Add to cart
               </button>
               <button
-                onClick={handleEnroll}
+                onClick={() => {
+                    navigate(`/payment/${user._id}/${course_id}`);
+                }}
                 disabled={isEnrolled}
                 className={`w-full px-6 py-3 text-lg font-bold mt-2 rounded-[5px] text-white transition ${
                   isEnrolled

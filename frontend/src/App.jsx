@@ -26,6 +26,7 @@ import SearchPage from "./pages/SearchPage";
 import CourseManagment from "./pages/CourseManagment";
 import CourseLandingPage from "./pages/CourseLandingPage";
 import Cart from "./component/Cart";
+import Payment from "./component/Payment";
 
 function App() {
   const dispatch = useDispatch();
@@ -70,6 +71,8 @@ function App() {
           <Route path="Earning" element={<Earning/>}/>
           
       </Route>
+
+      <Route path="/payment/:userId/:courseId" element={<Payment/>} />
       <Route path="/add-lecture/:courseId" element={<LectureForm/>} />
       <Route path="/media-player/:courseId/:index" element={<MediaPlayer />} />
       <Route path="/edit-profile" element={<EditProfile/>}/>
