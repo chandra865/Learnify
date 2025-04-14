@@ -4,10 +4,10 @@ import jwt from "jsonwebtoken";
 
 const userSchema = new Schema(
   {
-    
+    googleId: { type: String, unique: true, sparse: true },
     profilePicture: {
-      publicId: { type: String,}, 
-      url: { type: String,},
+      publicId: { type: String },
+      url: { type: String },
     },
     name: {
       type: String,
@@ -20,7 +20,6 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
     },
     bio: {
       type: String,
@@ -31,28 +30,17 @@ const userSchema = new Schema(
       enum: ["student", "instructor", "admin"],
       required: true,
     },
+    coursesEnrolled:{
+      type:Number,
+    },
     refreshToken: {
       type: String,
     },
 
-    enrolledCourses: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Course",
-      },
-    ],
-
-    createdCourses: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Course",
-      },
-    ],
-
-    expertise:[
+    expertise: [
       {
         type: String,
-      }
+      },
     ],
 
     education: [{ type: mongoose.Schema.Types.ObjectId, ref: "Education" }],
@@ -64,7 +52,7 @@ const userSchema = new Schema(
       website: String,
       instagram: String,
       youtube: String,
-    }
+    },
   },
   {
     timestamps: true,
@@ -72,7 +60,8 @@ const userSchema = new Schema(
 );
 
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+  // If no password is set (OAuth users), skip hashing
+  if (!this.isModified("password") || !this.password) return next();
 
   this.password = await bcrypt.hash(this.password, 10);
   next();
@@ -87,7 +76,7 @@ userSchema.methods.generateAccessToken = function () {
     {
       _id: this._id,
       email: this.email,
-      role: this.role
+      role: this.role,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {

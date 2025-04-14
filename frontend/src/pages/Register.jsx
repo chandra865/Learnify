@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import GoogleLogin from "../component/GoogleLogin";
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -35,13 +36,13 @@ const Register = () => {
   };
   
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-        <h2 className="text-2xl font-bold text-center mb-6">Register</h2>
+    <div className="flex justify-center items-center w-full min-h-screen bg-gray-600 text-white">
+      <div className="bg-gray-900 p-6 mb-20 rounded shadow-lg w-90 text-white">
+      <h2 className="text-2xl font-bold text-center mb-6">Register</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name Field */}
-          <div>
-            <label className="block text-gray-700 font-medium">Name</label>
+          {/* <div>
+            <label className="block font-medium">Name</label>
             <input
               type="text"
               name="name"
@@ -51,11 +52,11 @@ const Register = () => {
               placeholder="Enter your name"
               required
             />
-          </div>
+          </div> */}
 
           {/* Email Field */}
           <div>
-            <label className="block text-gray-700 font-medium">Email</label>
+            <label className="block  font-medium">Email</label>
             <input
               type="email"
               name="email"
@@ -69,7 +70,7 @@ const Register = () => {
 
           {/* Password Field */}
           <div>
-            <label className="block text-gray-700 font-medium">Password</label>
+            <label className="block  font-medium">Password</label>
             <input
               type="password"
               name="password"
@@ -82,7 +83,7 @@ const Register = () => {
           </div>
 
           {/* Role (Enum Selection) */}
-          <div>
+          {/* <div>
             <label className="block text-gray-700 font-medium">Role</label>
             <select
               name="role"
@@ -97,7 +98,7 @@ const Register = () => {
               <option value="student">student</option>
               <option value="instructor">instructor</option>
             </select>
-          </div>
+          </div> */}
 
           {/* Submit Button */}
           <button
@@ -107,6 +108,9 @@ const Register = () => {
             Register
           </button>
         </form>
+
+        <p className="text-center text-lg text-gray-300 my-2">or</p>
+        <GoogleLogin/>
       </div>
     </div>
   );

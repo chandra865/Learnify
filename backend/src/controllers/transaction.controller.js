@@ -6,6 +6,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
+import { Enrollment } from "../models/enrollment.model.js";
 
 const createOrder = asyncHandler(async (req, res) => {
   const { amount } = req.body;
@@ -33,8 +34,6 @@ const createOrder = asyncHandler(async (req, res) => {
 });
 
 const verifyPayment = asyncHandler(async (req, res) => {
-  console.log("verifyPayment called");
-  console.log(req.body);
   const {
     razorpay_order_id,
     razorpay_payment_id,
@@ -90,22 +89,33 @@ const verifyPayment = asyncHandler(async (req, res) => {
     const course = await Course.findById(courseId);
     if (!course) throw new ApiError(404, "course not found");
 
-    if (course.enrolledStudents.includes(userId)) {
+    const existing = await Enrollment.findOne({
+      user: userId,
+      course: courseId,
+    });
+
+    if (existing) {
       throw new ApiError(400, "You are already enrolled in this course");
     }
 
-    await Course.findByIdAndUpdate(
-      courseId,
-      {
-        $push: { enrolledStudents: userId },
-      },
-      { new: true, runValidators: false }
-    );
+    // Create new enrollment
+    const enrollment = new Enrollment({
+      user: userId,
+      course: courseId,
+    });
 
-    const user = await User.findById(userId);
-      if (!user) throw new ApiError(404, "user not found");
-      user.enrolledCourses.push(courseId);
-      await user.save();
+    await enrollment.save();
+
+    if (!enrollment) {
+      throw new ApiError(404, "enrollment not created");
+    }
+
+    await Course.findByIdAndUpdate(courseId, {
+      $inc: { studentenrolled: 1 },
+    });
+    await User.findByIdAndUpdate(userId, {
+      $inc: { coursesEnrolled: 1 },
+    });
   }
 
   return res

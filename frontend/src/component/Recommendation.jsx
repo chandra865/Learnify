@@ -6,9 +6,11 @@ import { FaStar, FaUser } from "react-icons/fa";
 
 const Recommendation = ({ courseId }) => {
   const [courses, setCourses] = useState([]);
+  const [enrolledStu, setEnrolledStu] = useState([]);
 
   useEffect(() => {
     const fetchRecommendations = async () => {
+
       try {
         const response = await axios.get(
           `http://localhost:8000/api/v1/course/recommend/${courseId}`
@@ -63,7 +65,7 @@ const Recommendation = ({ courseId }) => {
                   {/* Enrolled Students */}
                   <span className="flex items-center gap-1 text-sm text-gray-300 text-sm">
                     <FaUser size={14} />
-                    {course.enrolledStudents.length}
+                    {course.studentenrolled}
                   </span>
 
                   {/* Price */}

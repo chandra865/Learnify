@@ -13,12 +13,13 @@ const uploadMedia = asyncHandler(async (req, res) => {
     throw new ApiError(400, "No files found");
   }
 
+  
   // Upload file to Cloudinary
   const mediaResponse = await uploadToCloudinary(
     req.files.media,
     mediaType === "profilepic" ? "thumbnail" : mediaType
   );
-
+  //console.log(mediaResponse);
   if (!mediaResponse.publicId || !mediaResponse.url) {
     throw new ApiError(500, "Something went wrong while uploading the media");
   }

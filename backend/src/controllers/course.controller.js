@@ -81,11 +81,11 @@ const createCourse = asyncHandler(async (req, res) => {
   }
 
   // Associate course with the instructor
-  const user = await User.findById(instructor);
-  if (user) {
-    user.createdCourses.push(course._id);
-    await user.save();
-  }
+  // const user = await User.findById(instructor);
+  // if (user) {
+  //   user.createdCourses.push(course._id);
+  //   await user.save();
+  // }
 
   return res
     .status(201)
@@ -144,15 +144,17 @@ const addLecture = asyncHandler(async (req, res) => {
 });
 
 const instructorCourses = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id).populate("createdCourses");
+  const instructorId = req.user._id;
 
-  if (!user) throw new ApiError(404, "User not found");
+  const courses = await Course.find({ instructor: instructorId });
+
+  if (!courses || courses.length === 0) {
+    throw new ApiError(404, "No courses found for this instructor");
+  }
 
   return res
     .status(200)
-    .json(
-      new ApiResponse(200, user.createdCourses, "Courses fetched successfully")
-    );
+    .json(new ApiResponse(200, courses, "Courses fetched successfully"));
 });
 
 //not using because we do this is payment
@@ -226,7 +228,7 @@ const getLectures = asyncHandler (async (req, res) => {
       );
 });
 
-const changePublishStatus = asyncHandler( async (req, res, next) => {
+const changePublishStatus = asyncHandler( async (req, res) => {
 
     const { courseId } = req.params;
 

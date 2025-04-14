@@ -1,13 +1,22 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom"; // ✅ Import useNavigate
+import { Link, useNavigate, } from "react-router-dom"; 
 import { Search } from "lucide-react";
+import { useDispatch } from "react-redux";
 import CategoryMenu from "../component/CategoryMenu";
+import { toast } from "react-toastify";
+import { login } from "../store/slice/userSlice";
+import axios from "axios";
+
 
 const Navbar = () => {
-  const { status } = useSelector((state) => state.user);
+  const { status,userData } = useSelector((state) => state.user);
   const [searchQuery, setSearchQuery] = useState("");
-  const navigate = useNavigate(); // ✅ Initialize useNavigate
+  const [switching, setSwitching] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const user = useSelector((state) => state.user.userData);
 
   // Handle search submit on Enter
   const handleSearch = (e) => {
@@ -17,11 +26,34 @@ const Navbar = () => {
     }
   };
 
+
+  const handleRoleSwitch = async () => {
+    const newRole = user.role === "student" ? "instructor" : "student";
+    try {
+      setSwitching(true);
+      const response = await axios.put(
+        "http://localhost:8000/api/v1/user/switch-user-role",
+        { newRole },
+        { withCredentials: true }
+      );
+      dispatch(login(response.data.data));
+      newRole === "instructor" ? navigate("/dashboard"):navigate("/");
+      toast.success(`Switched to ${newRole} role`);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to switch role");
+      
+    } finally {
+      setSwitching(false);
+    }
+  };
   return (
     <nav className="bg-gray-800 text-white p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo */}
-        <Link to="/" className="text-2xl font-bold text-white">
+        <Link 
+         to={user?.role === "instructor" ? "/dashboard" : "/"} 
+        className="text-2xl font-bold text-white">
           MyApp
         </Link>
 
@@ -46,7 +78,7 @@ const Navbar = () => {
               <li>
                 <Link
                   to="/register"
-                  className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition"
+                  className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition"
                 >
                   Register
                 </Link>
@@ -54,7 +86,7 @@ const Navbar = () => {
               <li>
                 <Link
                   to="/login"
-                  className="px-4 py-2 bg-green-600 rounded-lg hover:bg-green-500 transition"
+                  className="px-4 py-2  bg-blue-600 rounded hover:bg-blue-700 transition"
                 >
                   Login
                 </Link>
@@ -63,9 +95,25 @@ const Navbar = () => {
           ) : (
             <>
               <li>
+                <button
+                  onClick={handleRoleSwitch}
+                  disabled={switching}
+                  title={
+                    user?.role === "instructor"
+                      ? "Switch to the student view here - get back to the courses you’re taking."
+                      : ""
+                  }
+                  className="px-3 py-2 rounded underline cursor-pointer hover:bg-gray-500 transition text-sm"
+                >
+                  {switching
+                    ? "Switching..."
+                    : `${user?.role === "student" ? "Instructor" : "Student"}`}
+                </button>
+              </li>
+              <li>
                 <Link
                   to="/dashboard"
-                  className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition"
+                  className="px-4 py-2  bg-blue-600 rounded hover:bg-blue-700 transition"
                 >
                   Dashboard
                 </Link>
@@ -73,7 +121,7 @@ const Navbar = () => {
               <li>
                 <Link
                   to="/logout"
-                  className="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-500 transition"
+                  className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition"
                 >
                   Logout
                 </Link>

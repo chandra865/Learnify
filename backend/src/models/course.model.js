@@ -46,17 +46,14 @@ const courseSchema = new Schema(
       required: true,
     },
 
-    lecture: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Lecture",
-      },
-    ],
+    studentenrolled:{
+        type:Number,
+    },
 
-    enrolledStudents: [
+    sections: [
       {
-        type: Schema.Types.ObjectId,
-        ref: "User",
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Section",
       },
     ],
 

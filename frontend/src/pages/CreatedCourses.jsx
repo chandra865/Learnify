@@ -14,6 +14,7 @@ import { useDispatch } from "react-redux";
 import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 import { FaArrowLeft } from "react-icons/fa";
 import Coupon from "../component/Coupon";
+import CourseCurriculum from "../component/CourseCurriculum";
 
 
 const CreatedCourses = () => {
@@ -34,6 +35,7 @@ const CreatedCourses = () => {
           "http://localhost:8000/api/v1/course/inst-courses",
           { withCredentials: true }
         );
+        console.log(response.data.data);
         setCourses(response.data.data);
       } catch (err) {
         toast.error("Failed to fetch courses");
@@ -73,7 +75,7 @@ const CreatedCourses = () => {
       case "resources":
         return <AddResources/>;
       case "lecture":
-        return <AddLecture/>;
+        return <CourseCurriculum/>;
       case "coupon":
         return <Coupon/>;
       case "analytics":

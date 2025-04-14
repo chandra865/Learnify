@@ -10,7 +10,7 @@ import Recommendation from "../component/Recommendation";
 import CourseReviews from "../component/CourseReviews";
 import AddReview from "../component/AddReview";
 import { useDispatch } from "react-redux";
-
+import CourseContent from "../component/CourseContent";
 
 import {
   FaTimes,
@@ -29,7 +29,7 @@ const CourseLandingPage = () => {
 
   const { course_id } = useParams();
   const [course, setCourse] = useState(null);
-  const [lectures, setLectures] = useState([]);
+  const [section, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -47,11 +47,23 @@ const CourseLandingPage = () => {
   });
 
   useEffect(() => {
-    if (user?.enrolledCourses?.includes(course_id)) {
-      setIsEnrolled(true);
-    } else {
-      setIsEnrolled(false);
+    const checkEnrollment = async () => {
+      try{
+        const response = await axios.get(
+          `http://localhost:8000/api/v1/enrollment/check-user-enrollment/${user._id}/${course_id}`,
+          {
+            withCredentials: true,
+          }
+        );
+  
+        const status = response.data.data.enrollmentStatus;
+        setIsEnrolled(status);
+      }catch(error){
+        console.log(error);
+      }
+      
     }
+    checkEnrollment();
   }, [user, course_id]);
 
   useEffect(() => {
@@ -73,30 +85,43 @@ const CourseLandingPage = () => {
     fetchCourse();
   }, [course_id]);
 
-
   useEffect(() => {
-    const fetchLectures = async () => {
+    // const fetchLectures = async () => {
+    //   try {
+    //     const response = await axios.get(
+    //       `http://localhost:8000/api/v1/course/lectures/${course_id}`,
+    //       { withCredentials: true }
+    //     );
+    //     const lectureData = response.data.data.lectures;
+    //     if (isEnrolled) {
+    //       setLectures(lectureData);
+    //     } else {
+    //       setLectures(lectureData.filter((lecture) => lecture.isFree === true));
+    //     }
+    //   } catch (err) {
+    //     const errorMessage =
+    //       error.response?.data?.message ||
+    //       "something went wrong while fetching course";
+    //     alert(errorMessage);
+    //   }
+    // };
+
+    const fetchSection = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/course/lectures/${course_id}`,
-          { withCredentials: true }
+          `http://localhost:8000/api/v1/section//get-section-by-course/${course_id}`,
+          {
+            withCredentials: true,
+          }
         );
-        const lectureData = response.data.data.lectures;
-        if (isEnrolled) {
-          setLectures(lectureData);
-        } else {
-          setLectures(lectureData.filter((lecture) => lecture.isFree === true));
-        }
-      } catch (err) {
-        const errorMessage =
-          error.response?.data?.message ||
-          "something went wrong while fetching course";
-        alert(errorMessage);
+        setSections(response.data.data);
+        console.log(response);
+      } catch (error) {
+        console.log(error);
       }
     };
-
     if (isEnrolled !== null) {
-      fetchLectures();
+      fetchSection();
     }
   }, [isEnrolled, course_id]);
 
@@ -127,7 +152,7 @@ const CourseLandingPage = () => {
       const response = await axios.post(
         `http://localhost:8000/api/v1/cart/add-cart`,
         {
-          userId : user._id, 
+          userId: user._id,
           courseId: course_id,
           price: price,
         },
@@ -135,13 +160,12 @@ const CourseLandingPage = () => {
       );
       // console.log(response.data.data);
       toast.success(response?.data?.message || "Added to cart successfully");
-    }
-    catch (error) {
+    } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error adding to cart";
       toast.error(errorMessage);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen overflow-y-auto bg-gray-900">
@@ -165,80 +189,50 @@ const CourseLandingPage = () => {
             <p className="flex items-center text-sm">
               <FaGlobe className="text-white mr-2" /> {course?.language}
             </p>
-          
+
             {/* What You Will Learn */}
             <div className="mt-6 bg-gray-800 p-8">
               <h2 className="text-2xl font-bold text-gray-200">
                 What You'll Learn
               </h2>
-              <ul className="mt-2">
+              <ul className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                 {course?.whatYouWillLearn?.map((item, index) => (
-                  <li key={index} className="flex items-center text-white text-sm">
-                    <span className="text-gray-500 mr-3">
+                  <li
+                    key={index}
+                    className="flex items-start text-white text-sm"
+                  >
+                    <div className="pt-1 text-gray-500 mr-2">
                       <FaCheck size={12} />
-                    </span>
-                    {item}
+                    </div>
+                    <div className="text-sm leading-snug">{item}</div>
                   </li>
                 ))}
               </ul>
             </div>
 
             {/* Course Includes */}
-            <div className="mt-6 bg-gray-800 p-8 ">
+            <div className="mt-6 bg-gray-800 p-8">
               <h2 className="text-2xl font-bold text-white mb-4">
                 This Course Includes
               </h2>
-              <ul className="mt-2">
+              <ul className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                 {course?.courseIncludes?.map((item, index) => (
-                  <li key={index} className="flex text-sm items-center text-white">
-                    <span className="text-gray-500 mr-3">
+                  <li
+                    key={index}
+                    className="flex items-start text-sm text-white"
+                  >
+                    <div className="pt-1 text-gray-500 mr-2">
                       <FaCheck size={12} />
-                    </span>
-                    {item}
+                    </div>
+                    <div className="text-sm leading-snug">{item}</div>
                   </li>
                 ))}
               </ul>
             </div>
 
             {/* Lectures List */}
-            <div>
-            <h2 className="mt-10 mb-6 text-2xl font-bold">Course Lectures</h2>
 
-            <ul className="">
-              <p className="">
-                {course?.lecture.length} Lecture |{" "}
-                {course?.enrolledStudents.length} Learners
-              </p>
-              {lectures.length > 0 ? (
-                lectures.map((lecture, index) => (
-                  <li
-                    key={lecture._id}
-                    className="flex items-center px-4 py-4 border-white border-2  hover:bg-gray-700 transition cursor-pointer"
-                    onClick={() =>{
-                      navigate(`/media-player/${course_id}/${index}`);
-                      dispatch(setSelectedLecture(lecture));
-                    }
-                      
-                    }
-                  >
-                    {/* Lecture Title */}
-                    <p className="flex-1 text-lg font-medium">
-                      {lecture.title}
-                    </p>
-
-                    {/* Play Icon */}
-                    <span className="text-gray-400 group-hover:text-white transition">
-                      <FaPlay size={16} />
-                    </span>
-                  </li>
-                ))
-                
-              ) : (
-                <p className="text-gray-500">No lectures available</p>
-              )}
-            </ul>
-            </div>
-
+            <CourseContent courseId={course_id} />
             <div className="mt-10">
               <p className="text-xl font-bold mb-4">Description</p>
               <p className="text-sm">{course?.description}</p>
@@ -311,19 +305,25 @@ const CourseLandingPage = () => {
 
             {/* Price & Enroll Button */}
             <div className="p-4">
-            <StarRating rating={course?.averageRating || 0} />
+              <StarRating rating={course?.averageRating || 0} />
               <p className="text-2xl font-bold text-white mt-4 mb-4">
                 ₹{course?.price}
               </p>
-              <button 
-              className="text-lg w-full px-6 py-3 border-1 rounded-[5px] font-bold cursor-pointer hover:bg-gray-600"
-              onClick={() =>handleCart(course?.price)}
+              <button
+                disabled={isEnrolled}
+                className={`text-lg w-full px-6 py-3 border-1 rounded-[5px] font-bold  hover:bg-gray-600
+                    ${isEnrolled
+                    ? "cursor-not-allowed":"cursor-pointer"
+                    }
+                  `}
+                onClick={() => handleCart(course?.price)}
+                
               >
                 Add to cart
               </button>
               <button
                 onClick={() => {
-                    navigate(`/payment/${user._id}/${course_id}`);
+                  navigate(`/payment/${user._id}/${course_id}`);
                 }}
                 disabled={isEnrolled}
                 className={`w-full px-6 py-3 text-lg font-bold mt-2 rounded-[5px] text-white transition ${

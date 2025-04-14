@@ -5,6 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Education } from "../models/Education.js";
 import jwt from "jsonwebtoken";
 import { Experience } from "../models/Experience.js";
+import passport from "passport";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -25,12 +26,17 @@ const generateAccessAndRefreshToken = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const {email, password} = req.body;
   //    console.log(req.body);
   // check for field are not empty
-  if ([name, email, password, role].some((field) => field?.trim() === "")) {
+  if ([email, password].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "All field are required");
   }
+
+  //fetching name form email
+  let rawName = email.split("@")[0];
+  let cleanName = rawName.replace(/[^a-zA-Z]/g, "");
+  let name = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
 
   //check user exist or not
   const existedUser = await User.findOne({ email });
@@ -44,7 +50,7 @@ const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password,
-    role,
+    role : "student",
   });
 
   //   console.log(user);
@@ -61,6 +67,38 @@ const registerUser = asyncHandler(async (req, res) => {
     .status(201)
     .json(new ApiResponse(200, createdUser, "User Registered Successfully"));
 });
+
+const switchUserRole = asyncHandler( async (req, res) => {
+
+    const userId = req.user._id;
+    const { newRole } = req.body;
+
+    if (!["student", "instructor"].includes(newRole)) {
+      throw new ApiError(400,"Invalid role switch request");
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new ApiError(404,"User not found");
+    }
+
+    if (user.role === "admin") {
+      throw new ApiError(403,"Cannot change role of admin");
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { role: newRole },
+      { new: true, runValidators: true }
+    );
+
+    res
+    .status(200)
+    .json(new ApiResponse(200,updatedUser,`Role changed to ${newRole}`))
+
+});
+
 
 const getCurrUser = asyncHandler(async (req, res) => {
   const user = req.user;
@@ -81,6 +119,33 @@ const getCurrUser = asyncHandler(async (req, res) => {
   );
 });
 
+const googleAuth = passport.authenticate("google", {
+  scope: ["profile", "email"],
+});
+
+const googleAuthCallback = asyncHandler( async (req, res) => {
+
+  const {user} = req.user;
+  const {accessToken,refreshToken}  = req.user.tokens; 
+  if (!user || !accessToken || !refreshToken) {
+    return res.redirect(`${process.env.CORS_ORIGIN}/login`); //?error=AuthenticationFailed
+  }
+  // if (!user || !accessToken || !refreshToken) {
+  //   throw new ApiError(401,`Authentication failed ${user} ${accessToken} ${refreshToken}}`);
+  // }
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  res
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    
+  return res.redirect(`${process.env.CORS_ORIGIN}`);
+});
+
 const loginUser = asyncHandler(async (req, res) => {
   //req body -> data
   //username or email
@@ -89,9 +154,9 @@ const loginUser = asyncHandler(async (req, res) => {
   //access and refresh token
   //send cookie
 
-  const { role, email, password } = req.body;
+  const {email, password } = req.body;
 
-  if (!role || !email || !password) {
+  if (!email || !password) {
     throw new ApiError(400, "role, email and password is required");
   }
 
@@ -108,9 +173,9 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   //if role not matched
-  if (user.role !== role) {
-    throw new ApiError(401, "Invalid User role");
-  }
+  // if (user.role !== role) {
+  //   throw new ApiError(401, "Invalid User role");
+  // }
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     user._id
@@ -557,5 +622,10 @@ export {
   deleteExperience,
   addExpertise,
   deleteExpertise,
-  getExperties
+  getExperties,
+  googleAuthCallback,
+  googleAuth,
+  generateAccessAndRefreshToken,
+  switchUserRole
+
 };

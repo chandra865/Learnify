@@ -2,11 +2,10 @@ import mongoose, { Schema } from "mongoose";
 
 const lectureSchema = new Schema(
   {
-    course: {
-      type: Schema.Types.ObjectId,
-      ref: "Course",
+    sectionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Section",
       required: true,
-      index: true, // Faster queries
     },
     quiz: {
       type: Schema.Types.ObjectId,
@@ -28,7 +27,10 @@ const lectureSchema = new Schema(
       default: 0,
       min: 0,
     },
-
+    order:{
+      type:Number,
+      required:true,
+    },
     isFree: {
       type: Boolean,
       default: false, // Default is paid

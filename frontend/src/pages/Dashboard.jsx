@@ -28,7 +28,6 @@ const Dashboard = () => {
         { title: "Profile", path: "/dashboard/profile", icon: <FaUser /> },
         { title: "Created Courses", path: "/dashboard/created", icon: <FaBook /> },
         { title: "Create Course", path: "/dashboard/create", icon: <FaPlusCircle /> },
-        { title: "Add Lectures", path: "/dashboard/AddLectures", icon: <FaPlusCircle /> },
         { title: "Earning", path: "/dashboard/Earning", icon: <FaDollarSign /> },
         { title: "Logout", path: "/logout", icon: <FaSignOutAlt /> },
       ];

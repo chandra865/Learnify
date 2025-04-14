@@ -89,12 +89,9 @@ const CreateQuiz = ({ courseId, lectureId, type }) => {
       );
       // console.log(response.data.data);
       alert("Quiz created successfully!");
-      fetchCourse();
-      // if(type === "lecture"){
-      //   navigate(`/manage-lecture/${courseId}/${lectureId}`);
-      // }else{
-      //   navigate(`/dashboard/created`);
-      // }
+      //fetchCourse();
+      
+      navigate(`/dashboard/created`);
       
     } catch (error) { 
       console.error("Error creating quiz:", error);

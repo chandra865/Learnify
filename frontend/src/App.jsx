@@ -27,6 +27,9 @@ import CourseManagment from "./pages/CourseManagment";
 import CourseLandingPage from "./pages/CourseLandingPage";
 import Cart from "./component/Cart";
 import Payment from "./component/Payment";
+import CustomVideoPlayer from "./component/CustomVideoPlayer";
+import CourseCurriculum from "./component/CourseCurriculum";
+import LectureManage from "./component/LectureManage";
 
 function App() {
   const dispatch = useDispatch();
@@ -73,11 +76,17 @@ function App() {
       </Route>
 
       <Route path="/payment/:userId/:courseId" element={<Payment/>} />
+      <Route path="/videoplayer" element={<CustomVideoPlayer  src="
+      https://cdn.pixabay.com/video/2020/10/19/52849-473336269_large.mp4" 
+        poster="https://example.com/thumbnail.jpg" />} />
       <Route path="/add-lecture/:courseId" element={<LectureForm/>} />
       <Route path="/media-player/:courseId/:index" element={<MediaPlayer />} />
       <Route path="/edit-profile" element={<EditProfile/>}/>
       <Route path="/search" element={<SearchPage/>} />
+      <Route path="/curri" element={<CourseCurriculum/>}/>
+      <Route path="/lecturemanage/:lectureId" element={<LectureManage/>}/>
       <Route path="/logout" element={<Logout/>} />
+
     </Routes>
     {/* { !location.pathname.startsWith("/dashboard") && <Footer /> } */}
     {/* Toast Notification Container */}

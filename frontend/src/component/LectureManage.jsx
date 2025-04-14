@@ -4,7 +4,8 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import CreateQuiz from "./CreateQuiz";
 
-const LectureManage = ({lectureId}) => {
+const LectureManage = () => {
+  const {lectureId} = useParams();
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
   const [assignments, setAssignments] = useState([]);

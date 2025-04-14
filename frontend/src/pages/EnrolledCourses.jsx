@@ -19,7 +19,7 @@ const EnrolledCourses = () => {
     const fetchEnrolledCourses = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/course/stu-courses`,
+          `http://localhost:8000/api/v1/enrollment/get-enrolled-courses/${userId}`,
           { withCredentials: true }
         );
 
