@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp, PlayCircle, Lock, Unlock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-const CourseContent = ({ courseId }) => {
+const CourseContent = () => {
   const [expandedSections, setExpandedSections] = useState({});
   const [courseContent, setCourseContent] = useState([]);
-
+  const courseId = useSelector((state) => state.course.selectedCourse._id);
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchSection = async () => {
       try {
@@ -83,72 +86,77 @@ const CourseContent = ({ courseId }) => {
       </div>
 
       <div className="max-w-4xl mx-auto text-white shadow-sm border border-gray-700 overflow-hidden ">
-        {courseContent.map((section) => (
-          <div key={section._id} className="border-b border-gray-700">
-            <div
-              className="flex items-center justify-between px-4 py-3 cursor-pointer bg-gray-800 hover:bg-gray-700 transition"
-              onClick={() => toggleSection(section._id)}
-            >
-              <div className="flex items-center">
-                {expandedSections[section._id] ? (
-                  <ChevronUp size={20} className="text-gray-400" />
-                ) : (
-                  <ChevronDown size={20} className="text-gray-400" />
-                )}
-                <h3 className="ml-2 font-medium">{section.title}</h3>
+        {courseContent
+          .filter((section) => section.published)
+          .map((section) => (
+            <div key={section._id} className="border-b border-gray-700">
+              <div
+                className="flex items-center justify-between px-4 py-3 cursor-pointer bg-gray-800 hover:bg-gray-700 transition"
+                onClick={() => toggleSection(section._id)}
+              >
+                <div className="flex items-center">
+                  {expandedSections[section._id] ? (
+                    <ChevronUp size={20} className="text-gray-400" />
+                  ) : (
+                    <ChevronDown size={20} className="text-gray-400" />
+                  )}
+                  <h3 className="ml-2 font-medium">{section.title}</h3>
+                </div>
+                <div className="text-gray-400 text-sm">
+                  {section.lectures.length} lectures •{" "}
+                  {Math.floor(section.duration / 60)} min
+                </div>
               </div>
-              <div className="text-gray-400 text-sm">
-                {section.lectures.length} lectures •{" "}
-                {Math.floor(section.duration / 60)} min
-              </div>
-            </div>
 
-            <AnimatePresence>
-              {expandedSections[section._id] && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden bg-gray-900"
-                >
-                  {section.lectures.map((lecture) => (
-                    <div
-                      key={lecture._id}
-                      className={`px-6 py-3 flex items-center justify-between ${lecture.isFree ? "cursor-pointer":""} hover:bg-gray-800 transition `}
-                    >
-                      <div className="flex items-center">
-                        <PlayCircle size={18} className="text-white mr-3" />
-                        <span
-                          className={`text-white text-sm ${
-                            lecture.preview ? "text-blue-400" : ""
-                          }`}
-                        >
-                          {lecture.title}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        {lecture.isFree && (
-                          <span className="text-blue-400 underline text-sm ">
-                            Preview
+              <AnimatePresence>
+                {expandedSections[section._id] && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden bg-gray-900"
+                  >
+                    {section.lectures.map((lecture) => (
+                      <div
+                        key={lecture._id}                 
+                        onClick={()=>navigate(`/course-watch/${courseId}/${section._id}/${lecture._id}`)}
+                        className={`px-6 py-3 flex items-center justify-between ${
+                          lecture.isFree ? "cursor-pointer" : ""
+                        } hover:bg-gray-800 transition `}
+                      >
+                        <div className="flex items-center">
+                          <PlayCircle size={18} className="text-white mr-3" />
+                          <span
+                            className={`text-white text-sm ${
+                              lecture.isFree ? "text-blue-400" : ""
+                            }`}
+                          >
+                            {lecture.title}
                           </span>
-                        )}
-                        {/* {lecture.isLocked ? (
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          {lecture.isFree && (
+                            <span className="text-blue-400 underline text-sm ">
+                              Preview
+                            </span>
+                          )}
+                          {/* {lecture.isLocked ? (
                           <Lock size={14} className="text-gray-500" />
                         ) : (
                           <Unlock size={14} className="text-green-400" />
                         )} */}
-                        <span className="text-xs text-gray-400">
-                          {formatDuration(lecture.duration)}
-                        </span>
+                          <span className="text-xs text-gray-400">
+                            {formatDuration(lecture.duration)}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        ))}
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
       </div>
     </div>
   );

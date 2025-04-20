@@ -1,14 +1,16 @@
 @import "tailwindcss";
 
-/* Custom Checkbox Styling */
-input[type="checkbox"]:checked::after {
-    content: "✔";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #2d2d2d; /* Dark Gray */
-    font-size: 14px;
-    font-weight: bold;
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari, and Opera */
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
   }
+
+  /* Hide scrollbar for IE, Edge, and Firefox */
+  .scrollbar-hidden {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;     /* Firefox */
+  }
+}
+
   

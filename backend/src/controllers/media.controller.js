@@ -49,4 +49,5 @@ const uploadMedia = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, newMedia, "Media uploaded successfully"));
 });
 
+
 export { uploadMedia };

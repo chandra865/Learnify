@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
+// Tooltip.jsx
+import { useState } from "react";
 
-const Tooltip = ({ children, content }) => {
-  const [isVisible, setIsVisible] = useState(false);
+const Tooltip = ({ content, children }) => {
+  const [show, setShow] = useState(false);
 
   return (
     <div
       className="relative inline-block"
-      onMouseEnter={() => setIsVisible(true)}
-      onMouseLeave={() => setIsVisible(false)}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
     >
       {children}
-      
-      {isVisible && (
-        <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-sm px-4 py-2 rounded shadow-lg max-w-xs">
+      {show && (
+        <div className="absolute bottom-full border-1 mb-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-sm px-5 py-2 rounded shadow z-50 whitespace-nowrap">
           {content}
-          <div className="absolute left-1/2 bottom-0 transform -translate-x-1/2 w-4 h-4 bg-gray-800 rotate-45"></div>
         </div>
       )}
     </div>

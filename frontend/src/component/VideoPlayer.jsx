@@ -3,13 +3,13 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import GiveQuiz from "./GiveQuiz";
 
-const VideoPlayer = ({ userId, courseId, lectureId, videoUrl }) => {
+const VideoPlayer = () => {
   const videoRef = useRef(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [isCourseCompleted, setIsCourseCompleted] = useState(null); 
-  const user = useSelector((state) => state.user.userData);
-
+  const userId = useSelector((state) => state.user.userData._id);
+  const courseId = useSelector((state) => state.course.selectedCourse._id);
   useEffect(() => {
     if (user?.enrolledCourses?.includes(courseId)) {
       setIsEnrolled(true);

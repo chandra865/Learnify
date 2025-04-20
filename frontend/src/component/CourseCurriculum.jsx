@@ -5,20 +5,25 @@ import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 const CourseCurriculum = () => {
   const [sections, setSections] = useState([]);
-  const [progress, setProgress] = useState(0);
+  const [uploadProgress, setUploadProgress] = useState({});
+
   const [sectionTitle, setSectionTitle] = useState("");
   const [lectureTitle, setLectureTitle] = useState("");
   const [showNewSectionForm, setShowNewSectionForm] = useState(false);
   const [newSection, setNewSection] = useState({ title: "" });
   const [editingSectionId, setEditingSectionId] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
+  const [showcontent, setShowContent] = useState();
+  const [fileUpload, setFileUpload] = useState(false);
+  
 
   const [editingLectureId, setEditingLectureId] = useState(null);
   const [editedLectureTitle, setEditedLectureTitle] = useState("");
+  const [expandedLectureId, setExpandedLectureId] = useState(null);
+  const [fileUploadFor, setFileUploadFor] = useState(null);
 
   const [lectureForms, setLectureForms] = useState({
     title: "",
-    videoFile: null,
     isFree: false,
   });
   const [showLectureForm, setShowLectureForm] = useState({});
@@ -30,77 +35,77 @@ const CourseCurriculum = () => {
 
   const courseId = useSelector((state) => state.course.selectedCourse._id);
 
-  const uploadMedia = async (file, mediaType) => {
-    const formData = new FormData();
-    formData.append("media", file); // Attach the file
-    formData.append("mediaType", mediaType); // Specify media type ("thumbnail" or "video")
+  // const uploadMedia = async (file, mediaType) => {
+  //   const formData = new FormData();
+  //   formData.append("media", file); // Attach the file
+  //   formData.append("mediaType", mediaType); // Specify media type ("thumbnail" or "video")
 
-    try {
-      const response = await axios.post(
-        "http://localhost:8000/api/v1/media/upload-media",
-        formData,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data", // Important for file upload
-          },
+  //   try {
+  //     const response = await axios.post(
+  //       "http://localhost:8000/api/v1/media/upload-media",
+  //       formData,
+  //       {
+  //         withCredentials: true,
+  //         headers: {
+  //           "Content-Type": "multipart/form-data", // Important for file upload
+  //         },
 
-          onUploadProgress: (progressEvent) => {
-            const percent = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
+  //         onUploadProgress: (progressEvent) => {
+  //           const percent = Math.round(
+  //             (progressEvent.loaded * 100) / progressEvent.total
+  //           );
 
-            // Only update if there's a significant change
-            if (progressRef.current !== percent) {
-              progressRef.current = percent;
-              setProgress(percent);
-            }
-          },
-        }
-      );
-      setProgress(0);
-      // console.log(`Upload ${mediaType} Success:`, response.data.data);
-      alert(`${mediaType} Upload  Successfully`);
-      return response.data.data; // Contains { publicId, url }
-    } catch (error) {
-      //console.error(`Upload ${mediaType} Failed:`, error);
-      const errorMessage =
-        error.response?.data?.message ||
-        "Something went wrong! Please try again later.";
-      throw errorMessage;
-    }
-  };
+  //           // Only update if there's a significant change
+  //           if (progressRef.current !== percent) {
+  //             progressRef.current = percent;
+  //             setProgress(percent);
+  //           }
+  //         },
+  //       }
+  //     );
+  //     setProgress(0);
+  //     // console.log(`Upload ${mediaType} Success:`, response.data.data);
+  //     alert(`${mediaType} Upload  Successfully`);
+  //     return response.data.data; // Contains { publicId, url }
+  //   } catch (error) {
+  //     //console.error(`Upload ${mediaType} Failed:`, error);
+  //     const errorMessage =
+  //       error.response?.data?.message ||
+  //       "Something went wrong! Please try again later.";
+  //     throw errorMessage;
+  //   }
+  // };
 
-  const handleFileChange = async (event, mediaType) => {
-    const file = event.target.files[0]; // Get the selected file
+  // const handleFileChange = async (event, mediaType) => {
+  //   const file = event.target.files[0]; // Get the selected file
 
-    if (!file) {
-      alert("No file selected");
-      return;
-    }
+  //   if (!file) {
+  //     alert("No file selected");
+  //     return;
+  //   }
 
-    try {
-      const mediaData = await uploadMedia(file, mediaType);
-      //console.log(`${mediaType} Uploaded:`, mediaData);
+  //   try {
+  //     const mediaData = await uploadMedia(file, mediaType);
+  //     //console.log(`${mediaType} Uploaded:`, mediaData);
 
-      setLectureForms({
-        ...lectureForms,
-        videoFile: JSON.stringify({
-          publicId: mediaData.video.publicId,
-          url: mediaData.video.url,
-          duration: mediaData.video.duration,
-        }),
-      });
-    } catch (error) {
-      console.error(`Error uploading ${mediaType}:`, error);
-      alert(`Error while uploading ${mediaType}:`);
-    }
-  };
+  //     setLectureForms({
+  //       ...lectureForms,
+  //       videoFile: JSON.stringify({
+  //         publicId: mediaData.video.publicId,
+  //         url: mediaData.video.url,
+  //         duration: mediaData.video.duration,
+  //       }),
+  //     });
+  //   } catch (error) {
+  //     console.error(`Error uploading ${mediaType}:`, error);
+  //     alert(`Error while uploading ${mediaType}:`);
+  //   }
+  // };
 
   const fetchSection = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/section//get-section-by-course/${courseId}`,
+        `http://localhost:8000/api/v1/section/get-section-by-course/${courseId}`,
         {
           withCredentials: true,
         }
@@ -174,33 +179,130 @@ const CourseCurriculum = () => {
       console.log(error);
     }
   };
- 
-  const handleDeleteSection = async (sectionId) =>{
-     try{ 
-        const response = await axios.delete(
-          `http://localhost:8000/api/v1/section/delete-section/${sectionId}`,
-          {
-            withCredentials:true,
-          }
-        )
-        if(!response.data.data){
-          alert(response.data.message);
-          return;
-        }
-        fetchSection();
-     }catch(error){
-        console.log(error);
-     }  
-  }
 
+  const handleDeleteSection = async (sectionId) => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:8000/api/v1/section/delete-section/${sectionId}`,
+        {
+          withCredentials: true,
+        }
+      );
+      if (!response.data.data) {
+        alert(response.data.message);
+        return;
+      }
+      fetchSection();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleFileUpload = async (e, lectureId, sectionId) => {
+    const file = e.target.files[0];
+    let duration = 0;
+    if (!file) {
+      alert("file not found");
+      return;
+    }
+    if (!file.type.startsWith("video/")) {
+      videoInputRef.current.value = null;
+      alert("Please select a valid video file");
+      return;
+    }
+
+    const video = document.createElement("video");
+    video.preload = "metadata";
+
+    video.onloadedmetadata = () => {
+      window.URL.revokeObjectURL(video.src); // Clean up URL
+      // duration in seconds
+      duration = video.duration;
+    };
+    video.src = URL.createObjectURL(file);
+
+    try {
+      // Step 1: Request signed URL from the backend
+      const response = await axios.post(
+        "http://localhost:8000/api/v1/lecture/upload-signed-aws-url",
+        {
+          courseId,
+          sectionId,
+          lectureId,
+          contentType: file.type,
+          fileName: file.name,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+      console.log(response);
+      const { uploadUrl, key } = response.data.data;
+      console.log("uploadUrl :", uploadUrl);
+      console.log("key :", key);
+      // Step 2: Upload video to S3 using the signed URL
+      const uploadRes = await axios.put(uploadUrl, file, {
+        headers: {
+          "Content-Type": file.type,
+        },
+        onUploadProgress: (progressEvent) => {
+          const progress = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress((prev) => ({
+            ...prev,
+            [lectureId]: progress,
+          }));
+        },
+      });
+
+      if (uploadRes.status === 200) {
+        setUploadProgress((prev) => ({
+          ...prev,
+          [lectureId]: 0,
+        }));
+        alert("Video uploaded successfully!");
+        try {
+          const response = await axios.post(
+            "http://localhost:8000/api/v1/lecture/add-video-lecture",
+            {
+              videoFileName: file.name,
+              duration,
+              courseId,
+              sectionId,
+              lectureId,
+            },
+            {
+              withCredentials: true,
+            }
+          );
+          console.log(response);
+        } catch (error) {
+          console.log(error);
+        }
+        setExpandedLectureId((prev) => (prev === lectureId ? null : lectureId));
+        setFileUploadFor(false);
+      } else {
+        alert("Error uploading video!");
+      }
+      fetchSection();
+    } catch (error) {
+      console.error("Error uploading video:", error);
+      alert("Error uploading video!");
+    } finally {
+      videoInputRef.current.value = null;
+    }
+  };
+  
   const addLecture = async (sectionId) => {
-    if (!lectureForms.title || !videoInputRef.current?.files[0]) {
+    // !videoInputRef.current?.files[0]
+    if (!lectureForms.title) {
       alert("Please fill in all required fields.");
       return;
     }
     const formData = new FormData();
     formData.append("title", lectureForms.title);
-    formData.append("videoFile", lectureForms.videoFile);
+    // formData.append("videoFile", lectureForms.videoFile);
     formData.append("sectionId", sectionId);
     formData.append("isFree", lectureForms.isFree || false);
     try {
@@ -215,8 +317,6 @@ const CourseCurriculum = () => {
       if (videoInputRef.current) videoInputRef.current.value = "";
       setLectureForms({
         title: "",
-        videoFile: null,
-        sectionId: null,
         isFree: false,
       });
       fetchSection();
@@ -254,7 +354,7 @@ const CourseCurriculum = () => {
       const response = await axios.patch(
         `http://localhost:8000/api/v1/lecture/update-lecture/${lectureId}`,
         {
-          title:editedLectureTitle,
+          title: editedLectureTitle,
         },
         {
           withCredentials: true,
@@ -269,24 +369,49 @@ const CourseCurriculum = () => {
     }
   };
 
-  const handleDeleteLecture = async (lectureId) =>{
-    try{
-
+  const handleDeleteLecture = async (lectureId, sectionId) => {
+    try {
       const response = await axios.delete(
-        `http://localhost:8000/api/v1/lecture/delete-lecture/${lectureId}`,
+        `http://localhost:8000/api/v1/lecture/delete-lecture`,
         {
-          withCredentials:true,
+          params: {
+            lectureId,
+            sectionId,
+            courseId,
+          },
+          withCredentials: true,
         }
-      )
+      );
       fetchSection();
-    }catch(error){
+    } catch (error) {
       console.log(error);
     }
-  }
- 
+  };
 
+  const handleFileDelete = async (lectureId, sectionId) => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:8000/api/v1/lecture/delete-video`,
+        {
+          params: {
+            lectureId,
+            sectionId,
+            courseId,
+          },
+          withCredentials: true,
+        }
+      );
+
+      // setDeleteVisible(false);
+      fetchSection();
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <div className="max-w-3xl mx-auto p-4">
+      {/*map on sections */}
       {sections.map((section, sectionIndex) => (
         <div
           key={section._id}
@@ -314,6 +439,7 @@ const CourseCurriculum = () => {
                   <FiTrash2 className="w-4 h-4 text-white cursor-pointer" />
                 </button>
               </span>
+              {/* section edit form */}
               {editingSectionId === section._id && (
                 <div className="mt-2 space-y-2">
                   <input
@@ -345,6 +471,7 @@ const CourseCurriculum = () => {
             </div>
           </div>
 
+          {/*map on lecture */}
           <div className="ml-6 mr-2 p-4 flex flex-col space-y-4">
             {section.lectures.map((lecture, lectureIndex) => (
               <div
@@ -369,23 +496,95 @@ const CourseCurriculum = () => {
 
                       <span>
                         <button
-                          onClick={() => handleDeleteLecture(lecture._id)}
+                          onClick={() =>
+                            handleDeleteLecture(lecture._id, section._id)
+                          }
                         >
                           <FiTrash2 className="w-4 h-4 text-gray-500 cursor-pointer" />
                         </button>
                       </span>
                     </div>
-                    <div className="flex gap-2">
-                      <button 
-                      onClick={()=>
-                        navigate(`/lecturemanage/${lecture._id}`)
-                      }
-                      className="text-gl px-3 py-1 cursor-pointer rounded hover:bg-gray-600 text-blue-500">
-                        +quiz
-                      </button>
+                    <div className="flex flex-row gap-2">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setExpandedLectureId((prev) =>
+                              prev === lecture._id ? null : lecture._id
+                            );
+                            setFileUploadFor(null);
+                          }}
+                          className="text-gl px-3 py-1 cursor-pointer rounded hover:bg-gray-600 text-blue-500"
+                        >
+                          +Content
+                        </button>
+                      </div>
                     </div>
                   </div>
 
+                  {expandedLectureId === lecture._id && (
+                    <div className="bg-gray-700 p-6 flex flex-col justify-center items-center gap-2">
+                      {lecture.videoFileName ? (
+                        <div className="flex flex-row justify-between w-full bg-gray-800 p-2">
+                          <p>{lecture.videoFileName}</p>
+                          <button
+                            onClick={() =>
+                              handleFileDelete(lecture._id, section._id)
+                            }
+                            className="bg-blue-500 px-2"
+                          >
+                            x
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setFileUploadFor(lecture._id);
+                            setExpandedLectureId((prev) =>
+                              prev === lecture._id ? null : lecture._id
+                            );
+                          }}
+                          className="text-gl px-3 py-1 cursor-pointer rounded hover:bg-gray-600 text-blue-500"
+                        >
+                          +upload video
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() =>
+                          navigate(`/lecturemanage/${lecture._id}`)
+                        }
+                        className="text-gl px-3 py-1 cursor-pointer rounded hover:bg-gray-600 text-blue-500"
+                      >
+                        +quiz
+                      </button>
+                    </div>
+                  )}
+
+                  {fileUploadFor === lecture._id && (
+                    <input
+                      type="file"
+                      name="videoFile"
+                      accept="video/*"
+                      onChange={(e) =>
+                        handleFileUpload(e, lecture._id, section._id)
+                      }
+                      className="w-full p-2 border border-gray-400 bg-gray-700 text-white"
+                      ref={videoInputRef}
+                    />
+                  )}
+
+                  {uploadProgress[lecture._id] > 0 && (
+                    <div className="w-full bg-gray-200 rounded-full mt-2">
+                      <div
+                        className="bg-blue-500 text-xs font-medium text-white text-center p-1 leading-none rounded-full"
+                        style={{ width: `${uploadProgress[lecture._id]}%` }}
+                      >
+                        {uploadProgress[lecture._id]}%
+                      </div>
+                    </div>
+                  )}
+
+                  {/* lecture edit form */}
                   {editingLectureId === lecture._id && (
                     <div className="mt-2 space-y-2">
                       <input
@@ -418,7 +617,6 @@ const CourseCurriculum = () => {
                 </div>
               </div>
             ))}
-            {/* edit lecture form */}
 
             {/* Show Lecture Form only if toggled */}
             {showLectureForm[section._id] && (
@@ -435,36 +633,10 @@ const CourseCurriculum = () => {
                         ...lectureForms,
                         title: e.target.value,
                       })
-                    // setLectureForms({
-                    //   ...lectureForms,
-                    //   [section.id]: {
-                    //     ...lectureForms[section.id],
-                    //     title: e.target.value,
-                    //   },
-                    // })
                   }
-                  required  
-                />
-                <input
-                  type="file"
-                  name="videoFile"
-                  accept="video/*"
-                  onChange={(e) => handleFileChange(e, "video")}
-                  className="w-full p-2 border border-gray-400 bg-gray-700 text-white"
-                  ref={videoInputRef}
                   required
                 />
-                {progress > 0 && (
-                  <div className="w-full bg-gray-200 rounded-full mt-2">
-                    <div
-                      className="bg-blue-500 text-xs font-medium text-white text-center p-1 leading-none rounded-full"
-                      style={{ width: `${progress}%` }}
-                      ref={progressRef}
-                    >
-                      {progress}%
-                    </div>
-                  </div>
-                )}
+
                 {/* Checkbox for Free/Paid Lecture */}
                 <label className="flex items-center cursor-pointer mb-3">
                   <span className="mr-2 text-white">Mark as Free Lecture</span>
@@ -487,19 +659,6 @@ const CourseCurriculum = () => {
                   </div>
                 </label>
 
-                {/* <input
-                  type="file"
-                  className="w-full p-2 border border-gray-400 bg-gray-700 text-white"
-                  onChange={(e) =>
-                    setLectureForms({
-                      ...lectureForms,
-                      [section.id]: {
-                        ...lectureForms[section.id],
-                        videoFile: e.target.files[0],
-                      },
-                    })
-                  }
-                /> */}
                 <div className="flex justify-end gap-2">
                   <button
                     className="px-4 py-2 text-gl bg-blue-500 hover:bg-blue-600 rounded cursor-pointer"

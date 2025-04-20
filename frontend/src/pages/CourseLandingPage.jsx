@@ -232,7 +232,7 @@ const CourseLandingPage = () => {
 
             {/* Lectures List */}
 
-            <CourseContent courseId={course_id} />
+            <CourseContent />
             <div className="mt-10">
               <p className="text-xl font-bold mb-4">Description</p>
               <p className="text-sm">{course?.description}</p>

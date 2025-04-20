@@ -16,10 +16,11 @@ const lectureSchema = new Schema(
       required: true,
       trim: true,
     },
-
+    videoFileName: {
+      type: String, 
+    },
     videoUrl: {
-      publicId: { type: String, required: true }, // Cloudinary's public ID
-      url: { type: String, required: true }, // Secure video URL
+      type: String,
     },
 
     duration: {

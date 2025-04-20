@@ -30,8 +30,12 @@ import Payment from "./component/Payment";
 import CustomVideoPlayer from "./component/CustomVideoPlayer";
 import CourseCurriculum from "./component/CourseCurriculum";
 import LectureManage from "./component/LectureManage";
+import CoursePlayer from "./pages/CoursePlayer";
+import { useLocation } from "react-router-dom";
 
 function App() {
+  const location = useLocation();
+  const isCourseWatch = location.pathname.startsWith("/course-watch");
   const dispatch = useDispatch();
   useEffect(()=>{
 
@@ -56,7 +60,7 @@ function App() {
   },[])
   return (
     <>
-    <Navbar/>
+    {!isCourseWatch ? <Navbar /> : ""}
     <Routes>
       <Route path="/" element={<Home/>}/>
       <Route path="/register" element={<Register/>}/>
@@ -83,6 +87,7 @@ function App() {
       <Route path="/media-player/:courseId/:index" element={<MediaPlayer />} />
       <Route path="/edit-profile" element={<EditProfile/>}/>
       <Route path="/search" element={<SearchPage/>} />
+      <Route path="/course-watch/:courseId/:sectionId/:lectureId" element = {<CoursePlayer/>}/>
       <Route path="/curri" element={<CourseCurriculum/>}/>
       <Route path="/lecturemanage/:lectureId" element={<LectureManage/>}/>
       <Route path="/logout" element={<Logout/>} />
