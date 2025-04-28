@@ -38,32 +38,65 @@ const CourseLandingPage = () => {
   const [courseProgress, setCourseProgress] = useState(false);
   const [isCourseCompleted, setIsCourseCompleted] = useState(false);
 
+  const [couponCode, setCouponCode] = useState("");
+  const [isCouponValid, setIsCouponValid] = useState(true);
+  const [discountApplied, setDiscountApplied] = useState(0);
+
   console.log(isEnrolled);
 
+  const handleCouponChange = (e) => {
+    setCouponCode(e.target.value.toUpperCase()); // Ensure coupon code is in uppercase
+  };
+
+  const applyCoupon = async () => {
+    try {
+      // Example API call for coupon validation
+      const response = await axios.post(
+        "http://localhost:8000/api/v1/coupon/validate-coupon",
+        {
+          code: couponCode,
+          courseId: course._id,
+          userId: user._id,
+        }
+      );
+      const { discountPercentage } = response.data; // Assuming response gives the discount
+      if (discountPercentage > 0) {
+        setDiscountApplied(discountPercentage);
+        setIsCouponValid(true);
+      } else {
+        setIsCouponValid(false);
+      }
+    } catch (err) {
+      setIsCouponValid(false);
+      console.error(err);
+    }
+  };
   const date = new Date(course?.updatedAt);
   const formattedDate = date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
   });
 
-  useEffect(() => {
-    const checkEnrollment = async () => {
-      try{
-        const response = await axios.get(
-          `http://localhost:8000/api/v1/enrollment/check-user-enrollment/${user._id}/${course_id}`,
-          {
-            withCredentials: true,
-          }
-        );
-  
-        const status = response.data.data.enrollmentStatus;
-        setIsEnrolled(status);
-      }catch(error){
-        console.log(error);
-      }
-      
+  const checkEnrollment = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/v1/enrollment/check-user-enrollment/${user._id}/${course_id}`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      const status = response.data.data.enrollmentStatus;
+      console.log("status: ", status);
+      setIsEnrolled(status);
+    } catch (error) {
+      console.log(error);
     }
-    checkEnrollment();
+  };
+  useEffect(() => {
+    if (user && course_id) {
+      checkEnrollment();
+    }
   }, [user, course_id]);
 
   useEffect(() => {
@@ -180,7 +213,9 @@ const CourseLandingPage = () => {
             <h2 className="mt-3 text-xl leading-relaxed">{course?.subtitle}</h2>
 
             <p className="mt-4 flex items-center text-sm">
-              <FaUser className="text-white mr-2" /> Created by Shekhar
+              <FaUser className="text-white mr-2" />
+              {"Created by"}
+              <span className="ml-1 underline">{course?.instructor?.name}</span>
             </p>
             <p className="flex items-center text-sm">
               <FaCalendarAlt className="text-white mr-2" /> Last update{" "}
@@ -238,9 +273,9 @@ const CourseLandingPage = () => {
               <p className="text-sm">{course?.description}</p>
             </div>
 
-            <Recommendation courseId={course_id} />
-            <CourseReviews courseId={course_id} />
-            {<AddReview courseId={course_id} />}
+            <Recommendation />
+            <CourseReviews />
+            {<AddReview />}
           </div>
 
           {/* course side bar */}
@@ -306,18 +341,46 @@ const CourseLandingPage = () => {
             {/* Price & Enroll Button */}
             <div className="p-4">
               <StarRating rating={course?.averageRating || 0} />
-              <p className="text-2xl font-bold text-white mt-4 mb-4">
-                ₹{course?.price}
-              </p>
+              <div className="flex items-center gap-2 my-2">
+                {course?.finalPrice === course?.price ? (
+                  <span className="text-2xl font-bold text-white">
+                    ₹{course?.price}
+                  </span>
+                ) : (
+                  <>
+                    <span className="text-2xl font-bold text-white">
+                      ₹{course?.finalPrice}
+                    </span>
+                    <span className="text-lg text-gray-400 line-through">
+                      ₹{course?.price}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {/* {!isEnrolled && (
+                <div className="flex items-center w-full gap-2 mb-4">
+                  <input
+                    type="text"
+                    placeholder="Enter Coupon Code"
+                    // value={couponCode}
+                    // onChange={handleCouponChange}
+                    className="p-3 border rounded"
+                  />
+                  <button
+                    // onClick={applyCoupon}
+                    className="px-4 py-3 bg-blue-500 text-lg font-bold w-2/5 text-white rounded cursor-pointer hover:bg-blue-600"
+                  >
+                    Apply
+                  </button>
+                </div>
+              )} */}
               <button
                 disabled={isEnrolled}
                 className={`text-lg w-full px-6 py-3 border-1 rounded-[5px] font-bold  hover:bg-gray-600
-                    ${isEnrolled
-                    ? "cursor-not-allowed":"cursor-pointer"
-                    }
+                    ${isEnrolled ? "cursor-not-allowed" : "cursor-pointer"}
                   `}
-                onClick={() => handleCart(course?.price)}
-                
+                onClick={() => handleCart(course?.finalPrice)}
               >
                 Add to cart
               </button>

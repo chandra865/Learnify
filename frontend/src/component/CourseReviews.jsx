@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import { useSelector } from "react-redux";
 import StarRating from "./StarRating";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-const Testimonials = ({ courseId }) => {
+const Testimonials = () => {
+  const courseId = useSelector((state) => state.course.selectedCourse._id);
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {

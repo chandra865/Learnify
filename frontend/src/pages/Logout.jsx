@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { logout } from '../store/slice/userSlice';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import {persistor } from "../store/store.js";
 import axios from 'axios';
 
 
@@ -20,13 +21,17 @@ const Logout = () => {
             }
           );
           console.log(response);// Log only response data
-          dispatch(logout());
+         
           toast.success(response.data.message);
           navigate("/");
           
         } catch (error) {
           console.error(error.response?.data || "Request failed"); // Handle errors properly
           toast.error(error.response?.data.message || "Request failed");
+        }finally{
+          await persistor.purge();
+          dispatch(logout());
+          navigate("/");
         }
       }
 

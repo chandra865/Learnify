@@ -74,6 +74,7 @@ const createCourse = asyncHandler(async (req, res) => {
     thumbnail: thumbnailData,
     preview: videoIdUrl,
     certificateOption,
+    finalPrice:price,
   });
 
   if (!course) {
@@ -95,8 +96,9 @@ const createCourse = asyncHandler(async (req, res) => {
 const getCourse = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
 
-  const course = await Course.findById(courseId);
+  const course = await Course.findById(courseId).populate("instructor", "name");
   if (!course) throw new ApiError(404, "course not found");
+
 
   return res
     .status(201)
@@ -200,7 +202,7 @@ const stuCourses = asyncHandler(async (req, res) => {
 });
 
 const getAllCourses = asyncHandler(async (req, res) => {
-  const course = await Course.find({});
+  const course = await Course.find({}).populate("instructor","name");
 
   if (!course) throw new ApiError(404, "failed to fetch course");
   return res

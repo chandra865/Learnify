@@ -4,6 +4,7 @@ import Hls from "hls.js";
 
 const VideoPlayer1 = forwardRef(
   ({ src, onPrevious, onNext, hasPrevious, hasNext, onExpand }, ref) => {
+    
     const videoRef = useRef(null);
     const containerRef = useRef(null);
     const hls = useRef(null);

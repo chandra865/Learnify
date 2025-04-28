@@ -40,6 +40,12 @@ const courseSchema = new Schema(
       required: true,
     },
 
+    finalPrice:{
+      type:Number,
+      default:0,
+      required:true,
+    },
+
     instructor: {
       type: Schema.Types.ObjectId,
       ref: "User",

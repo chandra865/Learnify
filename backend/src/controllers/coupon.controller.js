@@ -3,11 +3,12 @@ import { Course } from "../models/course.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { updateCourseFinalPrice } from "../utils/updateCoursePrice.js";
 
 const createCoupon = asyncHandler(async (req, res) => {
-  const { code, discountPercentage, expiresAt, usageLimit, courseId } = req.body;
+  const { code, discountPercentage, expiresAt, courseId } = req.body;
 
-  if (!code || !discountPercentage || !expiresAt || !usageLimit || !courseId) {
+  if (!code || !discountPercentage || !expiresAt || !courseId) {
     throw new ApiError(400, "All coupon fields are required");
   }
 
@@ -21,13 +22,13 @@ const createCoupon = asyncHandler(async (req, res) => {
     code: code.toUpperCase(),
     discountPercentage,
     expiresAt,
-    usageLimit,
     courseId,
   });
-
-  return res.status(201).json(new ApiResponse(201, coupon, "Coupon created successfully"));
+  await updateCourseFinalPrice(courseId);
+  return res
+    .status(201)
+    .json(new ApiResponse(201, coupon, "Coupon created successfully"));
 });
-
 
 // VALIDATE COUPON
 const validateCoupon = asyncHandler(async (req, res) => {
@@ -43,17 +44,23 @@ const validateCoupon = asyncHandler(async (req, res) => {
 
   if (coupon.expiresAt < new Date()) throw new ApiError(400, "Coupon expired");
 
-  if (coupon.usedBy.includes(userId)) throw new ApiError(400, "Coupon already used by user");
+  if (coupon.usedBy.includes(userId))
+    throw new ApiError(400, "Coupon already used by user");
 
-  if (coupon.usedBy.length >= coupon.usageLimit) {
-    throw new ApiError(400, "Coupon usage limit reached");
-  }
+  // if (coupon.usedBy.length >= coupon.usageLimit) {
+  //   throw new ApiError(400, "Coupon usage limit reached");
+  // }
 
-  return res.status(200).json(
-    new ApiResponse(200, { discountPercentage: coupon.discountPercentage }, "Coupon is valid")
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { discountPercentage: coupon.discountPercentage },
+        "Coupon is valid"
+      )
+    );
 });
-
 
 // MARK COUPON AS USED (call this after successful payment)
 const markCouponAsUsed = asyncHandler(async (userId, couponCode) => {
@@ -67,15 +74,53 @@ const markCouponAsUsed = asyncHandler(async (userId, couponCode) => {
   }
 });
 
+const getCouponsByCourse = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  const coupons = await Coupon.find({ courseId }).sort({ createdAt: -1 });
+  if (!coupons) {
+    throw new ApiError(404, "coupon not found");
+  }
 
-const deleteCoupon = asyncHandler(async (req, res) => {
-  const { code } = req.params;
-
-  const coupon = await Coupon.findOneAndDelete({ code: code.toUpperCase() });
-
-  if (!coupon) throw new ApiError(404, "Coupon not found");
-
-  return res.status(200).json(new ApiResponse(200, {}, "Coupon deleted successfully"));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, coupons, "coupon fectched successfully"));
 });
 
-export { createCoupon, validateCoupon, markCouponAsUsed, deleteCoupon };
+const deleteCoupon = asyncHandler(async (req, res) => {
+  const { couponId } = req.params;
+  //console.log(couponId);
+  const coupon = await Coupon.findOneAndDelete({ _id: couponId });
+
+  if (!coupon) throw new ApiError(404, "Coupon not found");
+  await updateCourseFinalPrice(coupon.courseId);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Coupon deleted successfully"));
+});
+
+// Toggle coupon status
+const toggleCouponStatus = asyncHandler(async (req, res) => {
+  const { couponId } = req.params;
+
+  const coupon = await Coupon.findById(couponId);
+  if (!coupon) {
+    throw new ApiError(404, "Coupon not found");
+  }
+
+  // Toggle logic
+  coupon.status = coupon.status === "active" ? "inactive" : "active";
+  await coupon.save();
+  await updateCourseFinalPrice(coupon.courseId);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, coupon, "Coupon status updated successfully"));
+});
+
+export {
+  createCoupon,
+  validateCoupon,
+  markCouponAsUsed,
+  deleteCoupon,
+  getCouponsByCourse,
+  toggleCouponStatus,
+};

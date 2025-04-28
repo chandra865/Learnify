@@ -14,7 +14,6 @@ const transactionSchema = new mongoose.Schema({
     paymentId: String,
     signature: String,
   },
-
   amount: {
     type: Number,
   },
@@ -23,7 +22,7 @@ const transactionSchema = new mongoose.Schema({
     type: String,
   },
   finalPrice: {
-    type: Number,
+    type: Number, 
   },
 
   status: {

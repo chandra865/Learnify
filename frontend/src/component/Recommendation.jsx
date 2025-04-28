@@ -2,9 +2,11 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import StarRating from "./StarRating";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { FaStar, FaUser } from "react-icons/fa";
 
-const Recommendation = ({ courseId }) => {
+const Recommendation = () => {
+  const courseId = useSelector((state) => state.course.selectedCourse._id);
   const [courses, setCourses] = useState([]);
   const [enrolledStu, setEnrolledStu] = useState([]);
 

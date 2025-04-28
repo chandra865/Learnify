@@ -1,8 +1,11 @@
 import { useState } from "react";
 import axios from "axios";
 import { FaStar } from "react-icons/fa";
+import { useSelector } from "react-redux";
 
-const AddReview = ({ courseId }) => {
+const AddReview = () => {
+
+  const courseId = useSelector((state) => state.course.selectedCourse._id);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [hover, setHover] = useState(null);

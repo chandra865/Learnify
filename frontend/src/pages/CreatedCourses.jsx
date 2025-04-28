@@ -103,26 +103,26 @@ const CreatedCourses = () => {
                 <div
                   key={course._id}
                   onClick={() => handleCourseSelection(course)}
-                  className="flex py-4 px-2 border-b-2 text-white hover:bg-gray-700 transform transition duration-300 hover:scale-102 cursor-pointer"
+                  className="flex mb-4 border-b-2 text-white hover:bg-gray-700 transform transition duration-300 hover:scale-102 cursor-pointer"
                 >
                   <div className="w-70 h-40 flex-shrink-0">
                     <img
                       src={course.thumbnail?.url}
                       alt={course.title}
-                      className="w-full h-full object-cover rounded"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="flex flex-row w-full px-4">
                     <div className="w-full">
                       <h1 className="text-xl font-extrabold">{course.title}</h1>
-                      <p className="text-white">{course.description}</p>
-                      <p className="text-gray-400 text-sm my-1">
+                      <p className="text-white">{course.subtitle}</p>
+                      {/* <p className="text-gray-400 text-sm my-1">
                         {course?.instructor?.name || "Unknown Instructor"}
-                      </p>
-                      <StarRating rating={course.averageRating || 0} />
-                      <p className="text-gray-400 text-sm my-1">
+                      </p> */}
+                      {/* <StarRating rating={course.averageRating || 0} /> */}
+                      {/* <p className="text-gray-400 text-sm my-1">
                         {course.lecture?.length || 0} Lectures
-                      </p>
+                      </p> */}
                     </div>
                     <div className="flex flex-col justify-between">
                       <p className="px-10 text-xl font-extrabold">₹{course.price}</p>

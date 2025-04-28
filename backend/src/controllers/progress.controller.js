@@ -7,15 +7,7 @@ import { User } from "../models/user.model.js";
 import PDFDocument from 'pdfkit';
 
 const updateProgress = asyncHandler(async (req, res) => {
-  const { userId, courseId, lectureId, watchTime, totalDuration } = req.body;
-
-  const course = await Course.findById(courseId);
-  if (!course) {
-    throw new ApiError(404, "Course Not Found");
-  }
-
-  const totalLectures = course.lecture.length;
-
+  const { userId, courseId, lectureId, watchTime, totalDuration, totalLectures } = req.body;
 
   let progress = await Progress.findOneAndUpdate(
     { userId, courseId },
@@ -40,6 +32,64 @@ const updateProgress = asyncHandler(async (req, res) => {
 
   return res.status(200).json(
     new ApiResponse(200, progress, "Progress Updated Successfully")
+  );
+});
+
+
+const unmarkLectureComplete = asyncHandler(async (req, res) => {
+  const { userId, courseId, lectureId, totalLectures } = req.body;
+
+  let progress = await Progress.findOneAndUpdate(
+    { userId, courseId },
+    { $pull: { completedLectures: lectureId } },
+    { new: true }
+  );
+
+  if (!progress) {
+    return res.status(404).json(
+      new ApiResponse(404, null, "Progress record not found")
+    );
+  }
+
+  // Recalculate progress
+  progress.progressPercentage =
+    (progress.completedLectures.length / totalLectures) * 100;
+
+  // Reset courseCompleted if progress drops below 100
+  if (progress.courseCompleted && progress.progressPercentage < 100) {
+    progress.courseCompleted = false;
+  }
+
+  await progress.save();
+
+  return res.status(200).json(
+    new ApiResponse(200, progress, "Lecture unmarked as complete")
+  );
+});
+
+
+const markLectureComplete = asyncHandler(async (req, res) => {
+  const { userId, courseId, lectureId, totalLectures } = req.body;
+
+  let progress = await Progress.findOneAndUpdate(
+    { userId, courseId },
+    { $addToSet: { completedLectures: lectureId } },
+    { new: true, upsert: true }
+  );
+
+  // Update progress percentage
+  progress.progressPercentage =
+    (progress.completedLectures.length / totalLectures) * 100;
+
+  // Mark course as completed if progress reaches 100%
+  if (progress.progressPercentage === 100 && !progress.courseCompleted) {
+    progress.courseCompleted = true;
+  }
+
+  await progress.save();
+
+  return res.status(200).json(
+    new ApiResponse(200, progress, "Lecture marked as complete")
   );
 });
 
@@ -118,4 +168,4 @@ const getCertificate = asyncHandler(async (req, res) => {
 });
 
 
-export { updateProgress, getProgress, getCertificate};
+export { updateProgress, getProgress, getCertificate, unmarkLectureComplete, markLectureComplete};

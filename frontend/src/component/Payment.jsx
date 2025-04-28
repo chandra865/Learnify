@@ -37,7 +37,7 @@ const Payment = () => {
       // 1. Create Razorpay Order
       const orderResponse = await axios.post(
         "http://localhost:8000/api/v1/transaction/create-order",
-        { amount: course.price },
+        { amount: course.price === course.finalPrice ? course.price : course.finalPrice },
         { withCredentials: true }
       );
 
@@ -54,7 +54,7 @@ const Payment = () => {
             response;
 
           // 2. Verify Payment
-          const r = await axios.post(
+          const res = await axios.post(
             "http://localhost:8000/api/v1/transaction/verify-payment",
             {
               razorpay_payment_id,
@@ -62,7 +62,7 @@ const Payment = () => {
               razorpay_signature,
               userId,
               courseId,
-              amount: course.price,
+              amount: course.price === course.finalPrice ? course.price : course.finalPrice,
               discountCode: null, // Add discount code if applicable
               paymentMethod: "Razorpay",
             },
@@ -123,14 +123,14 @@ const Payment = () => {
               </p>
             </div>
           </div>
-          <p className="px-4 text-xl font-extrabold ">₹{course?.price}</p>
+          <p className="px-4 text-xl font-extrabold ">₹{course?.price === course?.finalPrice ? course?.price : course?.finalPrice}</p>
           
         </div>
       </div>
 
       <div className="p-4 w-1/5">
             <p className="text-2xl font-bold">Total:</p>
-            <p className="text-3xl font-extrabold my-2">₹{course?.price}</p>    
+            <p className="text-3xl font-extrabold my-2">₹{course?.price === course?.finalPrice ? course?.price : course?.finalPrice}</p>    
             <button
                 onClick={handlePayment}
                 disabled={loading}

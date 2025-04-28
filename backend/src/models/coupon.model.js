@@ -7,23 +7,23 @@ const couponSchema = new mongoose.Schema(
       required: true,
       unique: true,
       uppercase: true,
-      match: /^[A-Z0-9]+$/, // only capital letters and numbers
+      match: /^[A-Z][A-Z0-9]*[0-9]$/, // must start with letter and end with number
       trim: true,
     },
-    discountPercentage: {
+    discountPercentage: { 
       type: Number,
       required: true,
       min: 1,
-      max: 99,
+      max: 100, // allow full free coupons if you want
     },
     expiresAt: {
       type: Date,
       required: true,
     },
-    usageLimit: {
-      type: Number,
-      required: true,
-      min: 1,
+    status: {
+      type: String,
+      enum: ["active", "inactive"],  // Only allowed values
+      default: "active",             // By default coupon is active
     },
     usedBy: [
       {

@@ -6,9 +6,12 @@ import {
   ChevronUp,
   BookOpen,
   FileText,
+  Medal,
+  CheckCircle,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSelector } from "react-redux";
 import axios from "axios";
 import VideoPlayer1 from "../component/VideoPlayer1";
 
@@ -19,22 +22,29 @@ const CoursePlayer = () => {
   const { courseId, sectionId, lectureId } = useParams();
   const [courseContent, setCourseContent] = useState([]);
   const [videoUrl, setVideoUrl] = useState(null);
-  const videoPlayerRef = useRef(null); // Ref for the VideoPlayer1 component
+  const videoPlayerRef = useRef(null);
   const navigate = useNavigate();
   const [isTheaterMode, setIsTheaterMode] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview"); // 'overview' | 'resources' | 'content'
+  const [activeTab, setActiveTab] = useState("overview");
 
-  const courseTitle = "React for Beginners";
-  const progress = 33; // %
+  // Progress tracking states
+  const [courseProgress, setCourseProgress] = useState(0);
+  const [completedLectures, setCompletedLectures] = useState([]);
+  const [completedSectionLectures, setCompletedSectionLectures] = useState([]);
+  const [isCourseCompleted, setIsCourseCompleted] = useState(false);
+  const [showCertificatePopup, setShowCertificatePopup] = useState(null);
 
+  const course = useSelector((state) => state.course.selectedCourse);
+  const user = useSelector((state) => state.user.userData);
+  const userId = user?._id;
+
+  // Fetch course sections
   useEffect(() => {
     const fetchSection = async () => {
       try {
         const response = await axios.get(
           `http://localhost:8000/api/v1/section/get-section-by-course/${courseId}`,
-          {
-            withCredentials: true,
-          }
+          { withCredentials: true }
         );
         setCourseContent(response.data.data);
 
@@ -50,14 +60,13 @@ const CoursePlayer = () => {
     fetchSection();
   }, [courseId]);
 
+  // Fetch video URL
   useEffect(() => {
     const fetchVideoUrl = async () => {
       try {
         const response = await axios.get(
           `http://localhost:8000/api/v1/lecture/get-lecture/${lectureId}`,
-          {
-            withCredentials: true,
-          }
+          { withCredentials: true }
         );
         setVideoUrl(response.data.data.videoUrl);
       } catch (error) {
@@ -66,6 +75,173 @@ const CoursePlayer = () => {
     };
     fetchVideoUrl();
   }, [lectureId]);
+
+  const totalLectures = courseContent.reduce(
+    (acc, section) => acc + section.lectures.length,
+    0
+  );
+
+  // Fetch course progress
+  useEffect(() => {
+    const fetchProgress = async () => {
+      if (!userId || !courseId) return;
+
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/api/v1/progress/get-progress/${userId}/${courseId}`,
+          { withCredentials: true }
+        );
+
+        const progress = response.data.data;
+        setCourseProgress(progress.progressPercentage);
+        setCompletedLectures(progress.completedLectures || []);
+
+        if (progress.progressPercentage === 100) {
+          setIsCourseCompleted(true);
+          setShowCertificatePopup(true);
+        }
+      } catch (error) {
+        console.error("Error fetching progress:", error);
+      }
+    };
+
+    fetchProgress();
+  }, [userId, courseId]);
+
+  // Track video progress
+  useEffect(() => {
+    if (isCourseCompleted) return;
+
+    const video = videoPlayerRef.current?.videoRef.current;
+    if (!video) return;
+
+    const saveProgress = async () => {
+      try {
+        const response = await axios.post(
+          "http://localhost:8000/api/v1/progress/update-progress",
+          {
+            userId,
+            courseId,
+            lectureId,
+            watchTime: video.currentTime,
+            totalDuration: video.duration,
+            totalLectures,
+          },
+          { withCredentials: true }
+        );
+
+        const progress = response.data.data;
+        setCourseProgress(progress.progressPercentage);
+        setCompletedLectures(progress.completedLectures || []);
+
+        if (progress.progressPercentage === 100 && !isCourseCompleted) {
+          setIsCourseCompleted(true);
+          setShowCertificatePopup(true);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    if (video) {
+      video.addEventListener("pause", saveProgress);
+      video.addEventListener("ended", saveProgress);
+      window.addEventListener("beforeunload", saveProgress);
+
+      return () => {
+        video.removeEventListener("pause", saveProgress);
+        video.removeEventListener("ended", saveProgress);
+        window.removeEventListener("beforeunload", saveProgress);
+      };
+    }
+  }, [userId, courseId, lectureId, isCourseCompleted, videoPlayerRef]);
+
+  const handleMarkUncomplete = async (lectureId) => {
+    try {
+      await axios.post(
+        "http://localhost:8000/api/v1/progress/uncomplete",
+        {
+          userId: user._id,
+          courseId,
+          lectureId,
+          totalLectures: getAllLectures().length,
+        },
+        { withCredentials: true }
+      );
+
+      const updatedLectures = completedLectures.filter(
+        (id) => id !== lectureId
+      );
+      setCompletedLectures(updatedLectures);
+
+      const newProgress =
+        (updatedLectures.length / getAllLectures().length) * 100;
+      setCourseProgress(newProgress);
+
+      if (isCourseCompleted && newProgress < 100) {
+        setIsCourseCompleted(false);
+      }
+    } catch (err) {
+      console.error("Error marking uncomplete", err);
+    }
+  };
+
+  const handleMarkComplete = async (lectureId) => {
+    try {
+      await axios.post(
+        "http://localhost:8000/api/v1/progress/complete",
+        {
+          userId: user._id,
+          courseId,
+          lectureId,
+          totalLectures: getAllLectures().length,
+        },
+        { withCredentials: true }
+      );
+
+      if (!completedLectures.includes(lectureId)) {
+        const updatedLectures = [...completedLectures, lectureId];
+        setCompletedLectures(updatedLectures);
+
+        const newProgress =
+          (updatedLectures.length / getAllLectures().length) * 100;
+        setCourseProgress(newProgress);
+
+        if (newProgress === 100 && !isCourseCompleted) {
+          setIsCourseCompleted(true);
+          setShowCertificatePopup(true);
+        }
+      }
+    } catch (err) {
+      console.error("Error marking complete", err);
+    }
+  };
+
+  // Handle certificate download
+  const handleDownloadCertificate = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/v1/progress/get-certificate/${userId}/${courseId}`,
+        {
+          withCredentials: true,
+          responseType: "blob",
+        }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `${user.name}_${course.title}_certificate.pdf`
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.log("Error downloading certificate:", error);
+    }
+  };
 
   const toggleSection = (sectionId) => {
     setExpandedSections((prev) => ({
@@ -80,17 +256,31 @@ const CoursePlayer = () => {
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   };
 
-  const handleMarkComplete = async (lectureId) => {
-    try {
-      await axios.post(
-        `http://localhost:8000/api/v1/lecture/complete/${lectureId}`,
-        {},
-        { withCredentials: true }
-      );
-    } catch (err) {
-      console.error("Error marking complete", err);
-    }
-  };
+  // const handleMarkComplete = async (lectureId) => {
+  //   try {
+  //     const response = await axios.post(
+  //       `http://localhost:8000/api/v1/lecture/complete/${lectureId}`,
+  //       {},
+  //       { withCredentials: true }
+  //     );
+
+  //     // Update local state
+  //     const updatedCompletedLectures = [...completedLectures, lectureId];
+  //     setCompletedLectures(updatedCompletedLectures);
+
+  //     // Check if course is completed
+  //     const totalLectures = courseContent.flatMap(section => section.lectures).length;
+  //     const completionPercentage = (updatedCompletedLectures.length / totalLectures) * 100;
+  //     setCourseProgress(completionPercentage);
+
+  //     if (completionPercentage === 100 && !isCourseCompleted) {
+  //       setIsCourseCompleted(true);
+  //       setShowCertificatePopup(true);
+  //     }
+  //   } catch (err) {
+  //     console.error("Error marking complete", err);
+  //   }
+  // };
 
   const getAllLectures = () =>
     courseContent.flatMap((section) =>
@@ -128,11 +318,22 @@ const CoursePlayer = () => {
     }
   };
 
+  const handleLectureCheckboxToggle = (lectureId, isCurrentlyCompleted) => {
+    if (isCurrentlyCompleted) {
+      handleMarkUncomplete(lectureId);
+    } else {
+      handleMarkComplete(lectureId);
+    }
+  };
+  
   // Auto-advance to the next lecture when the video ends
   useEffect(() => {
-    const videoElement = videoPlayerRef.current?.videoRef.current; // Access the underlying video element
+    const videoElement = videoPlayerRef.current?.videoRef.current;
 
     const handleEnded = () => {
+      // Mark current lecture as complete when video ends
+      //handleMarkComplete(lectureId);
+
       const nextLecture = getNextLecture();
       if (nextLecture) {
         setIsTransitioning(true);
@@ -157,10 +358,24 @@ const CoursePlayer = () => {
   const prevLecture = getPrevLecture();
   const nextLecture = getNextLecture();
 
+  // Function to determine if a lecture is completed
+  const isLectureCompleted = (lectureId) => {
+    return completedLectures.includes(lectureId);
+  };
+
+  //count completed lectures within a section
+  const getCompletedLecturesInSection = (sectionId) => {
+    const section = courseContent.find((section) => section._id === sectionId);
+    if (!section || !section.lectures) return 0;
+
+    return section.lectures.filter((lecture) =>
+      completedLectures.includes(lecture._id)
+    ).length;
+  };
+
   return (
     <div className="h-screen bg-gray-900 text-white flex flex-col">
       {/* Sticky Top Bar */}
-
       <nav className="bg-gray-800 px-6 py-4 flex justify-between items-center border-b border-gray-700">
         <div className="container mx-auto flex justify-between items-center">
           {/* Logo */}
@@ -168,24 +383,25 @@ const CoursePlayer = () => {
             MyApp
           </Link>
 
-          {/* Course Title - can be dynamic later */}
+          {/* Course Title */}
           <div className="text-lg font-semibold truncate max-w-xs">
-            {courseTitle}
+            {course.title}
           </div>
 
           {/* Progress */}
-          <div className="text-sm text-gray-400">Progress: 45%</div>
+          <div className="flex items-center">
+            <div className="w-32 bg-gray-700 rounded-full h-2.5 mr-2">
+              <div
+                className="bg-blue-600 h-2.5 rounded-full"
+                style={{ width: `${courseProgress}%` }}
+              ></div>
+            </div>
+            <div className="text-sm text-gray-400">
+              Progress: {Math.round(courseProgress)}%
+            </div>
+          </div>
         </div>
       </nav>
-      {/* <div className="bg-gray-800 px-6 py-4 flex justify-between items-center border-b border-gray-700">
-        <div className="text-xl font-semibold">{courseTitle}</div>
-        <div className="w-1/3 bg-gray-700 rounded-full h-4 overflow-hidden">
-          <div
-            className="bg-blue-500 h-full rounded-full"
-            style={{ width: `${progress}%` }}
-          ></div>
-        </div>
-      </div> */}
 
       <div className="flex flex-1 overflow-hidden">
         {/* Video Player and Content */}
@@ -204,7 +420,7 @@ const CoursePlayer = () => {
               onNext={nextLecture ? () => navigateToLecture(nextLecture) : null}
               hasPrevious={!!prevLecture}
               hasNext={!!nextLecture}
-              onExpand={(expanded) => setIsTheaterMode(expanded)} // Notify CoursePlayer of expand/collapse
+              onExpand={(expanded) => setIsTheaterMode(expanded)}
             />
           )}
           {isTransitioning && (
@@ -252,12 +468,20 @@ const CoursePlayer = () => {
                   This is a sample lecture description. You can add notes,
                   transcript, or other resources here.
                 </p>
-                <button
-                  onClick={() => handleMarkComplete(lectureId)}
-                  className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                >
-                  Mark as Complete
-                </button>
+                {!isLectureCompleted(lectureId) ? (
+                  <button
+                    onClick={() => handleMarkComplete(lectureId)}
+                    className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center"
+                  >
+                    <CheckCircle className="mr-2" size={16} /> Mark as Complete
+                  </button>
+                ) : (
+                  <div className="mt-4 px-4 py-2 bg-gray-700 text-gray-300 rounded flex items-center">
+                    <CheckCircle className="mr-2" size={16} /> Completed
+                  </div>
+                )}
+
+               
               </>
             )}
 
@@ -269,6 +493,16 @@ const CoursePlayer = () => {
                 <button className="flex items-center px-4 py-2 rounded bg-gray-700 hover:bg-gray-600">
                   <FileText className="mr-2" size={16} /> Transcript
                 </button>
+
+
+                {isCourseCompleted && (
+                  <button
+                    onClick={() => setShowCertificatePopup(true)}
+                    className="mt-4 ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center"
+                  >
+                    <Medal className="mr-2" size={16} /> Get Certificate
+                  </button>
+                )}
               </div>
             )}
 
@@ -281,7 +515,6 @@ const CoursePlayer = () => {
                   .filter((section) => section.published)
                   .map((section) => (
                     <div key={section._id} className="border-b-1 border-white">
-                      {/* ... (rest of the course content sidebar) ... */}
                       <div
                         className="flex flex-col justify-between px-2 py-3 cursor-pointer bg-gray-800 hover:bg-gray-700 transition"
                         onClick={() => toggleSection(section._id)}
@@ -299,7 +532,8 @@ const CoursePlayer = () => {
                           )}
                         </div>
                         <div className="text-gray-400 text-sm">
-                          {section.lectures.length}/
+                          {getCompletedLecturesInSection(section._id)}/
+                          {section.lectures.length}
                           {Math.floor(section.duration / 60)} | min
                         </div>
                       </div>
@@ -328,11 +562,19 @@ const CoursePlayer = () => {
                                 <div className="w-[10%] py-8 flex justify-center p-2">
                                   <input
                                     type="checkbox"
+                                    checked={isLectureCompleted(lecture._id)}
                                     className="w-4 h-4 bg-gray-800 border border-gray-400 rounded"
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      handleLectureCheckboxToggle(
+                                        lecture._id,
+                                        isLectureCompleted(lecture._id)
+                                      );
+                                    }}
                                     onClick={(e) => e.stopPropagation()}
                                   />
                                 </div>
-                                <div className=" w-[90%]  py-4 flex flex-col gap-2">
+                                <div className="w-[90%] py-4 flex flex-col gap-2">
                                   <div className="">
                                     <span className="text-white text-gl">
                                       <span>{lecture.order}. </span>
@@ -363,7 +605,7 @@ const CoursePlayer = () => {
 
         {/* Sidebar (Visible only when not in theater mode) */}
         {!isTheaterMode && (
-          <div className="w-[28%] bg-gray-800 border-l border-gray-700 ">
+          <div className="w-[28%] bg-gray-800 border-l border-gray-700 overflow-y-auto">
             <h3 className="text-xl font-bold py-4 px-2 bg-gray-700">
               Course Content
             </h3>
@@ -371,7 +613,6 @@ const CoursePlayer = () => {
               .filter((section) => section.published)
               .map((section) => (
                 <div key={section._id} className="border-b-1 border-white">
-                  {/* ... (rest of the course content sidebar) ... */}
                   <div
                     className="flex flex-col justify-between px-2 py-3 cursor-pointer bg-gray-800 hover:bg-gray-700 transition"
                     onClick={() => toggleSection(section._id)}
@@ -389,8 +630,10 @@ const CoursePlayer = () => {
                       )}
                     </div>
                     <div className="text-gray-400 text-sm">
-                      {section.lectures.length}/
-                      {Math.floor(section.duration / 60)} | min
+                      {getCompletedLecturesInSection(section._id)}/
+                      {section.lectures.length}
+                      {" | "}
+                      {Math.floor(section.duration / 60)} min
                     </div>
                   </div>
 
@@ -418,11 +661,19 @@ const CoursePlayer = () => {
                             <div className="w-[10%] py-8 flex justify-center p-2">
                               <input
                                 type="checkbox"
+                                checked={isLectureCompleted(lecture._id)}
                                 className="w-4 h-4 bg-gray-800 border border-gray-400 rounded"
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  handleLectureCheckboxToggle(
+                                    lecture._id,
+                                    isLectureCompleted(lecture._id)
+                                  );
+                                }}
                                 onClick={(e) => e.stopPropagation()}
                               />
                             </div>
-                            <div className=" w-[90%]  py-4 flex flex-col gap-2">
+                            <div className="w-[90%] py-4 flex flex-col gap-2">
                               <div className="">
                                 <span className="text-white text-gl">
                                   <span>{lecture.order}. </span>
@@ -449,6 +700,41 @@ const CoursePlayer = () => {
           </div>
         )}
       </div>
+
+      {/* Certificate Popup */}
+      {showCertificatePopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 backdrop-blur-sm z-50">
+          <div className="bg-gray-800 p-8 rounded-lg shadow-lg text-center max-w-md">
+            <div className="text-yellow-400 mb-4">
+              <Medal size={64} className="mx-auto" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              🎉 Congratulations! 🎉
+            </h2>
+            <p className="text-lg text-white mb-4">
+              You have successfully completed the course!
+            </p>
+            <p className="text-gray-300 mb-6">
+              You've achieved {Math.round(courseProgress)}% course completion.
+              Your certificate is ready for download.
+            </p>
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={handleDownloadCertificate}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center"
+              >
+                <Medal className="mr-2" size={20} /> Get Certificate
+              </button>
+              <button
+                onClick={() => setShowCertificatePopup(false)}
+                className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
