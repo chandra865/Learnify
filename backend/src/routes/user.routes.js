@@ -20,7 +20,9 @@ import {
   getExperties,
   googleAuth,
   googleAuthCallback,
-  switchUserRole
+  switchUserRole,
+  getInstructorStats,
+  getInstructorRatingAndReviews
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -50,6 +52,9 @@ router.route("/get-expertise").get(verifyJWT, getExperties);
 router.route("/add-expertise").post(verifyJWT, addExpertise);
 router.route("/delete-expertise").delete(verifyJWT, deleteExpertise);
 router.route("/switch-user-role").put(verifyJWT,switchUserRole);
+
+router.route("/get-instructor-stats/:instructorId").get(verifyJWT,getInstructorStats);
+router.route("/get-instructor-rating-and-reviews/:instructorId").get(verifyJWT,getInstructorRatingAndReviews);
 
 router.route("/refresh-token").post(refreshAccessToken);
 router.route("/auth/google").get(googleAuth);

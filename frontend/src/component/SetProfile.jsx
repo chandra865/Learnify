@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import StudentProfile from "../pages/StudentProfile";
-import InstructorProfile from "../pages/InstructorProfile";
+import InstructorProfile from "../pages/UserProfile";
 import { useSelector } from "react-redux";
 
 const SetProfile = ()=>{

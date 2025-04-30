@@ -32,6 +32,7 @@ import CourseCurriculum from "./component/CourseCurriculum";
 import LectureManage from "./component/LectureManage";
 import CoursePlayer from "./pages/CoursePlayer";
 import { useLocation } from "react-router-dom";
+import UserProfile from "./pages/UserProfile";
 
 function App() {
   const location = useLocation();
@@ -67,7 +68,7 @@ function App() {
       <Route path="/login" element={<Login/>}/>
       <Route path="/course/enroll/:course_id" element={<CourseLandingPage/>}/>
       <Route path="/dashboard" element={<Dashboard />}>
-          <Route path="profile" element={<SetProfile/>} />
+          <Route path="profile" element={<UserProfile/>} />
           <Route path="enrolled" element={<EnrolledCourses />} />
           <Route path="created" element={<CreatedCourses />} >
             <Route path="course-managment/:courseId" element={<CourseManagment/>} />

@@ -14,12 +14,19 @@ import {
 } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // LocalStorage
 
-// Combine all slices
-const rootReducer = combineReducers({
+const appReducer = combineReducers({
   user: userReducer,
   course: courseReducer,
   lecture: lectureReducer,
 });
+
+const rootReducer = (state, action) => {
+  if (action.type === 'user/logout') { // when logout action is dispatched
+    state = undefined; // clear all redux state
+  }
+  return appReducer(state, action);
+};
+
 
 // Persist everything by default
 const persistConfig = {

@@ -7,7 +7,7 @@ import Education from "../component/Education";
 import Experience from "../component/Experience";
 import Expertise from "../component/Expertise";
 
-const InstructorProfile = () => {
+const UserProfile = () => {
   const instructor = useSelector((state) => state.user.userData);
   const [activeTab, setActiveTab] = useState("courses");
   const [experience, setExperience] = useState([]);
@@ -55,4 +55,4 @@ const InstructorProfile = () => {
   );
 };
 
-export default InstructorProfile;
+export default UserProfile;

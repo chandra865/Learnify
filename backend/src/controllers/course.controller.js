@@ -96,7 +96,7 @@ const createCourse = asyncHandler(async (req, res) => {
 const getCourse = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
 
-  const course = await Course.findById(courseId).populate("instructor", "name");
+  const course = await Course.findById(courseId).populate("instructor", "name profilePicture bio");
   if (!course) throw new ApiError(404, "course not found");
 
 
@@ -202,7 +202,7 @@ const stuCourses = asyncHandler(async (req, res) => {
 });
 
 const getAllCourses = asyncHandler(async (req, res) => {
-  const course = await Course.find({}).populate("instructor","name");
+  const course = await Course.find({}).populate("instructor","name profilePicture bio");
 
   if (!course) throw new ApiError(404, "failed to fetch course");
   return res

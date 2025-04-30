@@ -19,7 +19,7 @@ const Profile = () => {
         <div>
           <h1 className="text-2xl font-bold">{user.name}</h1>
           <p className="text-gray-300">
-            {user.role === "instructor" ? user.bio : "" || "No bio available."}
+            {user.bio === "" ? "No bio available.":user.bio}
           </p>
           <div className="mt-2 flex gap-3">
             {user.socialLinks?.linkedin && (

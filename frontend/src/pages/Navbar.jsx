@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { Link, useNavigate, } from "react-router-dom"; 
+import { Link, useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { useDispatch } from "react-redux";
 import CategoryMenu from "../component/CategoryMenu";
@@ -8,9 +8,8 @@ import { toast } from "react-toastify";
 import { login } from "../store/slice/userSlice";
 import axios from "axios";
 
-
 const Navbar = () => {
-  const { status,userData } = useSelector((state) => state.user);
+  const { status, userData } = useSelector((state) => state.user);
   const [searchQuery, setSearchQuery] = useState("");
   const [switching, setSwitching] = useState(false);
   const navigate = useNavigate();
@@ -26,7 +25,6 @@ const Navbar = () => {
     }
   };
 
-
   const handleRoleSwitch = async () => {
     const newRole = user.role === "student" ? "instructor" : "student";
     try {
@@ -37,12 +35,11 @@ const Navbar = () => {
         { withCredentials: true }
       );
       dispatch(login(response.data.data));
-      newRole === "instructor" ? navigate("/dashboard"):navigate("/");
+      newRole === "instructor" ? navigate("/dashboard/profile") : navigate("/");
       toast.success(`Switched to ${newRole} role`);
     } catch (err) {
       console.error(err);
       toast.error("Failed to switch role");
-      
     } finally {
       setSwitching(false);
     }
@@ -51,12 +48,12 @@ const Navbar = () => {
     <nav className="bg-gray-800 text-white p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo */}
-        <Link 
-         to={user?.role === "instructor" ? "/dashboard" : "/"} 
-        className="text-2xl font-bold text-white">
+        <Link
+          to={user?.role === "instructor" ? "/dashboard/profile" : "/"}
+          className="text-2xl font-bold text-white"
+        >
           MyApp
         </Link>
-
 
         {/* Search Bar */}
         <div className="flex items-center bg-gray-700 rounded-lg px-3 py-2 w-80">
@@ -95,6 +92,7 @@ const Navbar = () => {
           ) : (
             <>
               <li>
+               
                 <button
                   onClick={handleRoleSwitch}
                   disabled={switching}
@@ -109,15 +107,29 @@ const Navbar = () => {
                     ? "Switching..."
                     : `${user?.role === "student" ? "Instructor" : "Student"}`}
                 </button>
+               
               </li>
-              <li>
+
+              {/* Profile Picture only if student */}
+              {user?.role === "student" && user?.profilePicture?.url && (
+                <li>
+                  <Link to="dashboard/profile">
+                    <img
+                      src={user.profilePicture.url}
+                      alt="Profile"
+                      className="w-10 h-10 rounded-full object-cover border-2 border-white hover:scale-105 transition"
+                    />
+                  </Link>
+                </li>
+              )}
+              {/* <li>
                 <Link
                   to="/dashboard"
                   className="px-4 py-2  bg-blue-600 rounded hover:bg-blue-700 transition"
                 >
                   Dashboard
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link
                   to="/logout"

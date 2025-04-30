@@ -4,5 +4,5 @@ import {uploadMedia} from '../controllers/media.controller.js';
 
 const router = Router();
 
-router.route('/upload-media').post(verifyJWT, isAuthorized('instructor'), uploadMedia);
+router.route('/upload-media').post(verifyJWT, uploadMedia);
 export default router;

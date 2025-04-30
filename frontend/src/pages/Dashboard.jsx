@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { useNavigate, Outlet } from "react-router-dom";
+import { useNavigate, Outlet, useLocation } from "react-router-dom";
 import {
   FaUser,
   FaBook,
@@ -12,8 +12,10 @@ import {
 } from "react-icons/fa";
 
 
+
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const role = useSelector((state) => state.user.userData?.role);
 
   // Sidebar items based on role
@@ -31,9 +33,11 @@ const Dashboard = () => {
         { title: "Earning", path: "/dashboard/Earning", icon: <FaDollarSign /> },
         { title: "Logout", path: "/logout", icon: <FaSignOutAlt /> },
       ];
-
+      
+  // Check if current path matches item path for active class
+  const isActive = (path) => location.pathname === path ? "bg-gray-700" : "";
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       {/* Sidebar */}
       <aside className="w-64 bg-gray-900 text-white p-6">
         <h2 className="text-xl font-bold mb-6">Dashboard</h2>
@@ -41,7 +45,7 @@ const Dashboard = () => {
           {sidebarItems.map((item) => (
             <li
               key={item.title}
-              className="flex items-center space-x-3 p-3 hover:bg-gray-700 cursor-pointer rounded"
+              className={`flex items-center space-x-3 p-3 ${isActive(item.path)} hover:bg-gray-700 cursor-pointer rounded`}
               onClick={() => navigate(item.path)}
             >
               <span>{item.icon}</span>

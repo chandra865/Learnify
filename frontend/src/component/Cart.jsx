@@ -67,7 +67,7 @@ const Cart = () => {
                 {/* Course Image */}
                 <div className="w-35 h-20 flex-shrink-0">
                   <img
-                    src={course.thumbnail.url}
+                    src={course?.thumbnail?.url}
                     alt={course.title}
                     className="w-full h-full object-cover rounded"
                   />
@@ -98,9 +98,25 @@ const Cart = () => {
                   className="flex items-start px-4 text-sm text-[16px] cursor-pointer text-blue-500 ">
                     Remove
                   </button>
-                  <p className="px-4 text-xl font-extrabold ">
+                  <div>
+                    {course.price === course.finalPrice ? (
+                      <p className="px-4 text-xl font-extrabold ">
+                        ₹{course.price}
+                      </p>
+                    ) : (
+                      <div className="flex flex-col items-start">
+                        <p className="px-4 text-xl font-extrabold line-through text-gray-500">
+                          ₹{course.price}
+                        </p>
+                        <p className="px-4 text-xl font-extrabold ">
+                          ₹{course.finalPrice}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  {/* <p className="px-4 text-xl font-extrabold ">
                     ₹{course.price}
-                  </p>
+                  </p> */}
                 </div>
               </div>
             ))}

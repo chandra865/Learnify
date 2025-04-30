@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -21,6 +21,7 @@ import {
   FaGlobe,
 } from "react-icons/fa";
 import { setSelectedLecture } from "../store/slice/selectedLectureSlice";
+import InstructorProfile from "../component/InstructorProfile";
 
 const CourseLandingPage = () => {
   const user = useSelector((state) => state.user.userData);
@@ -42,7 +43,8 @@ const CourseLandingPage = () => {
   const [isCouponValid, setIsCouponValid] = useState(true);
   const [discountApplied, setDiscountApplied] = useState(0);
 
-  console.log(isEnrolled);
+  const proRef = useRef(null);
+  //console.log(isEnrolled);
 
   const handleCouponChange = (e) => {
     setCouponCode(e.target.value.toUpperCase()); // Ensure coupon code is in uppercase
@@ -106,6 +108,7 @@ const CourseLandingPage = () => {
           `http://localhost:8000/api/v1/course/fetchcourse/${course_id}`,
           { withCredentials: true }
         );
+        // console.log(response.data.data);
         setCourse(response.data.data);
       } catch (error) {
         const errorMessage =
@@ -161,6 +164,9 @@ const CourseLandingPage = () => {
   const handlePreviewClick = () => {
     setShowPreview(true);
   };
+  const handleProfileClick = () => {
+    proRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
 
   // const handleEnroll = async () => {
   //   // try {
@@ -215,7 +221,9 @@ const CourseLandingPage = () => {
             <p className="mt-4 flex items-center text-sm">
               <FaUser className="text-white mr-2" />
               {"Created by"}
-              <span className="ml-1 underline">{course?.instructor?.name}</span>
+              <span 
+              onClick={handleProfileClick}
+              className="ml-1 underline cursor-pointer">{course?.instructor?.name}</span>
             </p>
             <p className="flex items-center text-sm">
               <FaCalendarAlt className="text-white mr-2" /> Last update{" "}
@@ -275,7 +283,11 @@ const CourseLandingPage = () => {
 
             <Recommendation />
             <CourseReviews />
-            {<AddReview />}
+            <div ref={proRef}>
+            <InstructorProfile />
+            </div>
+            
+            <AddReview />
           </div>
 
           {/* course side bar */}
@@ -380,7 +392,7 @@ const CourseLandingPage = () => {
                 className={`text-lg w-full px-6 py-3 border-1 rounded-[5px] font-bold  hover:bg-gray-600
                     ${isEnrolled ? "cursor-not-allowed" : "cursor-pointer"}
                   `}
-                onClick={() => handleCart(course?.finalPrice)}
+                onClick={() => handleCart(course?.finalPrice === course?.price ? course?.price : course?.finalPrice)}
               >
                 Add to cart
               </button>

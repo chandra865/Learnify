@@ -6,6 +6,9 @@ import { Education } from "../models/Education.js";
 import jwt from "jsonwebtoken";
 import { Experience } from "../models/Experience.js";
 import passport from "passport";
+import { Course } from "../models/course.model.js";
+import { Enrollment } from "../models/enrollment.model.js";
+import { Review } from "../models/review.model.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -604,6 +607,83 @@ const getExperties = asyncHandler( async (req, res) => {
 });
 
 
+const getInstructorStats = asyncHandler(async (req, res) => {
+  const { instructorId } = req.params;
+
+  if (!instructorId) {
+    throw new ApiError(400, "Instructor ID is required");
+  }
+
+  // 1. Get all courses created by instructor
+  const courses = await Course.find({ instructor: instructorId }).select("_id");
+  const courseIds = courses.map((c) => c._id);
+  const courseCount = courseIds.length;
+
+  if (courseCount === 0) {
+    return res.status(200).json(
+      new ApiResponse(200, {
+        totalCourses: 0,
+        totalStudents: 0,
+      }, "No courses found for this instructor"));
+  }
+
+  // 2. Get enrollments for these courses
+  const enrollments = await Enrollment.find({ course: { $in: courseIds } }).select("user");
+
+  // 3. Get unique students
+  const studentIds = new Set(enrollments.map((e) => e.user.toString()));
+  const totalStudents = studentIds.size;
+
+  res.status(200).json(
+    new ApiResponse(200, {
+      totalCourses: courseCount,
+      totalStudents,
+    }, "Instructor stats fetched successfully")
+    );
+});
+
+const getInstructorRatingAndReviews = asyncHandler(async (req, res) => {
+  const { instructorId } = req.params;
+
+  if (!instructorId) {
+    throw new ApiError(400, "Instructor ID is required");
+  }
+
+  // Step 1: Find all courses by this instructor
+  const courses = await Course.find({ instructor: instructorId }).select("_id");
+
+  if (!courses.length) {
+    return res.status(404).json(
+      new ApiResponse(404, {}, "No courses found for this instructor")
+      );
+  }
+
+  const courseIds = courses.map(course => course._id);
+
+  // Step 2: Find all reviews for these courses
+  const reviews = await Review.find({ courseId: { $in: courseIds } });
+
+  if (!reviews.length) {
+    return res.status(200).json(
+      new ApiResponse(200, {
+        totalReviews: 0,
+        averageRating: 0,
+      }, "No reviews found for this instructor")
+      );
+  }
+
+  // Step 3: Calculate total reviews and average rating
+  const totalReviews = reviews.length;
+  const averageRating = reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews;
+
+  res.status(200).json(
+    new ApiResponse(200, {
+      totalReviews,
+      averageRating: Number(averageRating.toFixed(2)), // Rounded to 2 decimal places
+    }, "Instructor rating and reviews fetched successfully")
+  );
+});
+
 
 export {
   registerUser,
@@ -626,6 +706,8 @@ export {
   googleAuthCallback,
   googleAuth,
   generateAccessAndRefreshToken,
-  switchUserRole
+  switchUserRole,
+  getInstructorStats,
+  getInstructorRatingAndReviews
 
 };

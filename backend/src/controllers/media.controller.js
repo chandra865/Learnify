@@ -7,7 +7,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 const uploadMedia = asyncHandler(async (req, res) => {
   const { mediaType } = req.body;
 
-  // console.log(mediaType);
+  console.log(mediaType);
 
   if (!req.files || !req.files.media) {
     throw new ApiError(400, "No files found");
@@ -19,7 +19,7 @@ const uploadMedia = asyncHandler(async (req, res) => {
     req.files.media,
     mediaType === "profilepic" ? "thumbnail" : mediaType
   );
-  //console.log(mediaResponse);
+  console.log(mediaResponse);
   if (!mediaResponse.publicId || !mediaResponse.url) {
     throw new ApiError(500, "Something went wrong while uploading the media");
   }
@@ -40,7 +40,7 @@ const uploadMedia = asyncHandler(async (req, res) => {
         : { publicId: "", url: "" },
     profilepic:
       mediaType === "profilepic"
-        ? { publicId, url }
+        ? { publicId: mediaResponse.publicId, url: mediaResponse.url }
         : { publicId: "", url: "" },
   });
 

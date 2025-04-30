@@ -122,6 +122,7 @@ const EditProfile = () => {
         console.log(mediaData);
       } catch (error) {
         // console.error(`Error uploading ${mediaType}:`, error);
+        console.log(error);
         toast.error(`Error while uploading ${mediaType}`);
         event.target.value = "";
       }
