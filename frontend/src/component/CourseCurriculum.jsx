@@ -15,7 +15,6 @@ const CourseCurriculum = () => {
   const [editedTitle, setEditedTitle] = useState("");
   const [showcontent, setShowContent] = useState();
   const [fileUpload, setFileUpload] = useState(false);
-  
 
   const [editingLectureId, setEditingLectureId] = useState(null);
   const [editedLectureTitle, setEditedLectureTitle] = useState("");
@@ -293,7 +292,7 @@ const CourseCurriculum = () => {
       videoInputRef.current.value = null;
     }
   };
-  
+
   const addLecture = async (sectionId) => {
     // !videoInputRef.current?.files[0]
     if (!lectureForms.title) {
@@ -551,7 +550,7 @@ const CourseCurriculum = () => {
 
                       <button
                         onClick={() =>
-                          navigate(`/lecturemanage/${lecture._id}`)
+                          window.open(`/lecturemanage/${lecture._id}`, '_blank')
                         }
                         className="text-gl px-3 py-1 cursor-pointer rounded hover:bg-gray-600 text-blue-500"
                       >
@@ -627,16 +626,27 @@ const CourseCurriculum = () => {
                   placeholder="Lecture Title"
                   className="w-full p-2 border border-gray-400 focus:outline-none focus:border-white bg-gray-700 text-white"
                   value={lectureForms.title}
-                  onChange={
-                    (e) =>
-                      setLectureForms({
-                        ...lectureForms,
-                        title: e.target.value,
-                      })
+                  onChange={(e) =>
+                    setLectureForms({
+                      ...lectureForms,
+                      title: e.target.value,
+                    })
                   }
                   required
+                  maxLength={30}
                 />
+                {/* Character counter */}
+                <p className="text-sm text-gray-400">
+                  {lectureForms.title.length}/30 characters
+                </p>
 
+                {/* Minimum length warning */}
+                {lectureForms.title.length > 0 &&
+                  lectureForms.title.length < 5 && (
+                    <p className="text-sm text-red-400">
+                      Title must be at least 5 characters long.
+                    </p>
+                  )}
                 {/* Checkbox for Free/Paid Lecture */}
                 <label className="flex items-center cursor-pointer mb-3">
                   <span className="mr-2 text-white">Mark as Free Lecture</span>
@@ -699,19 +709,35 @@ const CourseCurriculum = () => {
       {/* New Section Form */}
       {showNewSectionForm ? (
         <div className="bg-gray-700 text-white p-6 space-y-3 mb-4">
-          <div className="flex flex-row gap-2 items-center">
-            <label className="font-bold text-xl w-fit">New Section:</label>
-            <input
-              type="text"
-              placeholder="Enter a Title"
-              className="w-4/5 p-2 border border-gray-400 hover:border-white focus:outline-none focus:border-white bg-gray-600 text-white"
-              value={sectionTitle}
-              onChange={
-                (e) => setSectionTitle(e.target.value)
-                // setNewSection({ ...newSection, title: e.target.value })
-              }
-            />
+          <div className="flex flex-row gap-2">
+            <label className=" w-1/4 font-bold text-xl">New Section:</label>
+            <div className=" w-full">
+              <input
+                type="text"
+                placeholder="Enter a Title"
+                className="w-full p-2 border border-gray-400 hover:border-white focus:outline-none focus:border-white bg-gray-600 text-white"
+                value={sectionTitle}
+                onChange={
+                  (e) => setSectionTitle(e.target.value)
+                  // setNewSection({ ...newSection, title: e.target.value })
+                }
+                maxLength={30}
+              />
+
+              {/* Live character counter */}
+              <p className="text-sm text-gray-300 mt-1">
+                {sectionTitle.length}/30 characters
+              </p>
+
+              {/* Optional minimum length warning */}
+              {sectionTitle.length > 0 && sectionTitle.length < 5 && (
+                <p className="text-sm text-red-400 mt-1">
+                  Section title must be at least 5 characters long.
+                </p>
+              )}
+            </div>
           </div>
+
           <div className="flex justify-end gap-2">
             <button
               className="text-gl bg-blue-500 px-4 py-2 rounded cursor-pointer hover:bg-blue-600"

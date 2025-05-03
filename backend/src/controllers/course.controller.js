@@ -210,6 +210,32 @@ const getAllCourses = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, course, "Courses fetched successfully"));
 });
 
+// Function to handle quiz completion
+const completeQuiz = asyncHandler( async (req, res) => {
+  const { courseId } = req.body; 
+
+    // Find the course and update the quiztaken field to true
+    const course = await Course.findById(courseId);
+
+    if (!course) {
+      throw new ApiError(404, "Course not found");
+    }
+
+    if (course.quiztaken) {
+      throw new ApiError(400, "Quiz already completed for this course");
+    }
+
+    // Update the quiztaken field
+    course.quiztaken = true;
+    await course.save();
+
+    return res
+    .status(200)
+    .json(
+      new ApiResponse(200, course, "Quiz completed successfully")
+    );
+});
+
 const getLectures = asyncHandler (async (req, res) => {
     const { courseId } = req.params;
 
@@ -255,7 +281,6 @@ const changePublishStatus = asyncHandler( async (req, res) => {
       );
   
 });
-
 
 const updateCourse = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
@@ -387,4 +412,5 @@ export {
   updateCourse,
   courseRecommend,
   courseSearch,
+  completeQuiz
 };

@@ -15,7 +15,6 @@ const AddResources = () => {
   const [loading, setLoading] = useState(false);
  
   
-  
   const fetchQuizzes = async () => {
     try {
       const response = await axios.get(
@@ -24,6 +23,7 @@ const AddResources = () => {
           withCredentials: true,
         }
       );
+      console.log("response", response);
       setQuizzes(response.data.data);
     } catch (error) {
       console.error("Error fetching quizzes:", error);
@@ -68,7 +68,7 @@ const AddResources = () => {
         <div className="mt-6 text-white">
           <h3 className="text-xl font-medium">Quizzes</h3>
           <button
-            className="mt-2 px-4 py-2 cursor-pointer bg-blue-500 text-white rounded-md"
+            className="mt-2 px-4 py-2 cursor-pointer bg-blue-500 text-white rounded"
             onClick={handleAddQuiz}
           >
             Add Quiz
@@ -81,13 +81,13 @@ const AddResources = () => {
             quizzes.map((quiz) => (
               <div
                 key={quiz._id}
-                className="mt-3 p-2 bg-gray-700 rounded-lg flex justify-between"
+                className="mt-3 p-2 bg-gray-700 rounded flex justify-between"
               >
                 <div>
-                  <p className="text-lg font-semibold">{quiz.title}</p>
+                  <p className="">{quiz.title}</p>
                 </div>
                 <button
-                  className="px-3 py-1 bg-red-500 text-white cursor-pointer rounded-md"
+                  className="text-blue-500 hover:text-blue-600  cursor-pointer "
                   onClick={() => deleteQuiz(quiz._id)}
                 >
                   Delete

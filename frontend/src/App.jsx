@@ -33,6 +33,7 @@ import LectureManage from "./component/LectureManage";
 import CoursePlayer from "./pages/CoursePlayer";
 import { useLocation } from "react-router-dom";
 import UserProfile from "./pages/UserProfile";
+import QuizPage from "./pages/QuizPage";
 
 function App() {
   const location = useLocation();
@@ -91,6 +92,7 @@ function App() {
       <Route path="/course-watch/:courseId/:sectionId/:lectureId" element = {<CoursePlayer/>}/>
       <Route path="/curri" element={<CourseCurriculum/>}/>
       <Route path="/lecturemanage/:lectureId" element={<LectureManage/>}/>
+      <Route path="/quiz/:quizId" element={<QuizPage />} />
       <Route path="/logout" element={<Logout/>} />
 
     </Routes>

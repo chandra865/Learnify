@@ -12,7 +12,8 @@ import {
   changePublishStatus,
   updateCourse,
   courseRecommend,
-  courseSearch
+  courseSearch,
+  completeQuiz
 } from "../controllers/course.controller.js";
 
 const router = Router();
@@ -52,5 +53,9 @@ router
     .route("/recommend/:courseId").get(courseRecommend);
 router
     .route("/course-search").get(courseSearch);
+router
+    .route("/complete-quiz")
+    .post(verifyJWT, isAuthorized("student"), completeQuiz);
+
 
 export default router;

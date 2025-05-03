@@ -109,6 +109,7 @@ const getProgress = asyncHandler(async (req, res) => {
 
 
 const getCertificate = asyncHandler(async (req, res) => {
+  console.log("Generating certificate...");
   const { userId, courseId } = req.params;
 
   const user = await User.findById(userId);

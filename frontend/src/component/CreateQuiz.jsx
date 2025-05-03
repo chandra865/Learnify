@@ -1,164 +1,207 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
+import { FaArrowLeft } from "react-icons/fa";
 const CreateQuiz = ({ courseId, lectureId, type }) => {
   const navigate = useNavigate();
   const [quizTitle, setQuizTitle] = useState("");
   const [questions, setQuestions] = useState([
     { questionText: "", options: ["", "", "", ""], correctAnswerIndex: 0 },
   ]);
+  const [expandedQuestions, setExpandedQuestions] = useState([0]);
 
-  const dispatch = useDispatch();
-
-  
-  const fetchCourse = async () => {
-    try {
-      const response = await axios.get(
-        `http://localhost:8000/api/v1/course/fetchcourse/${courseId}`,
-        { withCredentials: true }
-      );
-      // console.log(response.data.data);
-      setChossenCourse(response.data.data);
-      dispatch(setSelectedCourse(response.data.data));
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message ||
-        "Something went wrong! Please try again later.";
-
-      alert(errorMessage);
-    }
-    setLoading(false);
-  };
-
-  //Handle question text change
   const handleQuestionChange = (index, value) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[index].questionText = value;
-    setQuestions(updatedQuestions);
+    const updated = [...questions];
+    updated[index].questionText = value;
+    setQuestions(updated);
   };
 
-  //Handle option text change
-  const handleOptionChange = (qIndex, optIndex, value) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[qIndex].options[optIndex] = value;
-    setQuestions(updatedQuestions);
+  const handleOptionChange = (qIdx, oIdx, value) => {
+    const updated = [...questions];
+    updated[qIdx].options[oIdx] = value;
+    setQuestions(updated);
   };
 
-  // Handle correct answer selection
-  const handleCorrectAnswerChange = (qIndex, optIndex) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[qIndex].correctAnswerIndex = optIndex;
-    setQuestions(updatedQuestions);
+  const handleCorrectAnswer = (qIdx, oIdx) => {
+    const updated = [...questions];
+    updated[qIdx].correctAnswerIndex = oIdx;
+    setQuestions(updated);
   };
 
-  // Add new question
+  const toggleExpand = (index) => {
+    setExpandedQuestions((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    );
+  };
+
   const addQuestion = () => {
-    setQuestions([...questions, { questionText: "", options: ["", "", "", ""], correctAnswerIndex: 0 }]);
+    const newIndex = questions.length;
+    setQuestions([
+      ...questions,
+      { questionText: "", options: ["", "", "", ""], correctAnswerIndex: 0 },
+    ]);
+    setExpandedQuestions([newIndex]);
+    //setExpandedQuestions((prev) => [...prev, questions.length]); // Expand new question
   };
 
-  // Remove question
   const removeQuestion = (index) => {
     if (questions.length > 1) {
       setQuestions(questions.filter((_, i) => i !== index));
+      setExpandedQuestions((prev) => prev.filter((i) => i !== index));
     }
   };
 
-  // Submit quiz
   const handleCreateQuiz = async () => {
-    if (!quizTitle) return alert("Enter a quiz title!");
-    if (questions.some((q) => q.questionText.trim() === "" || q.options.some((opt) => opt.trim() === ""))) {
-      return alert("Ensure all questions and options are filled!");
+    if (!quizTitle) return alert("Please enter a quiz title.");
+    if (
+      questions.some(
+        (q) => !q.questionText.trim() || q.options.some((o) => !o.trim())
+      )
+    ) {
+      return alert("Please fill in all questions and options.");
     }
 
-    const formattedQuestions = questions.map((q) => ({
+    const formatted = questions.map((q) => ({
       questionText: q.questionText,
       options: q.options,
       correctAnswer: q.options[q.correctAnswerIndex],
     }));
 
-    const quizData = { title:quizTitle, lectureId: lectureId, courseId:courseId, questions: formattedQuestions, passingScore: 50 };
-    // console.log(quizData);
     try {
-      const response = await axios.post(`http://localhost:8000/api/v1/quiz/create-quiz?quizFor=${type}`, quizData,
+      await axios.post(
+        `http://localhost:8000/api/v1/quiz/create-quiz?quizFor=${type}`,
         {
-            withCredentials:true,
-        }
+          title: quizTitle,
+          courseId,
+          lectureId,
+          questions: formatted,
+          passingScore: 50,
+        },
+        { withCredentials: true }
       );
-      // console.log(response.data.data);
-      alert("Quiz created successfully!");
-      //fetchCourse();
-      
-      navigate(`/dashboard/created`);
-      
-    } catch (error) { 
-      console.error("Error creating quiz:", error);
-      alert("Failed to create quiz");
+
+      alert("Quiz created successfully.");
+      navigate("/dashboard/created");
+    } catch (err) {
+      console.error("Quiz creation failed:", err);
+      alert("Something went wrong. Try again.");
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-6 p-6 bg-gray-900 text-white rounded-lg">
-      <h2 className="text-2xl font-semibold">Create Quiz</h2>
-      
-      {/*Quiz Title */}
-      <input
-        type="text"
-        className="mt-3 w-full p-2 bg-gray-800 text-white rounded-md"
-        placeholder="Enter quiz title"
-        value={quizTitle}
-        onChange={(e) => setQuizTitle(e.target.value)}
-      />
+    <div className="max-w-3xl mx-auto mt-8 bg-gray-900 text-white p-6 rounded-lg shadow-lg">
+      <div className="flex flex-row items-center gap-4 mb-6">
+        {/* <button
+          className="flex items-center cursor-pointer text-white"
+          onClick={() => setSelected(false)}
+        >
+          <FaArrowLeft className="" />
+        </button> */}
+        <h2 className="text-2xl font-bold">Create a New Quiz</h2>
+      </div>
 
-      {/*Questions Section */}
-      {questions.map((q, qIndex) => (
-        <div key={qIndex} className="mt-4 p-4 bg-gray-800 rounded-md">
-          <input
-            type="text"
-            className="w-full p-2 bg-gray-700 text-white rounded-md"
-            placeholder={`Question ${qIndex + 1}`}
-            value={q.questionText}
-            onChange={(e) => handleQuestionChange(qIndex, e.target.value)}
-          />
-          
-          {/*Options */}
-          {q.options.map((option, optIndex) => (
-            <div key={optIndex} className="mt-2 flex items-center">
-              <input
-                type="text"
-                className="flex-1 p-2 bg-gray-700 text-white rounded-md"
-                placeholder={`Option ${optIndex + 1}`}
-                value={option}
-                onChange={(e) => handleOptionChange(qIndex, optIndex, e.target.value)}
-              />
-              <input
-                type="radio"
-                name={`correct-${qIndex}`}
-                className="ml-2"
-                checked={q.correctAnswerIndex === optIndex}
-                onChange={() => handleCorrectAnswerChange(qIndex, optIndex)}
-              />
+      <div className="mb-6">
+        <label className="block text-lg font-medium mb-2">Quiz Title</label>
+        <input
+          type="text"
+          placeholder="Enter quiz title"
+          value={quizTitle}
+          onChange={(e) => setQuizTitle(e.target.value)}
+          className="w-full p-3 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      {questions.map((q, qIdx) => {
+        const isExpanded = expandedQuestions.includes(qIdx);
+        return (
+          <div
+            key={qIdx}
+            className="mb-4 p-4 bg-gray-800 rounded-md border border-gray-700"
+          >
+            <div className="flex justify-between items-center">
+              <div
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={() => toggleExpand(qIdx)}
+              >
+                {isExpanded ? (
+                  <ChevronDown size={20} />
+                ) : (
+                  <ChevronRight size={20} />
+                )}
+                <h3 className="text-lg font-semibold">
+                  {q.questionText || `Question ${qIdx + 1}`}
+                </h3>
+              </div>
+
+              <button
+                onClick={() => removeQuestion(qIdx)}
+                className="text-red-400 hover:text-red-600"
+                title="Remove question"
+              >
+                <Trash2 size={18} />
+              </button>
             </div>
-          ))}
 
-          {/* Remove Question Button */}
-          <button className="mt-3 px-3 py-1 bg-red-500 text-white rounded-md" onClick={() => removeQuestion(qIndex)}>
-            Remove Question
-          </button>
-        </div>
-      ))}
+            {isExpanded && (
+              <>
+                <input
+                  type="text"
+                  placeholder="Enter the question"
+                  value={q.questionText}
+                  onChange={(e) => handleQuestionChange(qIdx, e.target.value)}
+                  className="w-full mt-3 p-2 bg-gray-700 rounded-md mb-4"
+                />
 
-      {/* Add Question Button */}
-      <button className="mt-4 px-4 py-2 bg-green-500 text-white rounded-md" onClick={addQuestion}>
-        Add Question
-      </button>
+                <div className="space-y-3">
+                  {q.options.map((opt, oIdx) => (
+                    <div key={oIdx} className="flex items-center gap-3">
+                      <input
+                        type="text"
+                        placeholder={`Option ${oIdx + 1}`}
+                        value={opt}
+                        onChange={(e) =>
+                          handleOptionChange(qIdx, oIdx, e.target.value)
+                        }
+                        className="flex-1 p-2 bg-gray-700 rounded-md"
+                      />
+                      <button
+                        type="button"
+                        className={`px-3 py-1 rounded-md text-sm ${
+                          q.correctAnswerIndex === oIdx
+                            ? "bg-green-600 text-white"
+                            : "bg-gray-600 text-gray-200 hover:bg-green-500"
+                        }`}
+                        onClick={() => handleCorrectAnswer(qIdx, oIdx)}
+                      >
+                        {q.correctAnswerIndex === oIdx
+                          ? "✔ Correct"
+                          : "Mark Correct"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })}
 
-      {/*  Submit Quiz Button */}
-      <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md" onClick={handleCreateQuiz}>
-        Create Quiz
-      </button>
+      <div className="flex gap-4 mt-6">
+        <button
+          onClick={addQuestion}
+          className="bg-gray-500 text-white px-4 py-2 rounded cursor-pointer"
+        >
+          Add Question
+        </button>
+
+        <button
+          onClick={handleCreateQuiz}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded cursor-pointer"
+        >
+          Create Quiz
+        </button>
+      </div>
     </div>
   );
 };

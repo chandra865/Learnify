@@ -62,12 +62,12 @@ const createQuiz = asyncHandler(async (req, res) => {
 //Get all quizzes
 const getAllQuizzes = asyncHandler(async (req, res) => {
   const { quizFor } = req.query;
-  const { Id } = req.params; // Extract lectureId from URL params
+  const { Id } = req.params; // Id from URL params
 
   if (!quizFor || !Id) {
-    throw new ApiError(400, "Lecture ID is required");
+    throw new ApiError(400, "ID is required");
   }
-
+  console.log(quizFor, Id);
   let quizzes;
   if(quizFor === "lecture"){
     quizzes = await Quiz.find({ lecture: Id});
@@ -75,7 +75,7 @@ const getAllQuizzes = asyncHandler(async (req, res) => {
     quizzes = await Quiz.find({ course: Id});
   }
   
-
+  
   return res
     .status(200)
     .json(new ApiResponse(200, quizzes, "Quizzes fetched successfully"));
@@ -84,13 +84,12 @@ const getAllQuizzes = asyncHandler(async (req, res) => {
 // Get a single quiz by ID
 const getQuizById = asyncHandler(async (req, res) => {
   const { quizId } = req.params;
-  const quiz = await Quiz.findById(quizId).populate("lecture", "title");
+  const quiz = await Quiz.findById(quizId);
 
   if (!quiz) throw new ApiError(404, "Quiz not found");
-
   return res
-    .status(201)
-    .json(new ApiError(200, quiz, "quiz fetched succesfully"));
+    .status(200)
+    .json(new ApiResponse(200, quiz, "quiz fetched succesfully"));
 });
 
 // Update a quiz
@@ -115,11 +114,20 @@ const deleteQuiz = asyncHandler(async (req, res) => {
   if (!deletedQuiz) throw new ApiError(404, "Quiz not found");
 
   // Remove quiz reference from the lecture
-  await Lecture.findByIdAndUpdate(
-    deletedQuiz.lecture._id,
-    { $pull: { quiz: quizId } },
-    { new: true }
-  );
+
+  if(deletedQuiz.lecture) {
+    await Lecture.findByIdAndUpdate(
+      deletedQuiz.lecture,
+      { $pull: { quiz: quizId } },
+      { new: true }
+    );
+  }else{
+    await Course.findByIdAndUpdate(
+      deletedQuiz.course,
+      { $pull: { quiz: quizId } },
+      { new: true }
+    );
+  }
 
   return res
     .status(200)

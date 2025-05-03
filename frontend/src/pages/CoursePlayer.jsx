@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import VideoPlayer1 from "../component/VideoPlayer1";
+import GiveQuiz from "../component/GiveQuiz";
 
 const CoursePlayer = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -325,7 +326,7 @@ const CoursePlayer = () => {
       handleMarkComplete(lectureId);
     }
   };
-  
+
   // Auto-advance to the next lecture when the video ends
   useEffect(() => {
     const videoElement = videoPlayerRef.current?.videoRef.current;
@@ -468,25 +469,13 @@ const CoursePlayer = () => {
                   This is a sample lecture description. You can add notes,
                   transcript, or other resources here.
                 </p>
-                {!isLectureCompleted(lectureId) ? (
-                  <button
-                    onClick={() => handleMarkComplete(lectureId)}
-                    className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center"
-                  >
-                    <CheckCircle className="mr-2" size={16} /> Mark as Complete
-                  </button>
-                ) : (
-                  <div className="mt-4 px-4 py-2 bg-gray-700 text-gray-300 rounded flex items-center">
-                    <CheckCircle className="mr-2" size={16} /> Completed
-                  </div>
-                )}
-
-               
+                <GiveQuiz Id={lectureId} type={"lecture"} />
+                
               </>
             )}
 
             {activeTab === "resources" && (
-              <div className="flex space-x-4 mb-4">
+              <div className="flex flex-col space-y-4 mb-4">
                 <button className="flex items-center px-4 py-2 rounded bg-gray-700 hover:bg-gray-600">
                   <BookOpen className="mr-2" size={16} /> Resources
                 </button>
@@ -494,8 +483,7 @@ const CoursePlayer = () => {
                   <FileText className="mr-2" size={16} /> Transcript
                 </button>
 
-
-                {isCourseCompleted && (
+                {isCourseCompleted && course.quiztaken && (
                   <button
                     onClick={() => setShowCertificatePopup(true)}
                     className="mt-4 ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center"
@@ -503,6 +491,12 @@ const CoursePlayer = () => {
                     <Medal className="mr-2" size={16} /> Get Certificate
                   </button>
                 )}
+                {
+                  isCourseCompleted && course.certificateOption === "quiz" && (
+                    <GiveQuiz Id={course._id} type={"course"} />
+                  )
+                }
+                
               </div>
             )}
 
@@ -708,30 +702,65 @@ const CoursePlayer = () => {
             <div className="text-yellow-400 mb-4">
               <Medal size={64} className="mx-auto" />
             </div>
+
             <h2 className="text-2xl font-bold text-white mb-2">
               🎉 Congratulations! 🎉
             </h2>
-            <p className="text-lg text-white mb-4">
-              You have successfully completed the course!
-            </p>
-            <p className="text-gray-300 mb-6">
-              You've achieved {Math.round(courseProgress)}% course completion.
-              Your certificate is ready for download.
-            </p>
-            <div className="flex justify-center space-x-4">
-              <button
-                onClick={handleDownloadCertificate}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center"
-              >
-                <Medal className="mr-2" size={20} /> Get Certificate
-              </button>
-              <button
-                onClick={() => setShowCertificatePopup(false)}
-                className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700"
-              >
-                Close
-              </button>
-            </div>
+
+            {course?.certificateOption === "direct" || course?.quiztaken ? (
+              <>
+                <p className="text-lg text-white mb-4">
+                  You have successfully completed the course!
+                </p>
+                <p className="text-gray-300 mb-6">
+                  You've achieved {Math.round(courseProgress)}% course
+                  completion. Your certificate is ready for download.
+                </p>
+                <div className="flex justify-center space-x-4">
+                  <button
+                    onClick={handleDownloadCertificate}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center"
+                  >
+                    <Medal className="mr-2" size={20} /> Get Certificate
+                  </button>
+                  <button
+                    onClick={() => setShowCertificatePopup(false)}
+                    className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700"
+                  >
+                    Close
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-lg text-white mb-4">
+                  You've completed all lectures, but you need to pass the quiz
+                  to get your certificate.
+                </p>
+                <p className="text-gray-300 mb-6">
+                  Please complete the quiz associated with this course in the resources tab to unlock
+                  your certificate.
+                </p>
+                <div className="flex justify-center space-x-4">
+                  {/* <button
+                    onClick={() => {
+                      setShowCertificatePopup(false);
+                      <GiveQuiz Id={course._id} type={"course"} />
+                      navigate(``);
+                    }}
+                    className="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600"
+                  >
+                    Take Quiz
+                  </button> */}
+                  <button
+                    onClick={() => setShowCertificatePopup(false)}
+                    className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700"
+                  >
+                    Okay
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
