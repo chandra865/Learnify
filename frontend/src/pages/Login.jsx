@@ -105,6 +105,13 @@ const Login = () => {
 
         <p className="text-center text-lg text-gray-300 my-2">or</p>
         <GoogleLogin/>
+
+        <p className="text-center text-gray-400 mt-4">
+          Don't have an account?{" "}
+          <a href="/register" className="text-blue-500 hover:underline">
+            Register here
+          </a>
+        </p>
       </div>
     </div>
   );

@@ -2,22 +2,36 @@ import mongoose from "mongoose";
 
 const quizSchema = new mongoose.Schema(
   {
-    title:{
-        type:String,
-        required: true
+    title: {
+      type: String,
+      required: true,
     },
-    lecture: { type: mongoose.Schema.Types.ObjectId, ref: "Lecture", default:null },
-    course :{type:mongoose.Schema.Types.ObjectId, ref:"Course", default:null},
+    lecture: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Lecture",
+      default: null,
+    },
+    course: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+      default: null,
+    },
     questions: [
       {
         questionText: { type: String, required: true },
-        options: [{ type: String, required: true }], // Multiple choice options
-        correctAnswer: { type: String, required: true }, // Correct option
+        options: [{ type: String, required: true }],
+        correctAnswer: { type: String, required: true },
       },
     ],
-    passingScore: { type: Number, default: 50 }, // Minimum % required to pass
+    usersAttempted: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    ],
+    passingScore: { type: Number, default: 50 },
   },
-  { timestamps: true } // Automatically adds createdAt & updatedAt
+  { timestamps: true }
 );
 
 export const Quiz = mongoose.model("Quiz", quizSchema);

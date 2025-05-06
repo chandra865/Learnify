@@ -11,7 +11,6 @@ const SearchPage = () => {
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     title: query || "",
-    category: "",
     rating: "",
     price: "",
     language: "",
@@ -46,7 +45,7 @@ const SearchPage = () => {
   };
 
   return (
-    <div className="container mx-auto bg-gray-900 text-white min-h-max pd-20" >
+    <div className="container mx-auto bg-gray-900 text-white min-h-screen pd-20" >
       {/* Search Results Header */}
       <h2 className="text-2xl font-extrabold mb-4 ml-5 pt-10">
         {loading
@@ -60,7 +59,7 @@ const SearchPage = () => {
           <h3 className="text-xl font-bold mb-3">Filters</h3>
 
           {/* Category Filter */}
-          <label className="block text-sm font-semibold mb-1">Category</label>
+          {/* <label className="block text-sm font-semibold mb-1">Category</label>
           <select
             name="category"
             onChange={handleChange}
@@ -69,7 +68,7 @@ const SearchPage = () => {
             <option value="">Select Category</option>
             <option value="Web Development">Web Development</option>
             <option value="Data Science">Data Science</option>
-          </select>
+          </select> */}
 
           {/* Rating Filter */}
           <label className="block text-sm font-semibold mb-1">Rating</label>

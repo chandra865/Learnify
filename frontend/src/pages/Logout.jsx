@@ -23,7 +23,7 @@ const Logout = () => {
         // Clear Redux state and persist
         await persistor.purge();
         dispatch(logout());
-    
+        localStorage.clear();
         // Only navigate once everything is cleared
         navigate("/");
     

@@ -45,18 +45,29 @@ const Navbar = () => {
     }
   };
   return (
-    <nav className="bg-gray-800 text-white p-4 shadow-lg">
+    <nav className="bg-gray-800 text-white p-4 drop-shadow-[0_4px_4px_rgba(255,255,255,0.25)] border-b-2">
       <div className="container mx-auto flex justify-between items-center">
+        <div className="flex flex-row justify-between items-center gap-10">
         {/* Logo */}
         <Link
           to={user?.role === "instructor" ? "/dashboard/profile" : "/"}
-          className="text-2xl font-bold text-white"
+        
         >
-          MyApp
+          <div className="flex flex-row items-center gap-2 ml-25">
+          <img
+            src="src/assets/logo.png"
+            alt="Logo"
+            className="h-10 w-10"
+          />
+          <p className="text-blue-500 font-extrabold text-xl">Learnify</p>
+          </div>
+          
         </Link>
 
+        <CategoryMenu />
+
         {/* Search Bar */}
-        <div className="flex items-center bg-gray-700 rounded-lg px-3 py-2 w-80">
+        <div className="flex items-center bg-gray-700 rounded-3xl px-3 py-2 w-150 hover:border-2">
           <Search className="text-gray-400" size={20} />
           <input
             type="text"
@@ -68,6 +79,8 @@ const Navbar = () => {
           />
         </div>
 
+        </div>
+
         {/* Navigation Links */}
         <ul className="flex items-center gap-4">
           {!status ? (
@@ -75,7 +88,7 @@ const Navbar = () => {
               <li>
                 <Link
                   to="/register"
-                  className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition"
+                  className="px-4 py-2 border-1 rounded hover:bg-gray-500 transition"
                 >
                   Register
                 </Link>
@@ -83,7 +96,7 @@ const Navbar = () => {
               <li>
                 <Link
                   to="/login"
-                  className="px-4 py-2  bg-blue-600 rounded hover:bg-blue-700 transition"
+                  className="px-4 py-2  border-1 rounded hover:bg-gray-500 transition"
                 >
                   Login
                 </Link>
@@ -122,18 +135,10 @@ const Navbar = () => {
                   </Link>
                 </li>
               )}
-              {/* <li>
-                <Link
-                  to="/dashboard"
-                  className="px-4 py-2  bg-blue-600 rounded hover:bg-blue-700 transition"
-                >
-                  Dashboard
-                </Link>
-              </li> */}
               <li>
                 <Link
                   to="/logout"
-                  className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition"
+                  className="px-4 py-2 border-1 rounded hover:bg-gray-500  transition"
                 >
                   Logout
                 </Link>

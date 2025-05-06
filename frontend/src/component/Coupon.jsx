@@ -141,6 +141,7 @@ const Coupon = () => {
 
   return (
     <div className="max-w-2xl mx-auto my-10 p-6 bg-gray-800 text-white rounded-lg shadow-lg">
+      <p className="text-sm text-green-500 text-center mb-2 bg-gray-700 rounded-xl p-2">"From your created coupons, the active one with the highest discount will be automatically applied to the course."</p>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Manage Coupons</h2>
         <button

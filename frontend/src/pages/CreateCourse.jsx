@@ -191,6 +191,14 @@ const CreateCourse = () => {
       return;
     }
 
+    const maxSizeInMB = 5; // set your limit (e.g. 5MB)
+    const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+
+    if (file.size > maxSizeInBytes) {
+      alert(`File size exceeds ${maxSizeInMB}MB limit.`);
+      e.target.value = ""; // reset the input
+      return;
+    }
     try {
       const mediaData = await uploadMedia(file, mediaType);
       // console.log(`${mediaType} Uploaded:`, mediaData);
@@ -453,6 +461,7 @@ const CreateCourse = () => {
 
               <div className="mt-2">
                 {!uploadInputVideo && (
+                  <>
                   <input
                     type="file"
                     name="media"
@@ -461,6 +470,9 @@ const CreateCourse = () => {
                     className="w-full p-2 border rounded mb-3"
                     ref={videoInputRef}
                   />
+                  <p className="text-sm text-gray-400">Max size: 5MB</p>
+                  </>
+
                 )}
 
                 {!uploadInputImg && progress > 0 && (

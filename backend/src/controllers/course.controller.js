@@ -7,6 +7,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
 import { Media } from "../models/media.model.js";
 import { getVideoDuration } from "../utils/cloudinary.js";
+import { Quiz } from "../models/quiz.model.js";
+import { Section } from "../models/section.model.js";
 
 const createCourse = asyncHandler(async (req, res) => {
   const {
@@ -211,29 +213,31 @@ const getAllCourses = asyncHandler(async (req, res) => {
 });
 
 // Function to handle quiz completion
-const completeQuiz = asyncHandler( async (req, res) => {
-  const { courseId } = req.body; 
+const completeQuiz = asyncHandler(async (req, res) => {
+  const { courseId } = req.body;
+  const userId = req.user._id;
 
-    // Find the course and update the quiztaken field to true
-    const course = await Course.findById(courseId);
+  // Find the quiz for the course
+  const quiz = await Quiz.findOne({ course: courseId });
 
-    if (!course) {
-      throw new ApiError(404, "Course not found");
-    }
+  if (!quiz) {
+    throw new ApiError(404, "Quiz not found for this course");
+  }
 
-    if (course.quiztaken) {
-      throw new ApiError(400, "Quiz already completed for this course");
-    }
+  // Check if user already completed the quiz
+  const alreadyAttempted = quiz.usersAttempted.includes(userId);
 
-    // Update the quiztaken field
-    course.quiztaken = true;
-    await course.save();
+  if (alreadyAttempted) {
+    throw new ApiError(400, "You have already completed the quiz for this course");
+  }
 
-    return res
+  // Add user to attempted list
+  quiz.usersAttempted.push(userId);
+  await quiz.save();
+
+  return res
     .status(200)
-    .json(
-      new ApiResponse(200, course, "Quiz completed successfully")
-    );
+    .json(new ApiResponse(200, quiz, "Quiz completed successfully"));
 });
 
 const getLectures = asyncHandler (async (req, res) => {
@@ -370,21 +374,32 @@ const courseRecommend = asyncHandler(async (req, res) => {
 });
 
 const courseSearch = asyncHandler(async (req, res) => {
-  const { title, category, rating, price, language } = req.query;
+  const { title, rating, price, language } = req.query;
+
   let query = {};
 
-  if (category) query.category = category;
   if (language) query.language = language;
   if (rating) query.averageRating = { $gte: Number(rating) };
   if (price) query.price = { $gte: Number(price) };
 
-  // OR condition only for title
+  // Flexible search logic for 'title'
   if (title) {
-    query.$or = [{ title: { $regex: `.*${title}.*`, $options: "i" } }];
+    const words = title.trim().split(/\s+/); // Split by whitespace
+    query.$or = [];
+
+    for (const word of words) {
+      const regex = new RegExp(word, "i"); // Case-insensitive partial match
+      query.$or.push(
+        { title: { $regex: regex } },
+        { subtitle: { $regex: regex } },
+        { category: { $regex: regex } },
+        { subcategory: { $regex: regex } }
+      );
+    }
   }
 
   const courses = await Course.find(query)
-    .populate("instructor", "name") // Populate only the name field from User model
+    .populate("instructor", "name") // Only show instructor name
     .exec();
 
   if (!courses.length) {
@@ -395,8 +410,6 @@ const courseSearch = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, courses, "Courses fetched successfully"));
 });
-
-
 
 
 export {

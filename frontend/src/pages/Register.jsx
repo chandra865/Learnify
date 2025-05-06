@@ -111,6 +111,13 @@ const Register = () => {
 
         <p className="text-center text-lg text-gray-300 my-2">or</p>
         <GoogleLogin/>
+
+        <p className="text-center text-gray-400 mt-4">
+          Already have an account?{" "}
+          <a href="/login" className="text-blue-500 hover:underline">
+            Login
+          </a>
+        </p>
       </div>
     </div>
   );

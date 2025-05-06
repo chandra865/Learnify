@@ -29,11 +29,11 @@ const Hero = () => {
           </div>
   
           {/* Right Side - Image */}
-          <div className="md:w-1/2 flex justify-center mt-10 md:mt-0">
+          <div className="md:w-1/2 flex justify-center mt-10 ">
             <img
-              src="https://source.unsplash.com/600x400/?education,learning"
+              src="src/assets/lms-hero.png"
               alt="LMS Hero"
-              className="w-full max-w-lg rounded-lg shadow-xl"
+              className="w-full"
             />
           </div>
         </div>

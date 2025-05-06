@@ -111,10 +111,6 @@ const courseSchema = new Schema(
       default: false,
     },
 
-    quiztaken:{
-      type:Boolean,
-      default:false,
-    }
   },
   { timestamps: true }
 );

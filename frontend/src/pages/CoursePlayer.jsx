@@ -15,7 +15,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import VideoPlayer1 from "../component/VideoPlayer1";
 import GiveQuiz from "../component/GiveQuiz";
-
+import logo from "../assets/logo.png";
 const CoursePlayer = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [activeLecture, setActiveLecture] = useState(0);
@@ -34,7 +34,7 @@ const CoursePlayer = () => {
   const [completedSectionLectures, setCompletedSectionLectures] = useState([]);
   const [isCourseCompleted, setIsCourseCompleted] = useState(false);
   const [showCertificatePopup, setShowCertificatePopup] = useState(null);
-
+  const [isCourseQuizTaken, setIsCourseQuizTaken] = useState(false);
   const course = useSelector((state) => state.course.selectedCourse);
   const user = useSelector((state) => state.user.userData);
   const userId = user?._id;
@@ -76,6 +76,26 @@ const CoursePlayer = () => {
     };
     fetchVideoUrl();
   }, [lectureId]);
+
+  // checking is quiz taken or not
+  useEffect(() => {
+    const checkQuizTaken = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/api/v1/quiz/has-completed-quiz`,
+          {
+            params: { courseId: courseId },
+            withCredentials: true,
+          }
+        );
+        //console.log("response", response.data.data);
+        setIsCourseQuizTaken(response.data.data.completed);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    checkQuizTaken();
+  }, [courseId]);
 
   const totalLectures = courseContent.reduce(
     (acc, section) => acc + section.lectures.length,
@@ -326,6 +346,7 @@ const CoursePlayer = () => {
       handleMarkComplete(lectureId);
     }
   };
+  console.log(isCourseQuizTaken);
 
   // Auto-advance to the next lecture when the video ends
   useEffect(() => {
@@ -380,8 +401,11 @@ const CoursePlayer = () => {
       <nav className="bg-gray-800 px-6 py-4 flex justify-between items-center border-b border-gray-700">
         <div className="container mx-auto flex justify-between items-center">
           {/* Logo */}
-          <Link to="/" className="text-xl font-bold text-white">
-            MyApp
+          <Link to="/">
+            <div className="flex flex-row items-center gap-2">
+              <img src={logo} alt="Logo" className="h-10 w-10" />
+              <p className="text-blue-500 font-extrabold text-xl">Learnify</p>
+            </div>
           </Link>
 
           {/* Course Title */}
@@ -470,7 +494,6 @@ const CoursePlayer = () => {
                   transcript, or other resources here.
                 </p>
                 <GiveQuiz Id={lectureId} type={"lecture"} />
-                
               </>
             )}
 
@@ -483,7 +506,7 @@ const CoursePlayer = () => {
                   <FileText className="mr-2" size={16} /> Transcript
                 </button>
 
-                {isCourseCompleted && course.quiztaken && (
+                {isCourseCompleted && isCourseQuizTaken && (
                   <button
                     onClick={() => setShowCertificatePopup(true)}
                     className="mt-4 ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center"
@@ -491,12 +514,9 @@ const CoursePlayer = () => {
                     <Medal className="mr-2" size={16} /> Get Certificate
                   </button>
                 )}
-                {
-                  isCourseCompleted && course.certificateOption === "quiz" && (
-                    <GiveQuiz Id={course._id} type={"course"} />
-                  )
-                }
-                
+                {isCourseCompleted && course.certificateOption === "quiz" && (
+                  <GiveQuiz Id={course._id} type={"course"} />
+                )}
               </div>
             )}
 
@@ -707,7 +727,7 @@ const CoursePlayer = () => {
               🎉 Congratulations! 🎉
             </h2>
 
-            {course?.certificateOption === "direct" || course?.quiztaken ? (
+            {course?.certificateOption === "direct" || isCourseQuizTaken ? (
               <>
                 <p className="text-lg text-white mb-4">
                   You have successfully completed the course!
@@ -738,8 +758,8 @@ const CoursePlayer = () => {
                   to get your certificate.
                 </p>
                 <p className="text-gray-300 mb-6">
-                  Please complete the quiz associated with this course in the resources tab to unlock
-                  your certificate.
+                  Please complete the quiz associated with this course in the
+                  resources tab to unlock your certificate.
                 </p>
                 <div className="flex justify-center space-x-4">
                   {/* <button

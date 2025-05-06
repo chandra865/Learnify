@@ -210,6 +210,14 @@ const CourseCurriculum = () => {
       return;
     }
 
+    const maxSizeInMB = 10; // set your limit (e.g. 10MB)
+    const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+
+    if (file.size > maxSizeInBytes) {
+      alert(`File size exceeds ${maxSizeInMB}MB limit.`);
+      e.target.value = ""; // reset the input
+      return;
+    }
     const video = document.createElement("video");
     video.preload = "metadata";
 
@@ -550,7 +558,7 @@ const CourseCurriculum = () => {
 
                       <button
                         onClick={() =>
-                          window.open(`/lecturemanage/${lecture._id}`, '_blank')
+                          window.open(`/lecturemanage/${lecture._id}`, "_blank")
                         }
                         className="text-gl px-3 py-1 cursor-pointer rounded hover:bg-gray-600 text-blue-500"
                       >
@@ -560,6 +568,7 @@ const CourseCurriculum = () => {
                   )}
 
                   {fileUploadFor === lecture._id && (
+                    <>
                     <input
                       type="file"
                       name="videoFile"
@@ -570,6 +579,8 @@ const CourseCurriculum = () => {
                       className="w-full p-2 border border-gray-400 bg-gray-700 text-white"
                       ref={videoInputRef}
                     />
+                    <p className="text-sm text-gray-400">Max size: 10MB</p>
+                    </>
                   )}
 
                   {uploadProgress[lecture._id] > 0 && (

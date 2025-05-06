@@ -26,7 +26,7 @@ const createLecture = asyncHandler(async (req, res) => {
 
   const section = await Section.findByIdAndUpdate(sectionId, {
     $push: { lectures: lecture._id },
-    // $inc: { duration: lecture.duration || 0 }, // Add lecture duration to section
+    $inc: { duration: lecture.duration || 0 }, // Add lecture duration to section
   });
 
   // If it was unpublished before and now has at least one lecture, mark it published
@@ -61,6 +61,7 @@ const addVideoToLecture = asyncHandler(async (req, res) => {
     $inc: { duration: duration || 0 }, // Add lecture duration to section
   });
 
+  
   return res
     .status(200)
     .json(new ApiResponse(200, lecture, "video added successfully"));

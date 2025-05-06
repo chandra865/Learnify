@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const CategoryMenu = () => {
   const [categories, setCategories] = useState([]);
@@ -7,17 +8,26 @@ const CategoryMenu = () => {
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/v1/category/get-categories'); // Adjust API endpoint as needed
+        const response = await axios.get(
+          "http://localhost:8000/api/v1/category/get-categories"
+        );
         setCategories(response.data.data);
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error("Error fetching categories:", error);
       }
     };
     fetchCategories();
   }, []);
+
+  const handleSubcategoryClick = () => {
+    //console.log("Subcategory clicked:", selectedSubcategory);
+    navigate(`/search?query=${encodeURIComponent(selectedSubcategory.name)}`);
+  };
 
   const resetMenu = () => {
     setIsMenuOpen(false);
@@ -26,77 +36,92 @@ const CategoryMenu = () => {
   };
 
   return (
-    
-      <div className="">
-        <button
-          onClick={() => setIsMenuOpen(true)}
-          className=" text-white rounded-lg cursor-pointer hover:text-blue-700"
-        >
-          Explore Categories
-        </button>
+    <div className="relative">
+      <button
+        onMouseEnter={() => setIsMenuOpen(true)}
+        className="text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
+      >
+        Explore
+      </button>
 
-        {isMenuOpen && (
-          <div
-            className="absolute z-50 left-0 top-full mt-2 flex w-full bg-white shadow-2xl rounded-lg overflow-hidden"
-            onMouseLeave={resetMenu}
-          >
-            <div className="w-1/3 bg-gray-100 border-r">
-              <h2 className="text-lg font-semibold p-4 border-b bg-gray-200">Categories</h2>
+      {isMenuOpen && (
+        <div
+          className="absolute left-0 top-full mt-2 flex bg-gray-900 text-white rounded-lg shadow-xl z-50"
+          onMouseLeave={resetMenu}
+        >
+          {/* Column 1: Categories */}
+          <div className="w-56 border-r border-gray-700">
+            <h2 className="text-base font-semibold px-4 py-2 bg-gray-800 border-b border-gray-700">
+              Categories
+            </h2>
+            <ul>
+              {categories.map((category) => (
+                <li
+                  key={category._id}
+                  onMouseEnter={() => {
+                    setSelectedCategory(category);
+                    setSelectedSubcategory(null);
+                  }}
+                  className={`px-4 py-2 cursor-pointer hover:bg-gray-700 ${
+                    selectedCategory?._id === category._id
+                      ? "bg-gray-700 text-blue-400"
+                      : ""
+                  }`}
+                >
+                  {category.name}
+                  <span className="float-right text-sm">→</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 2: Subcategories */}
+          {selectedCategory && (
+            <div className="w-56 border-r border-gray-700">
+              <h2 className="text-base font-semibold px-4 py-2 bg-gray-800 border-b border-gray-700">
+                {selectedCategory.name}
+              </h2>
               <ul>
-                {categories.map((category) => (
+                {selectedCategory.subcategories.map((subcategory) => (
                   <li
-                    key={category._id}
-                    onMouseEnter={() => {
-                      setSelectedCategory(category);
-                      setSelectedSubcategory(null);
-                    }}
-                    className={`p-4 cursor-pointer hover:bg-gray-200 transition-colors duration-200 ${
-                      selectedCategory?._id === category._id ? 'bg-gray-200 text-blue-600' : ''
+                    key={subcategory._id}
+                    onMouseEnter={() => setSelectedSubcategory(subcategory)}
+                    onClick={handleSubcategoryClick}
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-700 ${
+                      selectedSubcategory?._id === subcategory._id
+                        ? "bg-gray-700 text-blue-400"
+                        : ""
                     }`}
                   >
-                    {category.name}
-                    <span className="float-right text-gray-500">→</span>
+                    {subcategory.name}
+                    {/* <span className="float-right text-sm">→</span> */}
                   </li>
                 ))}
               </ul>
             </div>
+          )}
 
-            {selectedCategory && (
-              <div className="w-1/3 bg-white border-r">
-                <h2 className="text-lg font-semibold p-4 border-b bg-gray-50">{selectedCategory.name}</h2>
-                <ul>
-                  {selectedCategory.subcategories.map((subcategory) => (
-                    <li
-                      key={subcategory._id}
-                      onMouseEnter={() => setSelectedSubcategory(subcategory)}
-                      className={`p-4 cursor-pointer hover:bg-gray-100 transition-colors duration-200 ${
-                        selectedSubcategory?._id === subcategory._id ? 'bg-gray-100 text-blue-600' : ''
-                      }`}
-                    >
-                      {subcategory.name}
-                      <span className="float-right text-gray-500">→</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {selectedSubcategory && (
-              <div className="w-1/3 bg-gray-50">
-                <h2 className="text-lg font-semibold p-4 border-b bg-white">{selectedSubcategory.name}</h2>
-                <ul>
-                  {selectedSubcategory.topics.map((topic) => (
-                    <li key={topic._id} className="p-4 cursor-pointer hover:bg-white transition-colors duration-200">
-                      {topic.name}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
+          {/* Column 3: Topics */}
+          {/* {selectedSubcategory && (
+            <div className="w-56">
+              <h2 className="text-base font-semibold px-4 py-2 bg-gray-800 border-b border-gray-700">
+                {selectedSubcategory.name}
+              </h2>
+              <ul>
+                {selectedSubcategory.topics.map((topic) => (
+                  <li
+                    key={topic._id}
+                    className="px-4 py-2 text-white cursor-pointer hover:bg-gray-700"
+                  >
+                    {topic}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )} */}
+        </div>
+      )}
+    </div>
   );
 };
 

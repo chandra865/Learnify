@@ -37,7 +37,11 @@ import QuizPage from "./pages/QuizPage";
 
 function App() {
   const location = useLocation();
-  const isCourseWatch = location.pathname.startsWith("/course-watch");
+  const hiddenNavbarPaths = ["/course-watch",  "/quiz"];
+  const shouldHideNavbar = hiddenNavbarPaths.some((path) => location.pathname.startsWith(path));
+ 
+  const hiddenFooterPaths = ["/dashboard", "/login", "/register", "/course", "/course-watch", "/quiz"];
+  const shouldHideFooter = hiddenFooterPaths.some((path) => location.pathname.startsWith(path));
   const dispatch = useDispatch();
   useEffect(()=>{
 
@@ -62,7 +66,7 @@ function App() {
   },[])
   return (
     <>
-    {!isCourseWatch ? <Navbar /> : ""}
+    {!shouldHideNavbar && <Navbar />}
     <Routes>
       <Route path="/" element={<Home/>}/>
       <Route path="/register" element={<Register/>}/>
@@ -96,7 +100,7 @@ function App() {
       <Route path="/logout" element={<Logout/>} />
 
     </Routes>
-    {/* { !location.pathname.startsWith("/dashboard") && <Footer /> } */}
+    { !shouldHideFooter && <Footer /> }
     {/* Toast Notification Container */}
     <ToastContainer position="top-right" autoClose={3000} />
    

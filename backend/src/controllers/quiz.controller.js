@@ -134,4 +134,23 @@ const deleteQuiz = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "", "Quiz Deleted Successfully"));
 });
 
-export { createQuiz, deleteQuiz, updateQuiz, getQuizById, getAllQuizzes };
+const hasCompletedQuiz = asyncHandler(async (req, res) => {
+  const { courseId } = req.query;
+  const userId = req.user._id;
+
+  const quiz = await Quiz.findOne({ course: courseId });
+
+  if (!quiz) {
+    throw new ApiError(404, "Quiz not found for this course");
+  }
+
+  const completed = quiz.usersAttempted.includes(userId);
+
+  
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { completed }, "Quiz status retrieved"));
+});
+
+
+export { createQuiz, deleteQuiz, updateQuiz, getQuizById, getAllQuizzes, hasCompletedQuiz };

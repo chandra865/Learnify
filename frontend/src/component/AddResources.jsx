@@ -13,12 +13,13 @@ const AddResources = () => {
   const [isFormVisible, setIsFormVisible] = useState(true);
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(false);
- 
-  
+
   const fetchQuizzes = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/quiz/get-all-quiz/${course._id}?quizFor=${"course"}`,
+        `http://localhost:8000/api/v1/quiz/get-all-quiz/${
+          course._id
+        }?quizFor=${"course"}`,
         {
           withCredentials: true,
         }
@@ -32,9 +33,9 @@ const AddResources = () => {
     }
   };
 
-  useEffect(() => { 
+  useEffect(() => {
     fetchQuizzes();
-}, [course._id]);
+  }, [course._id]);
 
   const handleAddQuiz = () => {
     // Logic to add a quiz
@@ -51,9 +52,12 @@ const AddResources = () => {
 
   const deleteQuiz = async (quizId) => {
     try {
-      await axios.delete(`http://localhost:8000/api/v1/quiz/delete-quiz/${quizId}`, {
-        withCredentials: true
-      });
+      await axios.delete(
+        `http://localhost:8000/api/v1/quiz/delete-quiz/${quizId}`,
+        {
+          withCredentials: true,
+        }
+      );
       alert("Quiz deleted successfully");
       fetchQuizzes();
     } catch (error) {
@@ -61,18 +65,20 @@ const AddResources = () => {
     }
   };
 
-
   return (
     <div>
       {isFormVisible ? (
         <div className="mt-6 text-white">
           <h3 className="text-xl font-medium">Quizzes</h3>
-          <button
-            className="mt-2 px-4 py-2 cursor-pointer bg-blue-500 text-white rounded"
-            onClick={handleAddQuiz}
-          >
-            Add Quiz
-          </button>
+          {course.quiz.length === 0 && (
+            <button
+              className="mt-2 px-4 py-2 cursor-pointer bg-blue-500 text-white rounded"
+              onClick={handleAddQuiz}
+            >
+              Add Quiz
+            </button>
+          )}
+
           {loading ? (
             <p>Loading quizzes...</p>
           ) : quizzes.length === 0 ? (
@@ -98,13 +104,17 @@ const AddResources = () => {
         </div>
       ) : (
         <div>
-        <CreateQuiz courseId={course._id} lectureId={"lecture"} type="course" />
-        <button
+          <CreateQuiz
+            courseId={course._id}
+            lectureId={"lecture"}
+            type="course"
+          />
+          <button
             className="mt-2 px-4 py-2 cursor-pointer bg-blue-500 text-white rounded-md"
             onClick={() => setIsFormVisible(true)}
-        >
+          >
             back
-        </button>
+          </button>
         </div>
       )}
     </div>

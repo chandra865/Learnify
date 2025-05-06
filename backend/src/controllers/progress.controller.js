@@ -108,7 +108,7 @@ const getProgress = asyncHandler(async (req, res) => {
 });
 
 
-const getCertificate = asyncHandler(async (req, res) => {
+const getCertificate = async (req, res) => {
   console.log("Generating certificate...");
   const { userId, courseId } = req.params;
 
@@ -166,7 +166,7 @@ const getCertificate = asyncHandler(async (req, res) => {
     .text(`Date: ${new Date().toLocaleDateString()}`, { align: "center" }).moveDown(1.5);
 
   doc.end();
-});
+};
 
 
 export { updateProgress, getProgress, getCertificate, unmarkLectureComplete, markLectureComplete};
