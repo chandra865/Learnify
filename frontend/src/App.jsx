@@ -40,9 +40,10 @@ function App() {
   const hiddenNavbarPaths = ["/course-watch",  "/quiz"];
   const shouldHideNavbar = hiddenNavbarPaths.some((path) => location.pathname.startsWith(path));
  
-  const hiddenFooterPaths = ["/dashboard", "/login", "/register", "/course", "/course-watch", "/quiz"];
+  const hiddenFooterPaths = ["/dashboard", "/login", "/register", "/course", "/course-watch", "/quiz", "/logout"];
   const shouldHideFooter = hiddenFooterPaths.some((path) => location.pathname.startsWith(path));
   const dispatch = useDispatch();
+
   useEffect(()=>{
 
     const fetchData = async () =>{
@@ -64,6 +65,7 @@ function App() {
     fetchData();
 
   },[])
+
   return (
     <>
     {!shouldHideNavbar && <Navbar />}

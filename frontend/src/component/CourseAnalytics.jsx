@@ -57,7 +57,7 @@ const CourseAnalytics = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Course Views Graph */}
-        {/* <div className="bg-gray-800 p-4 rounded-lg">
+        <div className="bg-gray-800 p-4 rounded-lg">
           <h2 className="text-xl font-semibold mb-3">Course Views</h2>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={viewsData}>
@@ -68,9 +68,9 @@ const CourseAnalytics = () => {
               <Line type="monotone" dataKey="views" stroke="#4F46E5" strokeWidth={3} />
             </LineChart>
           </ResponsiveContainer>
-        </div> */}
+        </div>
 
-        {/* Quiz Performance Graph
+        {/* Quiz Performance Graph */}
         <div className="bg-gray-800 p-4 rounded-lg">
           <h2 className="text-xl font-semibold mb-3">Quiz Performance</h2>
           <ResponsiveContainer width="100%" height={250}>
@@ -82,7 +82,7 @@ const CourseAnalytics = () => {
               <Bar dataKey="count" fill="#10B981" />
             </BarChart>
           </ResponsiveContainer>
-        </div> */}
+        </div>
       </div>
     </div>
   );

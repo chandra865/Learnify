@@ -56,7 +56,7 @@ const Categories = () => {
         >
           {categoryData.map((cat, index) => (
             <SwiperSlide key={index}>
-              <div className="bg-gray-700 rounded-xl p-6 shadow-lg h-full flex flex-col justify-between items-center text-center">
+              <div className="bg-gray-700 rounded p-6 shadow-lg h-full flex flex-col justify-between items-center text-center">
                 {cat.icon}
                 <h3 className="text-xl font-bold mt-4 mb-2">{cat.name}</h3>
                 <p className="text-sm text-gray-200">{cat.description}</p>

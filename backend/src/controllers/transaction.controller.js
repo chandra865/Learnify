@@ -123,10 +123,10 @@ const verifyPayment = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, transaction, "Payment verified successfully"));
 });
 
-const getUserTransactions = asyncHandler(async (req, res) => {
-  const { userId } = req.params;
+const getUserInstructorTransactions = asyncHandler(async (req, res) => {
+  const { instructorId } = req.params;
 
-  const transactions = await Transaction.find({ userId }).populate("courseId");
+  const transactions = await Transaction.find({ instructorId }).populate("courseId");
 
   if (!transactions) {
     throw new ApiError(404, "No transactions found for this user");
@@ -158,5 +158,5 @@ export {
   createOrder,
   verifyPayment,
   getCourseTransactions,
-  getUserTransactions,
+  getUserInstructorTransactions,
 };

@@ -44,6 +44,7 @@ const Navbar = () => {
       setSwitching(false);
     }
   };
+  
   return (
     <nav className="bg-gray-800 text-white p-4 drop-shadow-[0_4px_4px_rgba(255,255,255,0.25)] border-b-2">
       <div className="container mx-auto flex justify-between items-center">
