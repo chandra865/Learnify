@@ -6,24 +6,9 @@ import { useSelector } from "react-redux";
 const CourseAnalytics = () => {
   const course = useSelector((state)=>state.course.selectedCourse);
 
-  const learners = course.enrolledStudents.length;
-  const revenue = learners*course.price;
+  const learners = course.studentenrolled;
+  const revenue = learners*course.finalPrice;
   const avgRating = course.averageRating;
-
-//   const viewsData = [
-//     { day: "Mon", views: 200 },
-//     { day: "Tue", views: 400 },
-//     { day: "Wed", views: 300 },
-//     { day: "Thu", views: 500 },
-//     { day: "Fri", views: 700 },
-//     { day: "Sat", views: 600 },
-//     { day: "Sun", views: 800 },
-//   ];
-
-//   const quizPerformanceData = [
-//     { category: "Pass", count: 75 },
-//     { category: "Fail", count: 25 },
-//   ];
 
   return (
     <div className="min-h-screen p-6 bg-gray-900 text-white">
@@ -56,7 +41,7 @@ const CourseAnalytics = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Course Views Graph */}
+        {/* Course Views Graph
         <div className="bg-gray-800 p-4 rounded-lg">
           <h2 className="text-xl font-semibold mb-3">Course Views</h2>
           <ResponsiveContainer width="100%" height={250}>
@@ -68,10 +53,10 @@ const CourseAnalytics = () => {
               <Line type="monotone" dataKey="views" stroke="#4F46E5" strokeWidth={3} />
             </LineChart>
           </ResponsiveContainer>
-        </div>
+        </div> */}
 
         {/* Quiz Performance Graph */}
-        <div className="bg-gray-800 p-4 rounded-lg">
+        {/* <div className="bg-gray-800 p-4 rounded-lg">
           <h2 className="text-xl font-semibold mb-3">Quiz Performance</h2>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={quizPerformanceData}>
@@ -82,7 +67,7 @@ const CourseAnalytics = () => {
               <Bar dataKey="count" fill="#10B981" />
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </div> */}
       </div>
     </div>
   );

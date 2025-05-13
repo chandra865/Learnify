@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import CourseCard from "../component/CourseCard";
+import { toast } from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL; //Base URL for API
 
 const SearchPage = () => {
   const [searchParams] = useSearchParams();
@@ -25,16 +27,17 @@ const SearchPage = () => {
     setLoading(true); //Show loading before fetching
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/course/course-search`,
+        `${API_BASE_URL}/api/v1/course/course-search`,
         {
           params: filters,
         }
       );
       setCourses(response.data.data);
-      console.log(response.data.data);
       setTotalResults(response.data.data.length || 0); //Set total results
     } catch (error) {
-      console.error("Error fetching courses:", error);
+      toast.error(
+        error?.response?.data.message || "Error fetching courses"
+      );
     } finally {
       setLoading(false); //Hide loading after fetching
     }
@@ -57,18 +60,6 @@ const SearchPage = () => {
         {/* Sidebar Filters (Fixed) */}
         <div className="w-full md:w-1/4 p-4 bg-gray-800 rounded-lg md:sticky md:top-6 h-fit ml-5">
           <h3 className="text-xl font-bold mb-3">Filters</h3>
-
-          {/* Category Filter */}
-          {/* <label className="block text-sm font-semibold mb-1">Category</label>
-          <select
-            name="category"
-            onChange={handleChange}
-            className="w-full p-2 border rounded mb-3 bg-gray-800"
-          >
-            <option value="">Select Category</option>
-            <option value="Web Development">Web Development</option>
-            <option value="Data Science">Data Science</option>
-          </select> */}
 
           {/* Rating Filter */}
           <label className="block text-sm font-semibold mb-1">Rating</label>

@@ -7,6 +7,6 @@ const router = Router();
 
 router.route("/add-review").post(verifyJWT, addReview);
 router.route("/get-review/:courseId").get(getCourseReviews);
-router.route("/delete-review").delete(deleteReview);
+router.route("/delete-review").delete(verifyJWT, deleteReview);
 
 export default router;

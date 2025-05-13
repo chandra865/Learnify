@@ -2,11 +2,13 @@ import mongoose from "mongoose";
 
 const transactionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  courseId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Course",
-    required: true,
-  },
+  courses: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+      required: true,
+    },
+  ],
   instructorId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
   razorpay: {
@@ -20,9 +22,6 @@ const transactionSchema = new mongoose.Schema({
   currency: { type: String, default: "INR" },
   discountCode: {
     type: String,
-  },
-  finalPrice: {
-    type: Number, 
   },
 
   status: {

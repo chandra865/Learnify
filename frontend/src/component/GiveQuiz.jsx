@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-
+import { toast } from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const GiveQuiz = ({ Id, type }) => {
   const [quizzes, setQuizzes] = useState([]);
 
@@ -24,22 +25,23 @@ const GiveQuiz = ({ Id, type }) => {
     fetchQuizzes();
   }, [Id, type]);
 
-  const handleQuizCompletion = async () => {
-    try {
-      await axios.post(
-        `http://localhost:8000/api/v1/course/complete-quiz`,
-        {
-          courseId: Id,
-          userId: "userId", // Replace with actual user ID
-        },
-        { withCredentials: true }
-      );
-      alert("Congratulations! You've completed the quiz and your course status is updated.");
-    } catch (error) {
-      console.error("Error completing the quiz:", error);
-      alert("There was an error updating your course status.");
-    }
-  };
+  // const handleQuizCompletion = async () => {
+  //   try {
+  //     await axios.post(
+  //       `${API_BASE_URL}/api/v1/course/complete-quiz`,
+  //       {
+  //         courseId: Id,
+  //         userId: "userId", // Replace with actual user ID
+  //       },
+  //       { withCredentials: true }
+  //     );
+  //     alert("Congratulations! You've completed the quiz and your course status is updated.");
+  //   } catch (error) {
+  //     toast.error(
+  //       error.response?.data?.message || "Error updating course status"
+  //     );
+  //   }
+  // };
 
   const handleGiveQuizClick = (quizId) => {
     window.open(`/quiz/${quizId}`, "_blank");

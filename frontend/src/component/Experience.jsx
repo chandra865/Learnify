@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import { toast } from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Experience = () => {
   const [experience, setExperience] = useState([]);
@@ -23,23 +25,24 @@ const Experience = () => {
   const fetchExperience = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/v1/user/get-experience",
+        `${API_BASE_URL}/api/v1/user/get-experience`,
         {
           withCredentials: true,
         }
       );
-      console.log(response.data.data);
       setExperience(response.data.data);
     } catch (error) {
-      alert(error.response.data.message || "Error fetching experience");
+      toast.error(
+        error.response?.data.message || "Error fetching experience data"
+      );
     }
   };
 
   const handleAddOrUpdateExperience = async () => {
     try {
       const url = editingId
-        ? `http://localhost:8000/api/v1/user/update-experience/${editingId}`
-        : "http://localhost:8000/api/v1/user/add-experience";
+        ? `${API_BASE_URL}/api/v1/user/update-experience/${editingId}`
+        : `${API_BASE_URL}/api/v1/user/add-experience`;
 
       const payload = { 
         ...formData,
@@ -62,7 +65,9 @@ const Experience = () => {
         description: "",
       });
     } catch (error) {
-      console.error(error.response.data.message || "Error saving experience:");
+      toast.error(
+        error.response?.data.message || "Failed while adding/updating experience"
+      );
     }
   };
 
@@ -79,14 +84,16 @@ const Experience = () => {
   const handleDelete = async (expId) => {
     try {
       await axios.delete(
-        `http://localhost:8000/api/v1/user/delete-experience/${expId}`,
+        `${API_BASE_URL}/api/v1/user/delete-experience/${expId}`,
         {
           withCredentials: true,
         }
       );
       fetchExperience();
     } catch (error) {
-      alert(error.response.data.message || "Failed while deleting experience");
+      toast.error(
+        error.response?.data.message || "Error deleting experience"
+      );
     }
   };
 

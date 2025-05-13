@@ -40,7 +40,7 @@ router
 
 router.route("/all-courses").get(getAllCourses);
 router.route("/fetchcourse/:courseId").get(getCourse);
-router.route("/lectures/:courseId").get(getLectures);
+router.route("/lectures/:courseId").get(verifyJWT, getLectures);
 router
   .route("/change-publish-status/:courseId")
   .patch(verifyJWT, isAuthorized("instructor"), changePublishStatus);

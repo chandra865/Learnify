@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { X } from "lucide-react";
+import { toast } from "react-toastify";
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const Expertise = () => {
   const [expertise, setExpertise] = useState([]);
   const [selectedExpertise, setSelectedExpertise] = useState("");
@@ -20,12 +22,14 @@ const Expertise = () => {
   const fetchExpertise = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/v1/user/get-expertise",
+        `${API_BASE_URL}/api/v1/user/get-expertise`,
         { withCredentials: true }
       );
       setExpertise(response.data.data || []);
     } catch (error) {
-      alert(error.response?.data?.message || "Error fetching expertise");
+      toast.error(
+        error.response?.data?.message || "Error fetching expertise data"
+      );
     }
   };
 
@@ -42,7 +46,7 @@ const Expertise = () => {
 
       try {
         await axios.post(
-          "http://localhost:8000/api/v1/user/add-expertise",
+          `${API_BASE_URL}/api/v1/user/add-expertise`,
           formData,
           { withCredentials: true }
         );
@@ -51,7 +55,9 @@ const Expertise = () => {
         setCustomExpertise("");
         fetchExpertise();
       } catch (error) {
-        console.error(error.response?.data?.message || "Error adding expertise");
+        toast.error(
+          error.response?.data?.message || "Error adding expertise"
+        );
       }
     }
   };
@@ -59,13 +65,15 @@ const Expertise = () => {
   const removeExpertise = async (expertiseItem) => {
     try {
       await axios.delete(
-        `http://localhost:8000/api/v1/user/delete-expertise?expertise=${expertiseItem}`,
+        `${API_BASE_URL}/api/v1/user/delete-expertise?expertise=${expertiseItem}`,
         { withCredentials: true }
       );
       setExpertise(expertise.filter((e) => e !== expertiseItem));
       fetchExpertise();
     } catch (error) {
-      console.error(error.response?.data?.message || "Error removing expertise");
+      toast.error(
+        error.response?.data?.message || "Error removing expertise"
+      );
     }
   };
 

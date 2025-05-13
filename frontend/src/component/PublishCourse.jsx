@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 import { toast } from "react-toastify";
 import axios from "axios";
-
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const PublishCourse = () => {
 
   const course = useSelector((state) => state.course.selectedCourse);
@@ -12,17 +12,13 @@ const PublishCourse = () => {
   const fetchCourse = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/course/fetchcourse/${course._id}`,
+        `${API_BASE_URL}/api/v1/course/fetchcourse/${course._id}`,
         { withCredentials: true }
       );
-      // console.log(response.data.data);
+      
       dispatch(setSelectedCourse(response.data.data));
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message ||
-        "Something went wrong! Please try again later.";
-
-      alert(errorMessage);
+      toast.error(error?.response?.data.message || "Error fetching course data");
     }
     setLoading(false);
   };
@@ -34,7 +30,7 @@ const PublishCourse = () => {
     }
     try {
       const response = await axios.patch(
-        `http://localhost:8000/api/v1/course/change-publish-status/${course._id}`,
+        `${API_BASE_URL}/api/v1/course/change-publish-status/${course._id}`,
         null,
         { withCredentials: true }
       );

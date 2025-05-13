@@ -13,6 +13,8 @@ import {
   FaCalendarAlt,
   FaGlobe,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CourseContent = () => {
   const [expandedSections, setExpandedSections] = useState({});
   const [isEnrolled, setIsEnrolled] = useState(false);
@@ -27,7 +29,7 @@ const CourseContent = () => {
   const checkEnrollment = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/enrollment/check-user-enrollment/${user._id}/${courseId}`,
+        `${API_BASE_URL}/api/v1/enrollment/check-user-enrollment/${user._id}/${courseId}`,
         {
           withCredentials: true,
         }
@@ -36,7 +38,9 @@ const CourseContent = () => {
       const status = response.data.data.enrollmentStatus;
       setIsEnrolled(status);
     } catch (error) {
-      console.log(error);
+      toast.error(
+        error?.response?.data.message || "Error checking enrollment status"
+      );
     }
   };
   useEffect(() => {
@@ -48,7 +52,7 @@ const CourseContent = () => {
   const fetchSection = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/section/get-section-by-course/${courseId}`,
+        `${API_BASE_URL}/api/v1/section/get-section-by-course/${courseId}`,
         {
           withCredentials: true,
         }
@@ -62,7 +66,10 @@ const CourseContent = () => {
       });
       setExpandedSections(initialExpandState);
     } catch (error) {
-      console.log(error);
+      toast.error(
+        error?.response?.data.message || "Error fetching course sections"
+      );
+
     }
   };
   useEffect(() => {
@@ -79,7 +86,8 @@ const CourseContent = () => {
       setSelectedLecture(lecture);
       setShowPreview(true);
     } else {
-      alert("your are not enrolled in this course");
+      toast.error("Please enroll in the course to watch this lecture.");
+
     }
   };
   const toggleSection = (sectionId) => {

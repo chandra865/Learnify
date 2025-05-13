@@ -6,7 +6,7 @@ import CourseCard from "../component/CourseCard";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
@@ -16,8 +16,6 @@ const Courses = () => {
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState(null);
   const [categoryCourses, setCategoryCourses] = useState([]);
-
-  // Create refs for custom navigation buttons
   const swiperRef = useRef(null);
 
   useEffect(() => {
@@ -27,19 +25,15 @@ const Courses = () => {
           "http://localhost:8000/api/v1/course/all-courses"
         );
         const courseData = response.data.data;
-        const filteredCourses = courseData.filter(
-          (course) => course.published === true
-        );
+        const filteredCourses = courseData.filter(course => course.published === true);
         setCourses(filteredCourses);
 
-        // Default set to the first category
-        const defaultCategory = courseData[0]?.category;
+        const defaultCategory = filteredCourses[0]?.category;
         setActiveCategory(defaultCategory);
 
-        // Filter courses by the default category
         if (defaultCategory) {
           setCategoryCourses(
-            courseData.filter((course) => course.category === defaultCategory)
+            filteredCourses.filter(course => course.category === defaultCategory)
           );
         }
       } catch (err) {
@@ -48,24 +42,22 @@ const Courses = () => {
         setLoading(false);
       }
     };
+
     fetchCourses();
   }, []);
 
   const handleCategoryChange = (category) => {
     setActiveCategory(category);
-    setCategoryCourses(
-      courses.filter((course) => course.category === category)
-    );
+    setCategoryCourses(courses.filter(course => course.category === category));
   };
 
   if (loading) return <Loading />;
 
-  // Group courses by categories
-  const categories = [...new Set(courses.map((course) => course.category))];
+  const categories = [...new Set(courses.map(course => course.category))];
 
   return (
-    <div className="flex justify-center items-center bg-gray-900 py-10">
-      <div className="w-full max-w-7xl p-6 bg-gray-900 text-white rounded-xl">
+    <div className="bg-gray-900 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-7xl mx-auto text-white">
         <h2 className="text-3xl font-extrabold text-center mb-8">
           Explore Our Courses
         </h2>
@@ -73,11 +65,11 @@ const Courses = () => {
         {error ? (
           <p className="text-center text-red-500">{error}</p>
         ) : categories.length === 0 ? (
-          <p className="text-center text-gray-600">No courses available</p>
+          <p className="text-center text-gray-400">No courses available</p>
         ) : (
           <>
-            {/* Category Slider (Tabs) */}
-            <div className="relative">
+            {/* Category Tabs Slider */}
+            <div className="relative mb-6">
               <Swiper
                 ref={swiperRef}
                 spaceBetween={20}
@@ -85,6 +77,7 @@ const Courses = () => {
                 loop={true}
                 modules={[Navigation, Pagination]}
                 breakpoints={{
+                  480: { slidesPerView: 3 },
                   640: { slidesPerView: 4 },
                   768: { slidesPerView: 5 },
                   1024: { slidesPerView: 6 },
@@ -93,7 +86,7 @@ const Courses = () => {
                 {categories.map((category, index) => (
                   <SwiperSlide key={index}>
                     <div
-                      className={`cursor-pointer text-center py-4 px-2 rounded-4xl transition-all duration-300  ${
+                      className={`cursor-pointer text-center py-3 px-4 rounded-full transition-all duration-300 whitespace-nowrap ${
                         activeCategory === category
                           ? "bg-black text-white"
                           : "bg-gray-700 text-gray-300"
@@ -106,8 +99,8 @@ const Courses = () => {
                 ))}
               </Swiper>
 
-               {/* Custom Navigation Buttons */}
-               <div
+              {/* Custom Navigation Buttons */}
+              <div
                 className="absolute top-1/2 left-0 transform -translate-y-1/2 cursor-pointer text-xl text-white hover:text-blue-500"
                 style={{ zIndex: 10, left: "-30px" }}
                 onClick={() => swiperRef.current.swiper.slidePrev()}
@@ -123,15 +116,19 @@ const Courses = () => {
               </div>
             </div>
 
-            {/* Course Display for the Active Category */}
+            {/* Courses Grid */}
             {categoryCourses.length > 0 && (
-              <div className="mt-8">
+              <div>
                 <h3 className="text-2xl font-extrabold text-center mb-6">
                   Top Courses in {activeCategory}
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
                   {categoryCourses.slice(0, 12).map((course) => (
-                    <CourseCard key={course._id} course={course} layout="vertical" />
+                    <CourseCard
+                      key={course._id}
+                      course={course}
+                      layout="vertical"
+                    />
                   ))}
                 </div>
               </div>

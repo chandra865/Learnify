@@ -16,6 +16,10 @@ import axios from "axios";
 import VideoPlayer1 from "../component/VideoPlayer1";
 import GiveQuiz from "../component/GiveQuiz";
 import logo from "../assets/logo.png";
+import { toast } from "react-toastify";
+
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 const CoursePlayer = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [activeLecture, setActiveLecture] = useState(0);
@@ -44,7 +48,7 @@ const CoursePlayer = () => {
     const fetchSection = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/section/get-section-by-course/${courseId}`,
+          `${API_BASE_URL}/api/v1/section/get-section-by-course/${courseId}`,
           { withCredentials: true }
         );
         setCourseContent(response.data.data);
@@ -55,7 +59,9 @@ const CoursePlayer = () => {
         });
         setExpandedSections(initialExpandState);
       } catch (error) {
-        console.log(error);
+        toast.error( 
+          error?.response?.data.message || "Error fetching course sections"
+        );
       }
     };
     fetchSection();
@@ -66,12 +72,14 @@ const CoursePlayer = () => {
     const fetchVideoUrl = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/lecture/get-lecture/${lectureId}`,
+          `${API_BASE_URL}/api/v1/lecture/get-lecture/${lectureId}`,
           { withCredentials: true }
         );
         setVideoUrl(response.data.data.videoUrl);
       } catch (error) {
-        console.log(error);
+        toast.error(  
+          error?.response?.data.message || "Error fetching video URL"
+        );
       }
     };
     fetchVideoUrl();
@@ -82,13 +90,12 @@ const CoursePlayer = () => {
     const checkQuizTaken = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/quiz/has-completed-quiz`,
+          `${API_BASE_URL}/api/v1/quiz/has-completed-quiz`,
           {
             params: { courseId: courseId },
             withCredentials: true,
           }
         );
-        //console.log("response", response.data.data);
         setIsCourseQuizTaken(response.data.data.completed);
       } catch (error) {
         console.log(error);
@@ -109,7 +116,7 @@ const CoursePlayer = () => {
 
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/progress/get-progress/${userId}/${courseId}`,
+          `${API_BASE_URL}/api/v1/progress/get-progress/${userId}/${courseId}`,
           { withCredentials: true }
         );
 
@@ -122,7 +129,9 @@ const CoursePlayer = () => {
           setShowCertificatePopup(true);
         }
       } catch (error) {
-        console.error("Error fetching progress:", error);
+        toast.error(
+          error?.response?.data.message || "Error fetching progress"
+        );
       }
     };
 
@@ -139,7 +148,7 @@ const CoursePlayer = () => {
     const saveProgress = async () => {
       try {
         const response = await axios.post(
-          "http://localhost:8000/api/v1/progress/update-progress",
+          `${API_BASE_URL}/api/v1/progress/update-progress`,
           {
             userId,
             courseId,
@@ -180,7 +189,7 @@ const CoursePlayer = () => {
   const handleMarkUncomplete = async (lectureId) => {
     try {
       await axios.post(
-        "http://localhost:8000/api/v1/progress/uncomplete",
+        `${API_BASE_URL}/api/v1/progress/uncomplete`,
         {
           userId: user._id,
           courseId,
@@ -203,7 +212,7 @@ const CoursePlayer = () => {
         setIsCourseCompleted(false);
       }
     } catch (err) {
-      console.error("Error marking uncomplete", err);
+      alert("Error marking uncomplete");
     }
   };
 
@@ -242,7 +251,7 @@ const CoursePlayer = () => {
   const handleDownloadCertificate = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/progress/get-certificate/${userId}/${courseId}`,
+        `${API_BASE_URL}/api/v1/progress/get-certificate/${userId}/${courseId}`,
         {
           withCredentials: true,
           responseType: "blob",
@@ -260,7 +269,9 @@ const CoursePlayer = () => {
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.log("Error downloading certificate:", error);
+      toast.error(
+        error?.response?.data.message || "Error downloading certificate"
+      );
     }
   };
 
@@ -277,31 +288,6 @@ const CoursePlayer = () => {
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   };
 
-  // const handleMarkComplete = async (lectureId) => {
-  //   try {
-  //     const response = await axios.post(
-  //       `http://localhost:8000/api/v1/lecture/complete/${lectureId}`,
-  //       {},
-  //       { withCredentials: true }
-  //     );
-
-  //     // Update local state
-  //     const updatedCompletedLectures = [...completedLectures, lectureId];
-  //     setCompletedLectures(updatedCompletedLectures);
-
-  //     // Check if course is completed
-  //     const totalLectures = courseContent.flatMap(section => section.lectures).length;
-  //     const completionPercentage = (updatedCompletedLectures.length / totalLectures) * 100;
-  //     setCourseProgress(completionPercentage);
-
-  //     if (completionPercentage === 100 && !isCourseCompleted) {
-  //       setIsCourseCompleted(true);
-  //       setShowCertificatePopup(true);
-  //     }
-  //   } catch (err) {
-  //     console.error("Error marking complete", err);
-  //   }
-  // };
 
   const getAllLectures = () =>
     courseContent.flatMap((section) =>
@@ -346,7 +332,6 @@ const CoursePlayer = () => {
       handleMarkComplete(lectureId);
     }
   };
-  console.log(isCourseQuizTaken);
 
   // Auto-advance to the next lecture when the video ends
   useEffect(() => {

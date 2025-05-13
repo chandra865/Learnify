@@ -4,6 +4,8 @@ import { useDispatch } from "react-redux";
 import axios from "axios";
 import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 import CreateQuiz from "./CreateQuiz";
+import { toast } from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const AddResources = () => {
   const course = useSelector((state) => state.course.selectedCourse);
@@ -17,17 +19,18 @@ const AddResources = () => {
   const fetchQuizzes = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/quiz/get-all-quiz/${
+        `${API_BASE_URL}/api/v1/quiz/get-all-quiz/${
           course._id
         }?quizFor=${"course"}`,
         {
           withCredentials: true,
         }
       );
-      console.log("response", response);
       setQuizzes(response.data.data);
     } catch (error) {
-      console.error("Error fetching quizzes:", error);
+      toast.error(
+        error.response?.data.message || "Failed to fetch quizzes"
+      );
     } finally {
       setLoading(false);
     }
@@ -53,15 +56,17 @@ const AddResources = () => {
   const deleteQuiz = async (quizId) => {
     try {
       await axios.delete(
-        `http://localhost:8000/api/v1/quiz/delete-quiz/${quizId}`,
+        `${API_BASE_URL}/api/v1/quiz/delete-quiz/${quizId}`,
         {
           withCredentials: true,
         }
       );
-      alert("Quiz deleted successfully");
+      toast.success("Quiz deleted successfully");
       fetchQuizzes();
     } catch (error) {
-      console.error("Error deleting quiz:", error);
+      toast.error(
+        error.response?.data.message || "Failed to delete quiz"
+      );
     }
   };
 

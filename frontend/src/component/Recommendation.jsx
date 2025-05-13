@@ -4,6 +4,8 @@ import StarRating from "./StarRating";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { FaStar, FaUser } from "react-icons/fa";
+import { toast } from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Recommendation = () => {
   const courseId = useSelector((state) => state.course.selectedCourse._id);
@@ -15,13 +17,12 @@ const Recommendation = () => {
 
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/course/recommend/${courseId}`
+          `${API_BASE_URL}/api/v1/course/recommend/${courseId}`
         );
         setCourses(response.data.data);
       } catch (error) {
-        console.error(
-          "Error fetching recommendations:",
-          error?.response?.data?.message || error.message
+        toast.error(
+          error?.response?.data.message || "Error fetching recommendations"
         );
       }
     };

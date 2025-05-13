@@ -7,6 +7,8 @@ import StarRating from "./StarRating";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import { toast } from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Testimonials = () => {
   const courseId = useSelector((state) => state.course.selectedCourse._id);
@@ -16,12 +18,14 @@ const Testimonials = () => {
     const fetchReviews = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/review/get-review/${courseId}`,
+          `${API_BASE_URL}/api/v1/review/get-review/${courseId}`,
           { withCredentials: true }
         );
         setReviews(response.data.data);
       } catch (error) {
-        console.error("Error fetching reviews:", error);
+        toast.error(
+          error?.response?.data.message || "Error fetching reviews"
+        );
       }
     };
     fetchReviews();

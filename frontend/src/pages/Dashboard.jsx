@@ -8,7 +8,8 @@ import {
   FaPlusCircle,
   FaSignOutAlt,
   FaDollarSign,
-  FaShoppingCart
+  FaShoppingCart,
+  FaReceipt
 } from "react-icons/fa";
 
 
@@ -24,6 +25,7 @@ const Dashboard = () => {
         { title: "Profile", path: "/dashboard/profile", icon: <FaUser /> },
         { title: "Enrolled Courses", path: "/dashboard/enrolled", icon: <FaBook /> },
         { title: "Cart", path: "/dashboard/cart", icon: < FaShoppingCart /> },
+        { title: "Order", path: "/dashboard/order", icon: <FaReceipt /> },
         { title: "Logout", path: "/logout", icon: <FaSignOutAlt /> },
       ]
     : [

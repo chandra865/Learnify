@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import {toast} from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Education = () => {
   const [education, setEducation] = useState([]);
@@ -23,7 +25,7 @@ const Education = () => {
   const fetchEducation = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/v1/user/get-education",
+        `${API_BASE_URL}/api/v1/user/get-education`,
         {
           withCredentials: true,
         }
@@ -31,15 +33,17 @@ const Education = () => {
       const data = response.data.data;
       setEducation(data);
     } catch (error) {
-      alert(error.response.data.message || "Error fetching education");
+      toast.error(
+        error.response?.data.message || "Error fetching education data"
+      );
     }
   };
 
   const handleAddOrUpdateEducation = async () => {
     try {
       const url = editingId
-        ? `http://localhost:8000/api/v1/user/update-education/${editingId}`
-        : "http://localhost:8000/api/v1/user/add-education";
+        ? `${API_BASE_URL}/api/v1/user/update-education/${editingId}`
+        : `${API_BASE_URL}/api/v1/user/add-education`;
 
       const payload = {
         ...formData,
@@ -62,7 +66,10 @@ const Education = () => {
         cgpa: "",
       });
     } catch (error) {
-      console.error(error.response.data.message || "Error saving education:");
+      toast.error(
+        error.response?.data.message || "Error adding/updating education"
+      );
+
     }
   };
 
@@ -79,16 +86,18 @@ const Education = () => {
   const handleDelete = async (eduId) => {
     try {
       const response = await axios.delete(
-        `http://localhost:8000/api/v1/user/delete-education/${eduId}`,
+        `${API_BASE_URL}/api/v1/user/delete-education/${eduId}`,
         {
           withCredentials: true,
         }
       );
 
-      alert(response.data.message || "Education deleted Successfully");
+      
       fetchEducation();
     } catch (error) {
-      alert(error.response.data.message || "Failed while deleting education");
+      toast.error(
+        error.response?.data.message || "Error deleting education"
+      );
     }
   };
   return (

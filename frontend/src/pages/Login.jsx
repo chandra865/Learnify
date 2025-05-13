@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import GoogleLogin from "../component/GoogleLogin";
-
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL; // Ensure this is set in your .env file
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -21,21 +21,26 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login Data Submitted:", formData);
     // Send formData to backend using fetch/axios
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/v1/user/login",
+        `${API_BASE_URL}/api/v1/user/login`,
         formData,
         {
           headers: { "Content-Type": "application/json" }, // Use JSON for regular form data
           withCredentials: true, // Include credentials if needed
         }
       );
-      console.log(response.data); // Log only response data
-      dispatch(login(response.data.data.user));
+      //console.log(response.data); // Log only response data
+      const user = response.data.data.user;
+      dispatch(login(user));
+
+      if(user.role === "instructor"){
+        navigate("/dashboard/profile"); // Redirect to instructor dashboard
+      }else{
       navigate("/"); // Redirect to homepage
+      }
       toast.success(response.data.message);
     } catch (error) {
       console.error(error.response?.data || "Request failed"); // Handle errors properly
@@ -48,24 +53,7 @@ const Login = () => {
       <div className="bg-gray-900 p-8 rounded shadow-lg w-96 mb-10">
       <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Role (Enum Selection) */}
-          {/* <div>
-            <label className="block text-gray-700 font-medium">Role</label>
-            <select
-              name="role"
-              defaultValue=""
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="" disabled>
-                Select a role
-              </option>
-              <option value="student">student</option>
-              <option value="instructor">instructor</option>
-            </select>
-          </div> */}
-
+          
           {/* Email Field */}
           <div>
             <label className="block font-medium">Email</label>

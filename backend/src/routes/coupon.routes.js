@@ -7,14 +7,14 @@ import {
   markCouponAsUsed,
   toggleCouponStatus,
 } from "../controllers/coupon.controller.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyJWT, isAuthorized } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.route("/create-coupon").post(verifyJWT, createCoupon);
-router.route("/validate-coupon").get(verifyJWT, validateCoupon);
-router.route("/get-coupon/:courseId").get(verifyJWT, getCouponsByCourse);
-router.route("/delete-coupon/:couponId").delete(verifyJWT, deleteCoupon);
-router.route("/toggle-coupon/:couponId").patch(verifyJWT, toggleCouponStatus);
+router.route("/create-coupon").post(verifyJWT, isAuthorized("instructor"), createCoupon);
+router.route("/validate-coupon").get(verifyJWT, isAuthorized("instructor"), validateCoupon);
+router.route("/get-coupon/:courseId").get(verifyJWT, isAuthorized("instructor"), getCouponsByCourse);
+router.route("/delete-coupon/:couponId").delete(verifyJWT, isAuthorized("instructor"), deleteCoupon);
+router.route("/toggle-coupon/:couponId").patch(verifyJWT, isAuthorized("instructor"), toggleCouponStatus);
 
 export default router;

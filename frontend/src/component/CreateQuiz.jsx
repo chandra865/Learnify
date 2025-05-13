@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import { FaArrowLeft } from "react-icons/fa";
+import { toast } from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CreateQuiz = ({ courseId, lectureId, type }) => {
   const navigate = useNavigate();
   const [quizTitle, setQuizTitle] = useState("");
@@ -70,7 +72,7 @@ const CreateQuiz = ({ courseId, lectureId, type }) => {
 
     try {
       await axios.post(
-        `http://localhost:8000/api/v1/quiz/create-quiz?quizFor=${type}`,
+        `${API_BASE_URL}/api/v1/quiz/create-quiz?quizFor=${type}`,
         {
           title: quizTitle,
           courseId,
@@ -81,11 +83,12 @@ const CreateQuiz = ({ courseId, lectureId, type }) => {
         { withCredentials: true }
       );
 
-      alert("Quiz created successfully.");
+      toast.success("Quiz created successfully!");
       navigate("/dashboard/created");
     } catch (err) {
-      console.error("Quiz creation failed:", err);
-      alert("Something went wrong. Try again.");
+      toast.error(
+        err?.response?.data.message || "Error creating quiz. Please try again."
+      );
     }
   };
 

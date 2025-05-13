@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Coupon = () => {
   const [formData, setFormData] = useState({
@@ -23,14 +25,16 @@ const Coupon = () => {
   const fetchCoupons = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/v1/coupon/get-coupon/${courseId}`,
+        `${API_BASE_URL}/api/v1/coupon/get-coupon/${courseId}`,
         {
           withCredentials: true,
         }
       );
       setCoupons(res.data.data);
     } catch (error) {
-      console.log(error);
+      toast.error(
+        error?.response?.data.message || "Error fetching coupons"
+      ); 
     }
   };
 
@@ -42,13 +46,15 @@ const Coupon = () => {
   const handleToggleStatus = async (couponId) => {
     try {
       await axios.patch(
-        `http://localhost:8000/api/v1/coupon/toggle-coupon/${couponId}`,
+        `${API_BASE_URL}/api/v1/coupon/toggle-coupon/${couponId}`,
         {},
         { withCredentials: true }
       );
       fetchCoupons(); // refresh list
     } catch (error) {
-      console.log(error);
+      toast.error(
+        error?.response?.data.message || "Error toggling coupon status"
+      );
     }
   };
 
@@ -128,14 +134,16 @@ const Coupon = () => {
   const handleDelete = async (couponId) => {
     try {
       await axios.delete(
-        `http://localhost:8000/api/v1/coupon/delete-coupon/${couponId}`,
+        `${API_BASE_URL}/api/v1/coupon/delete-coupon/${couponId}`,
         {
           withCredentials: true,
         }
       );
       fetchCoupons(); // refresh after delete
     } catch (error) {
-      console.log(error);
+      toast.error(
+        error?.response?.data.message || "Error deleting coupon"
+      );
     }
   };
 

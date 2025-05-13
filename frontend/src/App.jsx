@@ -14,16 +14,14 @@ import EnrolledCourses from "./pages/EnrolledCourses";
 import CreatedCourses from "./pages/CreatedCourses";
 import CreateCourse from "./pages/CreateCourse";
 import Logout from "./pages/Logout";
-import AddLecture from "./pages/AddLecture";
 import LectureForm from "./pages/LectureForm";
-import MediaPlayer from "./pages/MediaPlayer";
 import EditCourse from "./pages/EditCourse";
-import SetProfile from "./component/SetProfile";
+
 import EditProfile from "./pages/EditProfile";
 import Earning from "./pages/Earning";
 import Footer from "./component/Footer";
 import SearchPage from "./pages/SearchPage";
-import CourseManagment from "./pages/CourseManagment";
+
 import CourseLandingPage from "./pages/CourseLandingPage";
 import Cart from "./component/Cart";
 import Payment from "./component/Payment";
@@ -34,6 +32,7 @@ import CoursePlayer from "./pages/CoursePlayer";
 import { useLocation } from "react-router-dom";
 import UserProfile from "./pages/UserProfile";
 import QuizPage from "./pages/QuizPage";
+import Order from "./component/Order";
 
 function App() {
   const location = useLocation();
@@ -77,12 +76,12 @@ function App() {
       <Route path="/dashboard" element={<Dashboard />}>
           <Route path="profile" element={<UserProfile/>} />
           <Route path="enrolled" element={<EnrolledCourses />} />
-          <Route path="created" element={<CreatedCourses />} >
-            <Route path="course-managment/:courseId" element={<CourseManagment/>} />
-          </Route>
+          <Route path="created" element={<CreatedCourses />} />
+            
           <Route path="cart" element={<Cart/>}/>
+          <Route path="order" element={<Order/>}/>
           <Route path="create" element={<CreateCourse />} />
-          <Route path="AddLectures" element={<AddLecture/>} />
+          
           <Route path="Earning" element={<Earning/>}/>
           
       </Route>
@@ -92,7 +91,6 @@ function App() {
       https://cdn.pixabay.com/video/2020/10/19/52849-473336269_large.mp4" 
         poster="https://example.com/thumbnail.jpg" />} />
       <Route path="/add-lecture/:courseId" element={<LectureForm/>} />
-      <Route path="/media-player/:courseId/:index" element={<MediaPlayer />} />
       <Route path="/edit-profile" element={<EditProfile/>}/>
       <Route path="/search" element={<SearchPage/>} />
       <Route path="/course-watch/:courseId/:sectionId/:lectureId" element = {<CoursePlayer/>}/>
@@ -104,7 +102,7 @@ function App() {
     </Routes>
     { !shouldHideFooter && <Footer /> }
     {/* Toast Notification Container */}
-    <ToastContainer position="top-right" autoClose={3000} />
+    <ToastContainer position="bottom-right" autoClose={3000} />
    
     </>
   )

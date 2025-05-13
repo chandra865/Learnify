@@ -3,6 +3,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CourseCurriculum = () => {
   const [sections, setSections] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({});
@@ -34,85 +36,21 @@ const CourseCurriculum = () => {
 
   const courseId = useSelector((state) => state.course.selectedCourse._id);
 
-  // const uploadMedia = async (file, mediaType) => {
-  //   const formData = new FormData();
-  //   formData.append("media", file); // Attach the file
-  //   formData.append("mediaType", mediaType); // Specify media type ("thumbnail" or "video")
-
-  //   try {
-  //     const response = await axios.post(
-  //       "http://localhost:8000/api/v1/media/upload-media",
-  //       formData,
-  //       {
-  //         withCredentials: true,
-  //         headers: {
-  //           "Content-Type": "multipart/form-data", // Important for file upload
-  //         },
-
-  //         onUploadProgress: (progressEvent) => {
-  //           const percent = Math.round(
-  //             (progressEvent.loaded * 100) / progressEvent.total
-  //           );
-
-  //           // Only update if there's a significant change
-  //           if (progressRef.current !== percent) {
-  //             progressRef.current = percent;
-  //             setProgress(percent);
-  //           }
-  //         },
-  //       }
-  //     );
-  //     setProgress(0);
-  //     // console.log(`Upload ${mediaType} Success:`, response.data.data);
-  //     alert(`${mediaType} Upload  Successfully`);
-  //     return response.data.data; // Contains { publicId, url }
-  //   } catch (error) {
-  //     //console.error(`Upload ${mediaType} Failed:`, error);
-  //     const errorMessage =
-  //       error.response?.data?.message ||
-  //       "Something went wrong! Please try again later.";
-  //     throw errorMessage;
-  //   }
-  // };
-
-  // const handleFileChange = async (event, mediaType) => {
-  //   const file = event.target.files[0]; // Get the selected file
-
-  //   if (!file) {
-  //     alert("No file selected");
-  //     return;
-  //   }
-
-  //   try {
-  //     const mediaData = await uploadMedia(file, mediaType);
-  //     //console.log(`${mediaType} Uploaded:`, mediaData);
-
-  //     setLectureForms({
-  //       ...lectureForms,
-  //       videoFile: JSON.stringify({
-  //         publicId: mediaData.video.publicId,
-  //         url: mediaData.video.url,
-  //         duration: mediaData.video.duration,
-  //       }),
-  //     });
-  //   } catch (error) {
-  //     console.error(`Error uploading ${mediaType}:`, error);
-  //     alert(`Error while uploading ${mediaType}:`);
-  //   }
-  // };
 
   const fetchSection = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/section/get-section-by-course/${courseId}`,
+        `${API_BASE_URL}/api/v1/section/get-section-by-course/${courseId}`,
         {
           withCredentials: true,
         }
       );
       setSections(response.data.data);
-      console.log(response);
+      
     } catch (error) {
-      console.log(error);
+      toast.error(
+        error?.response?.data.message || "Error fetching course sections"
+      );
     }
   };
 
@@ -129,7 +67,7 @@ const CourseCurriculum = () => {
     }
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/v1/section/add-section",
+        `${API_BASE_URL}/api/v1/section/add-section`,
         {
           title: sectionTitle,
           courseId,
@@ -139,29 +77,20 @@ const CourseCurriculum = () => {
         }
       );
 
-      console.log(response);
       fetchSection();
-      // const sectionId = Date.now();
-      // setSections([
-      //   ...sections,
-      //   {
-      //     id: sectionId,
-      //     title: newSection.title,
-      //     lectures: [],
-      //   },
-      // ]);
-      // setNewSection({ title: "" });
       setSectionTitle("");
       setShowNewSectionForm(false);
     } catch (error) {
-      console.log(error);
+      toast.error(
+        error?.response?.data.message || "Error adding section"
+      );
     }
   };
 
   const handleUpdateSection = async (sectionId) => {
     try {
       const response = await axios.patch(
-        `http://localhost:8000/api/v1/section/update-section/${sectionId}`,
+        `${API_BASE_URL}/api/v1/section/update-section/${sectionId}`,
         {
           title: editedTitle,
         },
@@ -170,30 +99,29 @@ const CourseCurriculum = () => {
         }
       );
 
-      console.log(response);
       setEditingSectionId(null);
       setEditedTitle("");
       fetchSection();
     } catch (error) {
-      console.log(error);
+      toast.error(
+        error?.response?.data.message || "Error updating section"
+      );
     }
   };
 
   const handleDeleteSection = async (sectionId) => {
     try {
       const response = await axios.delete(
-        `http://localhost:8000/api/v1/section/delete-section/${sectionId}`,
+        `${API_BASE_URL}/api/v1/section/delete-section/${sectionId}`,
         {
           withCredentials: true,
         }
       );
-      if (!response.data.data) {
-        alert(response.data.message);
-        return;
-      }
       fetchSection();
     } catch (error) {
-      console.log(error);
+      toast.error(
+        error?.response?.data.message || "Error deleting section"
+      );
     }
   };
 
@@ -231,7 +159,7 @@ const CourseCurriculum = () => {
     try {
       // Step 1: Request signed URL from the backend
       const response = await axios.post(
-        "http://localhost:8000/api/v1/lecture/upload-signed-aws-url",
+        `${API_BASE_URL}/api/v1/lecture/upload-signed-aws-url`,
         {
           courseId,
           sectionId,
@@ -243,10 +171,9 @@ const CourseCurriculum = () => {
           withCredentials: true,
         }
       );
-      console.log(response);
+     
       const { uploadUrl, key } = response.data.data;
-      console.log("uploadUrl :", uploadUrl);
-      console.log("key :", key);
+      
       // Step 2: Upload video to S3 using the signed URL
       const uploadRes = await axios.put(uploadUrl, file, {
         headers: {
@@ -268,7 +195,7 @@ const CourseCurriculum = () => {
           ...prev,
           [lectureId]: 0,
         }));
-        alert("Video uploaded successfully!");
+        toast.success("Video uploaded successfully!");
         try {
           const response = await axios.post(
             "http://localhost:8000/api/v1/lecture/add-video-lecture",
@@ -290,37 +217,37 @@ const CourseCurriculum = () => {
         setExpandedLectureId((prev) => (prev === lectureId ? null : lectureId));
         setFileUploadFor(false);
       } else {
-        alert("Error uploading video!");
+        toast.error("Error uploading video!");
       }
       fetchSection();
     } catch (error) {
-      console.error("Error uploading video:", error);
-      alert("Error uploading video!");
+     toast.error(
+        error?.response?.data.message || "Error uploading video" 
+     );
     } finally {
       videoInputRef.current.value = null;
     }
   };
 
   const addLecture = async (sectionId) => {
-    // !videoInputRef.current?.files[0]
+    
     if (!lectureForms.title) {
-      alert("Please fill in all required fields.");
+      toast.error("Please fill in all required fields.");
       return;
     }
     const formData = new FormData();
     formData.append("title", lectureForms.title);
-    // formData.append("videoFile", lectureForms.videoFile);
     formData.append("sectionId", sectionId);
     formData.append("isFree", lectureForms.isFree || false);
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/v1/lecture/add-lecture",
+       `${API_BASE_URL}/api/v1/lecture/add-lecture`,
         formData,
         {
           withCredentials: true,
         }
       );
-      console.log(response);
+      
       if (videoInputRef.current) videoInputRef.current.value = "";
       setLectureForms({
         title: "",
@@ -329,37 +256,16 @@ const CourseCurriculum = () => {
       fetchSection();
       setShowLectureForm({ ...showLectureForm, [sectionId]: false });
     } catch (error) {
-      console.log(error);
+      toast.error(
+        error?.response?.data.message || "Error adding lecture"
+      );
     }
-    // const form = lectureForms[sectionId];
-    // if (!form?.title || !form?.videoFile) return;
-
-    // setSections((prev) =>
-    //   prev.map((section) =>
-    //     section.id === sectionId
-    //       ? {
-    //           ...section,
-    //           lectures: [
-    //             ...section.lectures,
-    //             {
-    //               id: Date.now(),
-    //               title: form.title,
-    //               videoFile: form.videoFile.name,
-    //             },
-    //           ],
-    //         }
-    //       : section
-    //   )
-    // );
-
-    // setLectureForms({ ...lectureForms, [sectionId]: {} });
-    //setShowLectureForm({ ...showLectureForm, [sectionId]: false });
   };
 
   const handleUpdateLecture = async (lectureId) => {
     try {
       const response = await axios.patch(
-        `http://localhost:8000/api/v1/lecture/update-lecture/${lectureId}`,
+        `${API_BASE_URL}/api/v1/lecture/update-lecture/${lectureId}`,
         {
           title: editedLectureTitle,
         },
@@ -367,19 +273,20 @@ const CourseCurriculum = () => {
           withCredentials: true,
         }
       );
-      console.log(response);
       setEditingLectureId(null);
       setEditedLectureTitle("");
       fetchSection();
     } catch (error) {
-      console.log(error);
+      toast.error(
+        error?.response?.data.message || "Error updating lecture"
+      );
     }
   };
 
   const handleDeleteLecture = async (lectureId, sectionId) => {
     try {
       const response = await axios.delete(
-        `http://localhost:8000/api/v1/lecture/delete-lecture`,
+        `${API_BASE_URL}/api/v1/lecture/delete-lecture`,
         {
           params: {
             lectureId,
@@ -391,14 +298,16 @@ const CourseCurriculum = () => {
       );
       fetchSection();
     } catch (error) {
-      console.log(error);
+      toast.error(
+        error?.response?.data.message || "Error deleting lecture"
+      );
     }
   };
 
   const handleFileDelete = async (lectureId, sectionId) => {
     try {
       const response = await axios.delete(
-        `http://localhost:8000/api/v1/lecture/delete-video`,
+        `${API_BASE_URL}/api/v1/lecture/delete-video`,
         {
           params: {
             lectureId,
@@ -408,12 +317,11 @@ const CourseCurriculum = () => {
           withCredentials: true,
         }
       );
-
-      // setDeleteVisible(false);
       fetchSection();
-      console.log(response);
     } catch (error) {
-      console.log(error);
+      toast.error(
+        error?.response?.data.message || "Error deleting video"
+      );
     }
   };
   return (

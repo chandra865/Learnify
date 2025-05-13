@@ -2,7 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { FaStar } from "react-icons/fa";
 import { useSelector } from "react-redux";
-
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { toast } from "react-toastify";
 const AddReview = () => {
 
   const courseId = useSelector((state) => state.course.selectedCourse._id);
@@ -13,16 +14,15 @@ const AddReview = () => {
   const submitReview = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/v1/review/add-review",
+        `${API_BASE_URL}/api/v1/review/add-review`,
         { courseId, rating, comment },
         { withCredentials: true }
       );
-      console.log(response.data.data);
-      alert("Review submitted!");
+      toast.success("Review submitted successfully");
       setRating(5);
       setComment("");
     } catch (error) {
-      alert(error.response?.data?.message || "Error submitting review");
+      toast.error(error?.response?.data.message || "Error submitting review");
     }
   };
 

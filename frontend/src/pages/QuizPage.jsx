@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 import axios from "axios";
+import { toast } from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const QuizPage = () => {
   const { quizId } = useParams();
@@ -16,12 +18,14 @@ const QuizPage = () => {
     const fetchQuiz = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8000/api/v1/quiz/get-quiz/${quizId}`,
+          `${API_BASE_URL}/api/v1/quiz/get-quiz/${quizId}`,
           { withCredentials: true }
         );
         setQuiz(res.data.data);
       } catch (err) {
-        console.error("Failed to fetch quiz", err);
+        toast.error(
+          err?.response?.data.message || "Error fetching quiz data"
+        );
       }
     };
     fetchQuiz();
@@ -46,7 +50,7 @@ const QuizPage = () => {
     if (quiz.course && calculated >= quiz.passingScore) {
       try {
         const response = await axios.post(
-          `http://localhost:8000/api/v1/course/complete-quiz`,
+          `${API_BASE_URL}/api/v1/course/complete-quiz`,
           {
             courseId: quiz.course,
           },

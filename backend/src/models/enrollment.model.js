@@ -13,20 +13,6 @@ const enrollmentSchema = new mongoose.Schema(
       required: true,
     },
 
-    progress: {
-      completedLectures: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Lecture",
-        },
-      ],
-    },
-
-    certificateIssued: {
-      type: Boolean,
-      default: false,
-    },
-
   },
   { timestamps: true }
 );

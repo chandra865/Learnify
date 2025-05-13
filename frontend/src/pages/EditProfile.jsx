@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { login } from "../store/slice/userSlice";
-
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const EditProfile = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -56,7 +56,7 @@ const EditProfile = () => {
     console.log(profilePicture);
     try{
       const response = await axios.post(
-        "http://localhost:8000/api/v1/user/update-profile",
+        `${API_BASE_URL}/api/v1/user/update-profile`,
         formData,
         {
           withCredentials: true,
@@ -80,7 +80,7 @@ const EditProfile = () => {
       formData.append("mediaType", mediaType); // Specify media type ("thumbnail" or "video")
       try {
         const response = await axios.post(
-          "http://localhost:8000/api/v1/media/upload-media",
+          `${API_BASE_URL}/api/v1/media/upload-media`,
           formData,
           {
             withCredentials: true,
@@ -119,10 +119,7 @@ const EditProfile = () => {
                   })
             )
             event.target.value = "";
-        console.log(mediaData);
       } catch (error) {
-        // console.error(`Error uploading ${mediaType}:`, error);
-        console.log(error);
         toast.error(`Error while uploading ${mediaType}`);
         event.target.value = "";
       }

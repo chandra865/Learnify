@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const ProgressBar = ({ userId, courseId }) => {
   const [progress, setProgress] = useState(0);
 
@@ -7,12 +9,12 @@ const ProgressBar = ({ userId, courseId }) => {
     const fetchProgress = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/progress/get-progress/${userId}/${courseId}`,
+          `${API_BASE_URL}/api/v1/progress/get-progress/${userId}/${courseId}`,
           {
             withCredentials:true
           }
         );
-        // console.log(response.data.data);
+        
         setProgress(response.data.data.progressPercentage || 0); // Ensure default value
       } catch (error) {
         console.error("Error fetching progress:", error);

@@ -8,8 +8,6 @@ import WhyChooseUs from '../component/WhyChooseUs';
 const Home = () => {
   const {status, userData} = useSelector((state)=>state.user);
 
-//   console.log("home", userData);
-//   if(userData) return <p>Loading.....</p>;
   return (
     <> 
         <Hero/>

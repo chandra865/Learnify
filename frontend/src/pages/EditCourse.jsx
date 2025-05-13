@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 import { toast } from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const EditCourse = () => {
   const [courses, setCourses] = useState([]);
 
@@ -40,7 +41,7 @@ const EditCourse = () => {
 
   const courseId = useSelector((state) => state.course.selectedCourse._id);
   const dispatch = useDispatch();
-  // console.log("courseId", courseId);
+  
 
   const TITLE_LIMIT = 50;
   const SUBTITLE_LIMIT = 120;
@@ -52,11 +53,13 @@ const EditCourse = () => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/v1/category/get-categories"
+          `${API_BASE_URL}/api/v1/category/get-categories`
         ); // Adjust API endpoint as needed
         setCategories(response.data.data);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        toast.error(
+          error?.response?.data.message || "Error fetching categories"
+        );  
       }
     };
     fetchCategories();
@@ -65,10 +68,10 @@ const EditCourse = () => {
   const fetchCreatedCourses = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/course/fetchcourse/${courseId}`,
+        `${API_BASE_URL}/api/v1/course/fetchcourse/${courseId}`,
         { withCredentials: true }
       );
-      //   console.log(response.data.data);
+      
       const courseData = response.data.data;
       setCourses(courseData);
       dispatch(setSelectedCourse(courseData)); // Dispatch the selected course to Redux store
@@ -95,12 +98,9 @@ const EditCourse = () => {
       setCourseIncludes(courseData.courseIncludes || []);   
       
     } catch (error) {
-      // console.log("Failed to fetch created courses");
-      // console.error(err);
-      alert(
-        error.response?.data?.message ||
-          "something went worng while fetching course"
-      );
+      toast.error(
+        error?.response?.data.message || "Error fetching course data"
+      );  
     }
   };
 
@@ -146,7 +146,7 @@ const EditCourse = () => {
       formData.append("courseIncludes", courseIncludes.join(","));
       
       const response = await axios.patch(
-        `http://localhost:8000/api/v1/course/update-course/${courseId}`,
+        `${API_BASE_URL}/api/v1/course/update-course/${courseId}`,
         formData,
         {
           withCredentials: true,
@@ -154,30 +154,21 @@ const EditCourse = () => {
         }
       );
 
-      // console.log(response.data);
+      
       toast.success(response?.data?.message || "Course Updated Successfully!");
       fetchCreatedCourses(); // Refresh the course data after update
       
-      // setTitle("");
-      // setDescription("");
-      // setCategory("");
-      // setCustomCategory("");
-      // setPrice(0);
+     
       setThumbnail(null);
-      // setWhatYouWillLearn([""]);
-      // setCourseIncludes([""]);
-      // setLanguage("");
+      
       setVideoFile(null);
       setDisable(false);
-      // setImgPreview(null);
-      // setVideoPreview(null);
       setProgress(0);
 
       if (imageInputRef.current) imageInputRef.current.value = "";
       if (videoInputRef.current) videoInputRef.current.value = "";
     } catch (error) {
       setDisable(false);
-      // console.error("Error creating course", error.response.data);
       toast.error(error.response?.data?.message || "Failed to create course.");
     }
   };
@@ -190,7 +181,7 @@ const EditCourse = () => {
     try {
       setDisable(true);
       const response = await axios.post(
-        "http://localhost:8000/api/v1/media/upload-media",
+        `${API_BASE_URL}/api/v1/media/upload-media`,
         formData,
         {
           withCredentials: true,
@@ -253,10 +244,7 @@ const EditCourse = () => {
         );
       }
 
-      // console.log("Thumbnail:", thumbnail);
-      // console.log("Video:", videoFile);
     } catch (error) {
-      // console.error(`Error uploading ${mediaType}:`, error);
       toast.error(`Error while uploading ${mediaType}`);
     }
   };
@@ -277,8 +265,6 @@ const EditCourse = () => {
   
 
   const handleCategoryChange = (e) => {
-    // console.log("Selected Category:", e.target.value);
-    //console.log("Selected Index:", e.target.selectedIndex - 1);
     setSelectedCategoryIndex(e.target.selectedIndex - 1);
     setSelectedCategory(e.target.value);
     setSelectedSubcategory(""); // Reset subcategory when category changes

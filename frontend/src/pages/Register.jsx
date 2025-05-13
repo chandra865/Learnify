@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import GoogleLogin from "../component/GoogleLogin";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -20,7 +21,7 @@ const Register = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/v1/user/register",
+        `${API_BASE_URL}/api/v1/user/register`,
         formData,
         {
           headers: { "Content-Type": "application/json" }, // Use JSON for regular form data
@@ -40,20 +41,6 @@ const Register = () => {
       <div className="bg-gray-900 p-6 mb-20 rounded shadow-lg w-90 text-white">
       <h2 className="text-2xl font-bold text-center mb-6">Register</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name Field */}
-          {/* <div>
-            <label className="block font-medium">Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your name"
-              required
-            />
-          </div> */}
-
           {/* Email Field */}
           <div>
             <label className="block  font-medium">Email</label>
@@ -81,24 +68,6 @@ const Register = () => {
               required
             />
           </div>
-
-          {/* Role (Enum Selection) */}
-          {/* <div>
-            <label className="block text-gray-700 font-medium">Role</label>
-            <select
-              name="role"
-              defaultValue=""
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="" disabled>
-                Select a role
-              </option>
-              <option value="student">student</option>
-              <option value="instructor">instructor</option>
-            </select>
-          </div> */}
 
           {/* Submit Button */}
           <button

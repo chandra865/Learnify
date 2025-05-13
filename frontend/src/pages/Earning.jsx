@@ -10,7 +10,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
+import { toast } from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const monthNames = [
   "Jan",
   "Feb",
@@ -40,12 +41,12 @@ const Earning = () => {
     const fetchInstructorCourseTransaction = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/transaction/get-user-instructor-transactions/${user._id}`,
+          `${API_BASE_URL}/api/v1/transaction/get-user-instructor-transactions/${user._id}`,
           { withCredentials: true }
         );
 
         const transactions = response.data?.data || [];
-
+        console.log(transactions);
         const earningsByMonth = Array(12).fill(0);
         const courseMap = {};
         const studentSet = new Set();
@@ -56,34 +57,37 @@ const Earning = () => {
         transactions.forEach((tx) => {
           const createdAt = new Date(tx.createdAt);
           const month = createdAt.getMonth();
-          const course = tx.courseId;
-
-          const finalPrice = tx.finalPrice || 0;
-          const originalPrice = course?.price || 0;
-
-          total += finalPrice;
-          earningsByMonth[month] += finalPrice;
-
-          if (month === currentMonth) {
-            monthRevenue += finalPrice;
-          }
 
           studentSet.add(tx.userId);
 
-          if (!courseMap[course._id]) {
-            courseMap[course._id] = {
-              name: course.title,
-              originalPrice,
-              totalRevenue: 0,
-              students: new Set(),
-              rating: course.averageRating || 0,
-              finalPrice: tx.finalPrice || 0,
-            };
-          }
+          tx.courses.forEach((course) => {
+            const courseId = course._id;
+            const originalPrice = course.price || 0;
+            const finalPrice = course.finalPrice || originalPrice; // Use finalPrice if available
+            const rating = course.averageRating || 0;
 
-          courseMap[course._id].totalRevenue += finalPrice;
-          courseMap[course._id].students.add(tx.userId);
-          
+            // Track overall and monthly revenue
+            total += finalPrice;
+            earningsByMonth[month] += finalPrice;
+            if (month === currentMonth) {
+              monthRevenue += finalPrice;
+            }
+
+            // Initialize course entry
+            if (!courseMap[courseId]) {
+              courseMap[courseId] = {
+                name: course.title,
+                originalPrice,
+                totalRevenue: 0,
+                students: new Set(),
+                rating,
+                finalPrice,
+              };
+            }
+
+            courseMap[courseId].totalRevenue += finalPrice;
+            courseMap[courseId].students.add(tx.userId);
+          });
         });
 
         const monthlyData = monthNames.map((month, index) => ({
@@ -104,9 +108,8 @@ const Earning = () => {
         setTotalStudents(studentSet.size);
         setCoursesSold(transactions.length);
       } catch (error) {
-        console.error(
-          "Error fetching instructor course transaction data:",
-          error
+        toast.error(
+          error?.response?.data?.message || "Failed to fetch transactions"
         );
       }
     };

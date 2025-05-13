@@ -7,7 +7,6 @@ import StarRating from "../component/StarRating";
 import EditCourse from "./EditCourse";
 import PublishCourse from "../component/PublishCourse";
 import AddResources from "../component/AddResources";
-import AddLecture from "./AddLecture";
 import CourseAnalytics from "../component/CourseAnalytics";
 import CommentsFeedback from "../component/CommentsFeedback";
 import { useDispatch } from "react-redux";

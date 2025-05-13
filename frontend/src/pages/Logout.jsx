@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import {persistor } from "../store/store.js";
 import axios from 'axios';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 
 const Logout = () => {
@@ -14,7 +15,7 @@ const Logout = () => {
 
     const logoutUser = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/api/v1/user/logout", {
+        const response = await axios.get(`${API_BASE_URL}/api/v1/user/logout`, {
           withCredentials: true,
         });
     
@@ -28,8 +29,9 @@ const Logout = () => {
         navigate("/");
     
       } catch (error) {
-        console.error(error);
-        toast.error(error.response?.data.message || "Request failed");
+        toast.error(
+          error?.response?.data.message || "Error logging out"
+        );
       }
     };
     

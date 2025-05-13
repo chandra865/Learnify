@@ -100,7 +100,7 @@ const getProgress = asyncHandler(async (req, res) => {
   const progress = await Progress.findOne({ userId, courseId });
 
   if (!progress) {
-    throw new ApiError(404, "progress not found");
+    throw new ApiError(400, "progress not found");
   }
   return res
     .status(201)

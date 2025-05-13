@@ -20,9 +20,9 @@ import {
   FaCalendarAlt,
   FaGlobe,
 } from "react-icons/fa";
-import { setSelectedLecture } from "../store/slice/selectedLectureSlice";
 import InstructorProfile from "../component/InstructorProfile";
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CourseLandingPage = () => {
   const user = useSelector((state) => state.user.userData);
   const navigate = useNavigate();
@@ -46,33 +46,7 @@ const CourseLandingPage = () => {
   const proRef = useRef(null);
   //console.log(isEnrolled);
 
-  const handleCouponChange = (e) => {
-    setCouponCode(e.target.value.toUpperCase()); // Ensure coupon code is in uppercase
-  };
-
-  const applyCoupon = async () => {
-    try {
-      // Example API call for coupon validation
-      const response = await axios.post(
-        "http://localhost:8000/api/v1/coupon/validate-coupon",
-        {
-          code: couponCode,
-          courseId: course._id,
-          userId: user._id,
-        }
-      );
-      const { discountPercentage } = response.data; // Assuming response gives the discount
-      if (discountPercentage > 0) {
-        setDiscountApplied(discountPercentage);
-        setIsCouponValid(true);
-      } else {
-        setIsCouponValid(false);
-      }
-    } catch (err) {
-      setIsCouponValid(false);
-      console.error(err);
-    }
-  };
+ 
   const date = new Date(course?.updatedAt);
   const formattedDate = date.toLocaleDateString("en-US", {
     year: "numeric",
@@ -82,7 +56,7 @@ const CourseLandingPage = () => {
   const checkEnrollment = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/enrollment/check-user-enrollment/${user._id}/${course_id}`,
+        `${API_BASE_URL}/api/v1/enrollment/check-user-enrollment/${user._id}/${course_id}`,
         {
           withCredentials: true,
         }
@@ -105,16 +79,15 @@ const CourseLandingPage = () => {
     const fetchCourse = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/course/fetchcourse/${course_id}`,
+          `${API_BASE_URL}/api/v1/course/fetchcourse/${course_id}`,
           { withCredentials: true }
         );
-        // console.log(response.data.data);
+        
         setCourse(response.data.data);
       } catch (error) {
-        const errorMessage =
-          error.response?.data?.message ||
-          "something went wrong while fetching course";
-        alert(errorMessage);
+        toast.error(
+          error?.response?.data.message || "Error fetching course data"
+        );
       }
     };
 
@@ -122,38 +95,20 @@ const CourseLandingPage = () => {
   }, [course_id]);
 
   useEffect(() => {
-    // const fetchLectures = async () => {
-    //   try {
-    //     const response = await axios.get(
-    //       `http://localhost:8000/api/v1/course/lectures/${course_id}`,
-    //       { withCredentials: true }
-    //     );
-    //     const lectureData = response.data.data.lectures;
-    //     if (isEnrolled) {
-    //       setLectures(lectureData);
-    //     } else {
-    //       setLectures(lectureData.filter((lecture) => lecture.isFree === true));
-    //     }
-    //   } catch (err) {
-    //     const errorMessage =
-    //       error.response?.data?.message ||
-    //       "something went wrong while fetching course";
-    //     alert(errorMessage);
-    //   }
-    // };
 
     const fetchSection = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/section//get-section-by-course/${course_id}`,
+          `${API_BASE_URL}/api/v1/section/get-section-by-course/${course_id}`,
           {
             withCredentials: true,
           }
         );
         setSections(response.data.data);
-        console.log(response);
       } catch (error) {
-        console.log(error);
+        toast.error(
+          error?.response?.data.message || "Error fetching course sections"
+        );
       }
     };
     if (isEnrolled !== null) {
@@ -167,24 +122,6 @@ const CourseLandingPage = () => {
   const handleProfileClick = () => {
     proRef.current?.scrollIntoView({ behavior: "smooth" });
   }
-
-  // const handleEnroll = async () => {
-  //   // try {
-  //   //   const response = await axios.post(
-  //   //     `http://localhost:8000/api/v1/course/enrolle/${course_id}`,
-  //   //     {},
-  //   //     { withCredentials: true }
-  //   //   );
-  //   //   setIsEnrolled(true);
-  //   //   toast.success(response?.data?.message || "Enrollment Successfull");
-  //   // } catch (error) {
-  //   //   // console.log(error.response?.data);
-  //   //   const errorMessage =
-  //   //     error.response?.data?.message || "Error in enrollment";
-  //   //   toast.error(errorMessage);
-  //   // }
-
-  // };
 
   const handleCart = async (price) => {
     try {

@@ -4,6 +4,8 @@ import { useState } from "react";
 import axios from "axios";
 import StarRating from "./StarRating";
 import { Navigate } from "react-router-dom";
+import { toast } from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Payment = () => {
   const { userId, courseId } = useParams();
@@ -15,15 +17,12 @@ const Payment = () => {
   const fetchCourse = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/course/fetchcourse/${courseId}`,
+        `${API_BASE_URL}/api/v1/course/fetchcourse/${courseId}`,
         { withCredentials: true }
       );
       setCourse(response.data.data);
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message ||
-        "something went wrong while fetching course";
-      alert(errorMessage);
+      toast.error(error?.response?.data.message || "Error fetching course data");
     }
   };
 
@@ -36,7 +35,7 @@ const Payment = () => {
     try {
       // 1. Create Razorpay Order
       const orderResponse = await axios.post(
-        "http://localhost:8000/api/v1/transaction/create-order",
+        `${API_BASE_URL}/api/v1/transaction/create-order`,
         { amount: course.price === course.finalPrice ? course.price : course.finalPrice },
         { withCredentials: true }
       );
@@ -55,13 +54,14 @@ const Payment = () => {
 
           // 2. Verify Payment
           const res = await axios.post(
-            "http://localhost:8000/api/v1/transaction/verify-payment",
+            `${API_BASE_URL}/api/v1/transaction/verify-payment`,
             {
               razorpay_payment_id,
               razorpay_order_id,
               razorpay_signature,
               userId,
               courseId,
+              type: "single",
               amount: course.price === course.finalPrice ? course.price : course.finalPrice,
               discountCode: null, // Add discount code if applicable
               paymentMethod: "Razorpay",
@@ -84,8 +84,9 @@ const Payment = () => {
       const razorpay = new window.Razorpay(options);
       razorpay.open();
     } catch (err) {
-      console.error("Payment failed:", err);
-      alert("Payment failed. Try again.");
+      toast.error(
+        err?.response?.data.message || "Error processing payment. Please try again."
+      );
     } finally {
       setLoading(false);
     }

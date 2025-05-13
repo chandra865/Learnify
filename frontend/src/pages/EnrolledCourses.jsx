@@ -7,6 +7,8 @@ import ProgressBar from "../component/ProgressBar";
 import { Link } from "react-router-dom";
 import StarRating from "../component/StarRating";
 import { CircularProgressbar } from "react-circular-progressbar";
+import { toast } from "react-toastify";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const EnrolledCourses = () => {
   const [courses, setCourses] = useState([]);
@@ -19,15 +21,14 @@ const EnrolledCourses = () => {
     const fetchEnrolledCourses = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/enrollment/get-enrolled-courses/${userId}`,
+          `${API_BASE_URL}/api/v1/enrollment/get-enrolled-courses/${userId}`,
           { withCredentials: true }
         );
 
         setCourses(response.data.data);
-        console.log(response);
       } catch (err) {
-        alert(
-          err.response?.data?.message || "Failed to fetch enrolled courses"
+        toast.error(
+          err?.response?.data.message || "Error fetching enrolled courses"
         );
       } finally {
         setLoading(false);
