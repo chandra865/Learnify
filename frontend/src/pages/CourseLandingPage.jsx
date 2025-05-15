@@ -63,10 +63,10 @@ const CourseLandingPage = () => {
       );
 
       const status = response.data.data.enrollmentStatus;
-      console.log("status: ", status);
+      // console.log("status: ", status);
       setIsEnrolled(status);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
   useEffect(() => {
@@ -307,23 +307,7 @@ const CourseLandingPage = () => {
                 )}
               </div>
 
-              {/* {!isEnrolled && (
-                <div className="flex items-center w-full gap-2 mb-4">
-                  <input
-                    type="text"
-                    placeholder="Enter Coupon Code"
-                    // value={couponCode}
-                    // onChange={handleCouponChange}
-                    className="p-3 border rounded"
-                  />
-                  <button
-                    // onClick={applyCoupon}
-                    className="px-4 py-3 bg-blue-500 text-lg font-bold w-2/5 text-white rounded cursor-pointer hover:bg-blue-600"
-                  >
-                    Apply
-                  </button>
-                </div>
-              )} */}
+             
               <button
                 disabled={isEnrolled}
                 className={`text-lg w-full px-6 py-3 border-1 rounded-[5px] font-bold  hover:bg-gray-600

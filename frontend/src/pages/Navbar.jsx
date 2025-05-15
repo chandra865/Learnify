@@ -54,6 +54,7 @@ const Navbar = () => {
   return (
     <nav className="bg-gray-800 text-white p-4 drop-shadow-[0_4px_4px_rgba(255,255,255,0.25)] border-b-2">
       <div className="container mx-auto flex justify-between items-center">
+        <div className="flex items-center gap-6">
         <div className="flex flex-row justify-between items-center gap-4 md:gap-10">
           {/* Mobile Menu Button */}
           <button
@@ -90,7 +91,7 @@ const Navbar = () => {
         </div>
 
         {/* Search Bar (Hidden on smaller screens) */}
-        <div className="hidden md:flex items-center bg-gray-700 rounded-3xl px-3 py-2 w-120 hover:border-2">
+        <div className="hidden md:flex items-center bg-gray-700 rounded-3xl px-3 py-2 w-140 hover:border-2">
           <Search className="text-gray-400" size={20} />
           <input
             type="text"
@@ -101,7 +102,7 @@ const Navbar = () => {
             className="bg-transparent border-none outline-none text-white px-2 w-full"
           />
         </div>
-
+        </div>
         {/* Navigation Links (Hidden on smaller screens) */}
         <ul className="hidden md:flex items-center gap-4">
           {!status ? (

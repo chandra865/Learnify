@@ -96,6 +96,7 @@ function App() {
       <Route path="/course-watch/:courseId/:sectionId/:lectureId" element = {<CoursePlayer/>}/>
       <Route path="/curri" element={<CourseCurriculum/>}/>
       <Route path="/lecturemanage/:lectureId" element={<LectureManage/>}/>
+      
       <Route path="/quiz/:quizId" element={<QuizPage />} />
       <Route path="/logout" element={<Logout/>} />
 

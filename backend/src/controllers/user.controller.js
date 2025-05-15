@@ -29,47 +29,47 @@ const generateAccessAndRefreshToken = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  const {email, password} = req.body;
-  //    console.log(req.body);
-  // check for field are not empty
+  const { email, password } = req.body;
+
+  // Check required fields
   if ([email, password].some((field) => field?.trim() === "")) {
-    throw new ApiError(400, "All field are required");
+    throw new ApiError(400, "All fields are required");
   }
 
-  //fetching name form email
+  // Generate a name from email
   let rawName = email.split("@")[0];
   let cleanName = rawName.replace(/[^a-zA-Z]/g, "");
   let name = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
 
-  //check user exist or not
-  const existedUser = await User.findOne({ email });
+  // Check if user exists
+  const existingUser = await User.findOne({ email });
 
-  if (existedUser) {
-    throw new ApiError(409, "User with email already exist");
+  if (existingUser) {
+    if (existingUser.emailVerified) {
+      throw new ApiError(409, "User with this email already exists and is verified");
+    } else {
+      // Overwrite existing unverified user’s password and name
+      existingUser.password = password;
+      existingUser.name = name;
+      await existingUser.save();
+    }
+  } else {
+    // Create new user
+    await User.create({
+      name,
+      email,
+      password,
+      role: "student",
+    });
   }
 
-  //now create user
-  const user = await User.create({
-    name,
-    email,
-    password,
-    role : "student",
-  });
-
-  //   console.log(user);
-  //check is created or not
-  const createdUser = await User.findById(user._id).select(
-    "-password -refreshToken"
-  );
-
-  if (!createdUser) {
-    throw new ApiError(500, "something went wrong while registering the user");
-  }
+  const user = await User.findOne({ email }).select("-password -refreshToken");
 
   return res
     .status(201)
-    .json(new ApiResponse(200, createdUser, "User Registered Successfully"));
+    .json(new ApiResponse(200, user, "User Registered Successfully. Please verify OTP."));
 });
+
 
 const switchUserRole = asyncHandler( async (req, res) => {
 
@@ -167,6 +167,9 @@ const loginUser = asyncHandler(async (req, res) => {
 
   if (!user) {
     throw new ApiError(404, "User does not exist");
+  }
+  if(!user.emailVerified){
+    throw new ApiError(401, "Email is not verified");
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);

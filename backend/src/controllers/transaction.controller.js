@@ -216,13 +216,13 @@ const getUserInstructorTransactions = asyncHandler(async (req, res) => {
 
   const instructorCourses = await Course.find({ instructor: instructorId });
   const instructorCourseIds = instructorCourses.map(course => course._id.toString());
-  //console.log(instructorCourseIds);
+  
   const transactions = await Transaction.find({
     courses: { $in: instructorCourseIds },
     status: "success", // optional: only successful transactions
   }).populate("courses");
 
-  //console.log(transactions);
+  
   if (!transactions) {
     throw new ApiError(404, "No transactions found for this user");
   }

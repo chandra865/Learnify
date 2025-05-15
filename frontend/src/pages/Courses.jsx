@@ -122,7 +122,7 @@ const Courses = () => {
                 <h3 className="text-2xl font-extrabold text-center mb-6">
                   Top Courses in {activeCategory}
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                   {categoryCourses.slice(0, 12).map((course) => (
                     <CourseCard
                       key={course._id}

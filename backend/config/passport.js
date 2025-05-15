@@ -31,6 +31,7 @@ passport.use(
             profilePicture: {
               url: profile.photos[0].value,
             },
+            emailVerified: true, // Automatically verified
             password: null, // No password for OAuth users
             role: "student", // Default role
           });
