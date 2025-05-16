@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import GoogleLogin from "../component/GoogleLogin";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL; // Ensure this is set in your .env file
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL; 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -36,10 +36,10 @@ const Login = () => {
       const user = response.data.data.user;
       dispatch(login(user));
 
-      if(user.role === "instructor"){
+      if (user.role === "instructor") {
         navigate("/dashboard/profile"); // Redirect to instructor dashboard
-      }else{
-      navigate("/"); // Redirect to homepage
+      } else {
+        navigate("/"); // Redirect to homepage
       }
       toast.success(response.data.message);
     } catch (error) {
@@ -51,9 +51,8 @@ const Login = () => {
   return (
     <div className="flex justify-center items-center w-full min-h-screen bg-gray-600 text-white">
       <div className="bg-gray-900 p-8 rounded shadow-lg w-96 mb-10">
-      <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-          
+        <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email Field */}
           <div>
             <label className="block font-medium">Email</label>
@@ -81,6 +80,9 @@ const Login = () => {
               required
             />
           </div>
+          <p className="text-right text-sm text-blue-400 hover:underline mt-1">
+            <a href="/forgot-password">Forgot Password?</a>
+          </p>
 
           {/* Submit Button */}
           <button
@@ -92,7 +94,7 @@ const Login = () => {
         </form>
 
         <p className="text-center text-lg text-gray-300 my-2">or</p>
-        <GoogleLogin/>
+        <GoogleLogin />
 
         <p className="text-center text-gray-400 mt-4">
           Don't have an account?{" "}

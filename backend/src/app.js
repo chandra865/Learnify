@@ -44,6 +44,7 @@ import sectionRouter from "./routes/section.routes.js"
 import lectureRouter from "./routes/lecture.routes.js"
 import enrollmentRouter from "./routes/enrollment.routes.js"
 import otpRouter from "./routes/otp.routes.js";
+import PasswordResetTokenRouter from "./routes/PasswordResetToken.routes.js";
 
 //routes declaration
 app.use("/api/v1/user", userRouter);
@@ -60,7 +61,7 @@ app.use("/api/v1/lecture", lectureRouter);
 app.use("/api/v1/section",sectionRouter);
 app.use("/api/v1/enrollment", enrollmentRouter);
 app.use("/api/v1/otp", otpRouter);
-
+app.use("/api/v1/password-reset-request", PasswordResetTokenRouter);
 
 
 

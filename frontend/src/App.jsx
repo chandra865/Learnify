@@ -28,6 +28,8 @@ import Payment from "./component/Payment";
 import CustomVideoPlayer from "./component/CustomVideoPlayer";
 import CourseCurriculum from "./component/CourseCurriculum";
 import LectureManage from "./component/LectureManage";
+import ForgotPassword from "./component/ForgotPassword";
+import ResetPassword from "./component/ResetPassword";
 import CoursePlayer from "./pages/CoursePlayer";
 import { useLocation } from "react-router-dom";
 import UserProfile from "./pages/UserProfile";
@@ -39,7 +41,7 @@ function App() {
   const hiddenNavbarPaths = ["/course-watch",  "/quiz"];
   const shouldHideNavbar = hiddenNavbarPaths.some((path) => location.pathname.startsWith(path));
  
-  const hiddenFooterPaths = ["/dashboard", "/login", "/register", "/course", "/course-watch", "/quiz", "/logout"];
+  const hiddenFooterPaths = ["/dashboard", "/login", "/register", "/course", "/course-watch", "/quiz", "/logout", "/forgot-password", "/reset-password"];
   const shouldHideFooter = hiddenFooterPaths.some((path) => location.pathname.startsWith(path));
   const dispatch = useDispatch();
 
@@ -96,7 +98,8 @@ function App() {
       <Route path="/course-watch/:courseId/:sectionId/:lectureId" element = {<CoursePlayer/>}/>
       <Route path="/curri" element={<CourseCurriculum/>}/>
       <Route path="/lecturemanage/:lectureId" element={<LectureManage/>}/>
-      
+      <Route path="/forgot-password" element={<ForgotPassword/>} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/quiz/:quizId" element={<QuizPage />} />
       <Route path="/logout" element={<Logout/>} />
 
