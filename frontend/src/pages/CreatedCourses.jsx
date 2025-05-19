@@ -15,7 +15,7 @@ import { FaArrowLeft } from "react-icons/fa";
 import Coupon from "../component/Coupon";
 import CourseCurriculum from "../component/CourseCurriculum";
 
-
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CreatedCourses = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +31,7 @@ const CreatedCourses = () => {
     const fetchCreatedCourses = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/v1/course/inst-courses",
+          `${API_BASE_URL}/api/v1/course/inst-courses`,
           { withCredentials: true }
         );
         console.log(response.data.data);
