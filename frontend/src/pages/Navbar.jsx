@@ -7,6 +7,7 @@ import CategoryMenu from "../component/CategoryMenu";
 import { toast } from "react-toastify";
 import { login } from "../store/slice/userSlice";
 import axios from "axios";
+import siteLogo from "../assets/logo.png";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Navbar = () => {
@@ -74,7 +75,7 @@ const Navbar = () => {
           >
             <div className="flex flex-row items-center gap-2 ml-2 md:ml-0">
               <img
-                src="src/assets/logo.png"
+                src={siteLogo}
                 alt="Logo"
                 className="h-8 w-8 md:h-10 md:w-10"
               />

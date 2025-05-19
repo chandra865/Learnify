@@ -1,3 +1,4 @@
+import heroImage from "../assets/lms-hero.png"; // Adjust the path as necessary
 const Hero = () => {
   return (
     <section className="bg-gray-900 text-white py-16 px-4 sm:px-6">
@@ -31,7 +32,7 @@ const Hero = () => {
         {/* Right Side - Image */}
         <div className="w-full md:w-1/2 flex justify-center">
           <img
-            src="src/assets/lms-hero.png"
+            src={heroImage}
             alt="LMS Hero"
             className="w-full max-w-md sm:max-w-lg md:max-w-xl h-auto object-contain"
           />
