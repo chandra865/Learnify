@@ -119,9 +119,9 @@ const Payment = () => {
               <StarRating rating={course?.averageRating || 0} />
 
               {/* Course Meta Info */}
-              <p className="text-white-500 text-sm my-1">
+              {/* <p className="text-white-500 text-sm my-1">
                 {course?.lecture?.length || 0} Lectures
-              </p>
+              </p> */}
             </div>
           </div>
           <p className="px-4 text-xl font-extrabold ">₹{course?.price === course?.finalPrice ? course?.price : course?.finalPrice}</p>

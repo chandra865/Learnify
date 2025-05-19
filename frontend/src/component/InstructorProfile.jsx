@@ -36,7 +36,7 @@ const InstructorProfile = () => {
   const fetchInstructorRatingReviews = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/user/get-instructor-rating-and-reviews/${instructorId}`,
+        `${API_BASE_URL}/api/v1/user/get-instructor-rating-and-reviews/${instructorId}`,
         {
           withCredentials: true,
         }

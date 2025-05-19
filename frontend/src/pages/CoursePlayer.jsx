@@ -219,7 +219,7 @@ const CoursePlayer = () => {
   const handleMarkComplete = async (lectureId) => {
     try {
       await axios.post(
-        "http://localhost:8000/api/v1/progress/complete",
+        `${API_BASE_URL}/api/v1/progress/complete`,
         {
           userId: user._id,
           courseId,

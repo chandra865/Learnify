@@ -105,11 +105,11 @@ const Coupon = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/v1/coupon/create-coupon",
+          `${API_BASE_URL}/api/v1/coupon/create-coupon`,
         payload,
         { withCredentials: true }
       );
-      console.log(res);
+      //console.log(res);
 
       setValidationMessage("Coupon created successfully");
       setIsValid(true);

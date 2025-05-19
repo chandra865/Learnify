@@ -9,7 +9,7 @@ const GiveQuiz = ({ Id, type }) => {
     const fetchQuizzes = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/quiz/get-all-quiz/${Id}?quizFor=${type}`,
+          `${API_BASE_URL}/api/v1/quiz/get-all-quiz/${Id}?quizFor=${type}`,
           {
             withCredentials: true,
           }

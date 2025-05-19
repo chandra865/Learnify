@@ -127,7 +127,7 @@ const CourseLandingPage = () => {
   const handleCart = async (price) => {
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/v1/cart/add-cart`,
+        `${API_BASE_URL}/api/v1/cart/add-cart`,
         {
           userId: user._id,
           courseId: course_id,
