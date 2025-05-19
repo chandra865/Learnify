@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, forwardRef } from "react";
-import Tooltip from "./ToolTip";
+import Tooltip from "./Tooltip";
 import Hls from "hls.js";
 
 const VideoPlayer1 = forwardRef(
