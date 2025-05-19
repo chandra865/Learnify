@@ -4,11 +4,15 @@ import { toast } from "react-toastify";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       await axios.post(`${API_BASE_URL}/api/v1/password-reset-request/password-reset-token`, { email });
+      setEmail("");
+      setLoading(false);
       toast.success("Reset link sent to your email");
     } catch (err) {
       toast.error(err?.response?.data?.message || "Something went wrong");
@@ -27,7 +31,9 @@ const ForgotPassword = () => {
           onChange={(e) => setEmail(e.target.value)}
           required
         />
-        <button type="submit" className="w-full cursor-pointer bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
+        <button 
+        disabled={loading}
+        type="submit" className="w-full cursor-pointer bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
           Send Reset Link
         </button>
       </form>

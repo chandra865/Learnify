@@ -25,6 +25,7 @@ import InstructorProfile from "../component/InstructorProfile";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CourseLandingPage = () => {
   const user = useSelector((state) => state.user.userData);
+  console.log(user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -63,7 +64,6 @@ const CourseLandingPage = () => {
       );
 
       const status = response.data.data.enrollmentStatus;
-      // console.log("status: ", status);
       setIsEnrolled(status);
     } catch (error) {
       // console.log(error);
@@ -111,9 +111,10 @@ const CourseLandingPage = () => {
         );
       }
     };
-    if (isEnrolled !== null) {
-      fetchSection();
-    }
+    // if (isEnrolled !== null) {
+    //   fetchSection();
+    // }
+    fetchSection();
   }, [isEnrolled, course_id]);
 
   const handlePreviewClick = () => {
@@ -309,9 +310,9 @@ const CourseLandingPage = () => {
 
              
               <button
-                disabled={isEnrolled}
+                disabled={isEnrolled || !user}
                 className={`text-lg w-full px-6 py-3 border-1 rounded-[5px] font-bold  hover:bg-gray-600
-                    ${isEnrolled ? "cursor-not-allowed" : "cursor-pointer"}
+                    ${isEnrolled || !user? "cursor-not-allowed" : "cursor-pointer"}
                   `}
                 onClick={() => handleCart(course?.finalPrice === course?.price ? course?.price : course?.finalPrice)}
               >
@@ -321,14 +322,14 @@ const CourseLandingPage = () => {
                 onClick={() => {
                   navigate(`/payment/${user._id}/${course_id}`);
                 }}
-                disabled={isEnrolled}
+                disabled={isEnrolled || !user}
                 className={`w-full px-6 py-3 text-lg font-bold mt-2 rounded-[5px] text-white transition ${
-                  isEnrolled
+                  isEnrolled || !user
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-blue-500 hover:bg-blue-600 cursor-pointer"
                 }`}
               >
-                {isEnrolled ? "Already Enrolled" : "Enroll Now"}
+                {isEnrolled  ? "Already Enrolled" : "Enroll Now"}
               </button>
             </div>
           </div>

@@ -138,7 +138,7 @@ const CourseCurriculum = () => {
       return;
     }
 
-    const maxSizeInMB = 10; // set your limit (e.g. 10MB)
+    const maxSizeInMB = 15; // set your limit (e.g. 10MB)
     const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
 
     if (file.size > maxSizeInBytes) {
@@ -155,7 +155,8 @@ const CourseCurriculum = () => {
       duration = video.duration;
     };
     video.src = URL.createObjectURL(file);
-
+    const originalFileName = file.name;
+    const dashFileName = originalFileName.replace(/\s+/g, "-"); 
     try {
       // Step 1: Request signed URL from the backend
       const response = await axios.post(
@@ -165,7 +166,7 @@ const CourseCurriculum = () => {
           sectionId,
           lectureId,
           contentType: file.type,
-          fileName: file.name,
+          fileName: dashFileName,
         },
         {
           withCredentials: true,
@@ -487,7 +488,7 @@ const CourseCurriculum = () => {
                       className="w-full p-2 border border-gray-400 bg-gray-700 text-white"
                       ref={videoInputRef}
                     />
-                    <p className="text-sm text-gray-400">Max size: 10MB</p>
+                    <p className="text-sm text-gray-400">Max size: 15MB</p>
                     </>
                   )}
 

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CreateCourse = () => {
   const defaultPreview =
     "https://dummyimage.com/300x200/cccccc/000000&text=thubmnail+preview";
@@ -50,7 +50,7 @@ const CreateCourse = () => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/v1/category/get-categories"
+          `${API_BASE_URL}/api/v1/category/get-categories`
         ); // Adjust API endpoint as needed
         setCategories(response.data.data);
       } catch (error) {
@@ -81,7 +81,7 @@ const CreateCourse = () => {
       formData.append("videoFile", videoFile);
       formData.append("certificateOption", certificateOption);
       const response = await axios.post(
-        "http://localhost:8000/api/v1/course/Add-course",
+        `${API_BASE_URL}/api/v1/course/Add-course`,
         formData,
         {
           withCredentials: true,
@@ -148,7 +148,7 @@ const CreateCourse = () => {
       }
 
       const response = await axios.post(
-        "http://localhost:8000/api/v1/media/upload-media",
+        `${API_BASE_URL}/api/v1/media/upload-media`,
         formData,
         {
           withCredentials: true,
@@ -191,7 +191,7 @@ const CreateCourse = () => {
       return;
     }
 
-    const maxSizeInMB = 5; // set your limit (e.g. 5MB)
+    const maxSizeInMB = 8; // set your limit (e.g. 5MB)
     const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
 
     if (file.size > maxSizeInBytes) {
@@ -470,7 +470,7 @@ const CreateCourse = () => {
                     className="w-full p-2 border rounded mb-3"
                     ref={videoInputRef}
                   />
-                  <p className="text-sm text-gray-400">Max size: 5MB</p>
+                  <p className="text-sm text-gray-400">Max size: 8MB</p>
                   </>
 
                 )}

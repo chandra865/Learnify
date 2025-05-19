@@ -53,8 +53,8 @@ router.route("/add-expertise").post(verifyJWT, addExpertise);
 router.route("/delete-expertise").delete(verifyJWT, deleteExpertise);
 router.route("/switch-user-role").put(verifyJWT,switchUserRole);
 
-router.route("/get-instructor-stats/:instructorId").get(verifyJWT,getInstructorStats);
-router.route("/get-instructor-rating-and-reviews/:instructorId").get(verifyJWT,getInstructorRatingAndReviews);
+router.route("/get-instructor-stats/:instructorId").get(getInstructorStats);
+router.route("/get-instructor-rating-and-reviews/:instructorId").get(getInstructorRatingAndReviews);
 
 router.route("/refresh-token").post(refreshAccessToken);
 router.route("/auth/google").get(googleAuth);

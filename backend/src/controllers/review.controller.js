@@ -8,7 +8,6 @@ const addReview = asyncHandler(async (req, res) => {
   const { courseId, rating, comment } = req.body;
   const userId = req.user.id; // Assuming authentication middleware
 
-  //console.log(first);
   const newReview = await Review.create({ courseId, userId, rating, comment });
   if (!newReview) {
     throw new ApiError(400, "review not created");

@@ -11,14 +11,6 @@ const getUserEnrollments = asyncHandler(async (req, res) => {
     .populate("course", "title description thumbnail")
     .populate("progress.completedLectures");
 
-  // const enrollments = await Enrollment.find({ user: userId }).populate({
-  //   path: "course",
-  //   select: "title description thumbnail instructor",
-  //   populate: {
-  //     path: "instructor",
-  //     select: "name",
-  //   },
-  // });
 
   if (!enrollments) {
     throw new ApiError(404, "enrollments not found");

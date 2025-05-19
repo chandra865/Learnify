@@ -9,7 +9,7 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const Courses = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +22,7 @@ const Courses = () => {
     const fetchCourses = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/v1/course/all-courses"
+          `${API_BASE_URL}/api/v1/course/all-courses`
         );
         const courseData = response.data.data;
         const filteredCourses = courseData.filter(course => course.published === true);

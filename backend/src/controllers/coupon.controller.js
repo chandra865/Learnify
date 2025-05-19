@@ -47,10 +47,6 @@ const validateCoupon = asyncHandler(async (req, res) => {
   if (coupon.usedBy.includes(userId))
     throw new ApiError(400, "Coupon already used by user");
 
-  // if (coupon.usedBy.length >= coupon.usageLimit) {
-  //   throw new ApiError(400, "Coupon usage limit reached");
-  // }
-
   return res
     .status(200)
     .json(
@@ -88,7 +84,6 @@ const getCouponsByCourse = asyncHandler(async (req, res) => {
 
 const deleteCoupon = asyncHandler(async (req, res) => {
   const { couponId } = req.params;
-  //console.log(couponId);
   const coupon = await Coupon.findOneAndDelete({ _id: couponId });
 
   if (!coupon) throw new ApiError(404, "Coupon not found");

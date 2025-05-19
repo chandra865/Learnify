@@ -5,7 +5,7 @@ import { createSection, deleteSection, getSectionsByCourse, updateSection } from
 const router = Router();
 
 router.route("/add-section").post(verifyJWT, isAuthorized("instructor"), createSection);
-router.route("/get-section-by-course/:courseId").get(verifyJWT, getSectionsByCourse);
+router.route("/get-section-by-course/:courseId").get( getSectionsByCourse);
 router.route("/delete-section/:sectionId").delete(verifyJWT, isAuthorized("instructor"), deleteSection);
 router.route("/update-section/:sectionId").patch(verifyJWT, isAuthorized("instructor"), updateSection);
 export default router;

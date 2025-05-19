@@ -9,7 +9,7 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const AddResources = () => {
   const course = useSelector((state) => state.course.selectedCourse);
-  // console.log("course", course)
+  //console.log("course", course)
   const dispatch = useDispatch();
 
   const [isFormVisible, setIsFormVisible] = useState(true);
@@ -75,7 +75,7 @@ const AddResources = () => {
       {isFormVisible ? (
         <div className="mt-6 text-white">
           <h3 className="text-xl font-medium">Quizzes</h3>
-          {course.quiz.length === 0 && (
+          {!course.quiz && (
             <button
               className="mt-2 px-4 py-2 cursor-pointer bg-blue-500 text-white rounded"
               onClick={handleAddQuiz}

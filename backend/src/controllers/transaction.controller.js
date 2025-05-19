@@ -23,8 +23,6 @@ const createOrder = asyncHandler(async (req, res) => {
   };
 
   const order = await razorpay.orders.create(options);
-  //const order = true;
-  //   console.log(order);
   if (!order) {
     throw new ApiError(500, "Unable to create order");
   }

@@ -463,7 +463,6 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies.refreshToken || req.body.refreshToken;
 
-  // console.log(incomingRefreshToken)
   if (!incomingRefreshToken) {
     throw new ApiError(401, "unauthorized request");
   }
@@ -486,7 +485,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     };
     const { accessToken, newRefreshToken } =
       await generateAccessAndRefreshToken(user._id);
-    // console.log(newRefreshToken)
+  
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
@@ -513,8 +512,7 @@ const updateProfile = asyncHandler(async(req, res)=>{
     const newProfilePicture = await JSON.parse(profilePicture);
     const newSocialLinks = await JSON.parse(socialLinks);
 
-    // console.log(newProfilePicture);
-    // console.log(newSocialLinks);
+
 
     // Update fields
     const updatedUser = await User.findByIdAndUpdate(
@@ -577,7 +575,6 @@ const deleteExpertise = asyncHandler(async (req, res) => {
     const { expertise } = req.query;
     const userId = req.user._id;
 
-    // console.log(expertise);
     const user = await User.findById(userId);
     if (!user) {
       throw new ApiError(404,"User not found");

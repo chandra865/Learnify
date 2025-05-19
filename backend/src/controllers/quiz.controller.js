@@ -45,7 +45,7 @@ const createQuiz = asyncHandler(async (req, res) => {
       { new: true }
     );
   }
-//   console.log(quizFor);
+
   if (quizFor === "course") {
     await Course.findByIdAndUpdate(
       courseId,
@@ -67,7 +67,7 @@ const getAllQuizzes = asyncHandler(async (req, res) => {
   if (!quizFor || !Id) {
     throw new ApiError(400, "ID is required");
   }
-  console.log(quizFor, Id);
+
   let quizzes;
   if(quizFor === "lecture"){
     quizzes = await Quiz.find({ lecture: Id});

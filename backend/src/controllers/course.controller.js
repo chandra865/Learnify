@@ -27,11 +27,6 @@ const createCourse = asyncHandler(async (req, res) => {
     certificateOption 
   } = req.body;
 
-  // console.log(req.body);
-  // console.log(thumbnail);
-  // console.log(videoFile);
-  // console.log(req.files);
-
   if (
     !title ||
     !subtitle ||
@@ -130,7 +125,7 @@ const addLecture = asyncHandler(async (req, res) => {
     isFree: isFree ?? false, // Default to false if not provided
     duration: videoDuration,
   });
-  // console.log(newLecture);
+ 
   await Course.findByIdAndUpdate(
     courseId,
     { $push: { lecture: newLecture._id } },
@@ -302,23 +297,17 @@ const updateCourse = asyncHandler(async (req, res) => {
     certificateOption
   } = req.body;
 
-  // console.log(req.body);
-  // console.log(thumbnail);
-  // console.log(videoFile);
-  // console.log(req.files);
+ 
+ 
 
   if (!title || !description || !category || !price || !language ||!certificateOption) {
     throw new ApiError(400, "All fields are required");
   }
 
-  // console.log("nthumbnail:-", thumbnail);
-  // console.log("nvideo", videoFile);
 
   const thumbnailData = await JSON.parse(thumbnail);
   const videoFileData = await JSON.parse(videoFile);
 
-  console.log("thumbnail:-", thumbnailData);
-  console.log("video:-", videoFileData);
 
   // Handle file uploads if present
   let updatedFields = {
