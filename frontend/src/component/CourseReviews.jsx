@@ -53,7 +53,7 @@ const Testimonials = () => {
         >
           {reviews.map(({ _id, userId, rating, comment }) => (
             <SwiperSlide key={_id}>
-              <div className="p-6 bg-gray-800  h-[200px] w-[200] text-center flex flex-col ">
+              <div className="p-6 bg-gray-800  w-[200] text-center flex flex-col ">
                 {/* User Info */}
                 <div className="flex items-center gap-2">
                   {/* User Avatar */}
