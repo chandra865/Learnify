@@ -7,7 +7,7 @@ const CourseAnalytics = () => {
   const course = useSelector((state)=>state.course.selectedCourse);
 
   const learners = course.studentenrolled;
-  const revenue = learners*course.finalPrice;
+  const revenue = learners*course.finalPrice || 0; // Assuming finalPrice is the price per learner
   const avgRating = course.averageRating;
 
   return (

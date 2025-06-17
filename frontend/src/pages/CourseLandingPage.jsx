@@ -11,6 +11,7 @@ import CourseReviews from "../component/CourseReviews";
 import AddReview from "../component/AddReview";
 import { useDispatch } from "react-redux";
 import CourseContent from "../component/CourseContent";
+import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 
 import {
   FaTimes,
@@ -84,6 +85,7 @@ const CourseLandingPage = () => {
         );
         
         setCourse(response.data.data);
+        dispatch(setSelectedCourse(response.data.data));
       } catch (error) {
         toast.error(
           error?.response?.data.message || "Error fetching course data"
