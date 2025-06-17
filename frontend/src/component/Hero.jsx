@@ -9,7 +9,8 @@ const Hero = () => {
             Learn Anytime, <span className="text-blue-500">Anywhere</span>
           </h1>
           <p className="text-base sm:text-lg text-gray-300">
-            Upskill yourself with our expert-led courses in technology, business, and more.
+            Upskill yourself with our expert-led courses in technology,
+            business, and more.
           </p>
 
           {/* CTA Buttons */}
@@ -21,7 +22,9 @@ const Hero = () => {
               Get Started
             </a>
             <a
-              href="/courses"
+              href="https://drive.google.com/file/d/1DgrDrbEdsnVaIEhFgBdNru2W4vsuGShC/view?usp=drive_link"
+              target="_blank"
+              rel="noopener noreferrer"
               className="bg-red-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg text-lg font-semibold text-center"
             >
               Demo Video
