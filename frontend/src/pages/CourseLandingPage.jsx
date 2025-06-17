@@ -11,8 +11,6 @@ import CourseReviews from "../component/CourseReviews";
 import AddReview from "../component/AddReview";
 import { useDispatch } from "react-redux";
 import CourseContent from "../component/CourseContent";
-import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
-
 import {
   FaTimes,
   FaPlay,
@@ -82,10 +80,8 @@ const CourseLandingPage = () => {
         const response = await axios.get(
           `${API_BASE_URL}/api/v1/course/fetchcourse/${course_id}`,
           { withCredentials: true }
-        );
-        
+        );   
         setCourse(response.data.data);
-        dispatch(setSelectedCourse(response.data.data));
       } catch (error) {
         toast.error(
           error?.response?.data.message || "Error fetching course data"
@@ -215,16 +211,16 @@ const CourseLandingPage = () => {
 
             {/* Lectures List */}
 
-            <CourseContent />
+            <CourseContent/>
             <div className="mt-10">
               <p className="text-xl font-bold mb-4">Description</p>
               <p className="text-sm">{course?.description}</p>
             </div>
 
-            <Recommendation />
-            <CourseReviews />
+            <Recommendation  />
+            <CourseReviews  />
             <div ref={proRef}>
-            <InstructorProfile />
+            <InstructorProfile  />
             </div>
             
             <AddReview />

@@ -128,5 +128,5 @@
 - instructor email:- instr@gmail.com
 - instructor password:- instr@123
 
--student email:- stu@gmail.com
--student password:- stu@123
+- student email:- stu@gmail.com
+- student password:- stu@123

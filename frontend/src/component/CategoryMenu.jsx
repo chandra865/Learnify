@@ -53,7 +53,7 @@ const CategoryMenu = () => {
           onMouseLeave={resetMenu}
         >
           {/* Column 1: Categories */}
-          <div className="w-56 border-r border-gray-700">
+          <div className="w-56 border-r border-gray-700 z-50">
             <h2 className="text-base font-semibold px-4 py-2 bg-gray-800 border-b border-gray-700">
               Categories
             </h2>
@@ -80,7 +80,7 @@ const CategoryMenu = () => {
 
           {/* Column 2: Subcategories */}
           {selectedCategory && (
-            <div className="w-56 border-r border-gray-700">
+            <div className="w-56 border-r border-gray-700  z-50">
               <h2 className="text-base font-semibold px-4 py-2 bg-gray-800 border-b border-gray-700">
                 {selectedCategory.name}
               </h2>

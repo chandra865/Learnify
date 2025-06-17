@@ -58,7 +58,7 @@ const SearchPage = () => {
 
       <div className="md:flex">
         {/* Sidebar Filters (Fixed) */}
-        <div className="w-full md:w-1/4 p-4 bg-gray-800 rounded-lg md:sticky md:top-6 h-fit ml-5">
+        <div className="w-full md:w-1/4 p-4 bg-gray-800 rounded-lg md:sticky md:top-6 h-fit ml-5 z-0">
           <h3 className="text-xl font-bold mb-3">Filters</h3>
 
           {/* Rating Filter */}

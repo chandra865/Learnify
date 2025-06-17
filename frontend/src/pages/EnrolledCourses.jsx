@@ -8,6 +8,8 @@ import { Link } from "react-router-dom";
 import StarRating from "../component/StarRating";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { toast } from "react-toastify";
+import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
+import { useDispatch } from "react-redux";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const EnrolledCourses = () => {
@@ -37,6 +39,9 @@ const EnrolledCourses = () => {
     fetchEnrolledCourses();
   }, [userId]);
 
+  const dispatch = useDispatch();
+  const handleClick = (course) => dispatch(setSelectedCourse(course));
+
   if (loading) return <Loading />;
 
   return (
@@ -45,10 +50,12 @@ const EnrolledCourses = () => {
         Enrolled Courses
       </h2>
 
-      {courses?.length > 0 ? (
+      {courses.length > 0 ? (
         <div className="">
           {courses.map((course) => (
-              <Link to={`/course/enroll/${course?._id}`}>
+              <Link 
+              onClick={() => handleClick(course)}
+              to={`/course/enroll/${course._id}`}>
                 <div className="flex mb-4 border-b-2 hover:bg-gray-700 transform transition duration-300 hover:scale-102">
                   {/* Course Image */}
                   <div className="w-70 h-40 flex-shrink-0">
