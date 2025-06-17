@@ -45,10 +45,10 @@ const EnrolledCourses = () => {
         Enrolled Courses
       </h2>
 
-      {courses.length > 0 ? (
+      {courses?.length > 0 ? (
         <div className="">
           {courses.map((course) => (
-              <Link to={`/course/enroll/${course._id}`}>
+              <Link to={`/course/enroll/${course?._id}`}>
                 <div className="flex mb-4 border-b-2 hover:bg-gray-700 transform transition duration-300 hover:scale-102">
                   {/* Course Image */}
                   <div className="w-70 h-40 flex-shrink-0">

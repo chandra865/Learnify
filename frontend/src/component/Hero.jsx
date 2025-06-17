@@ -20,12 +20,12 @@ const Hero = () => {
             >
               Get Started
             </a>
-            {/* <a
+            <a
               href="/courses"
-              className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg text-lg font-semibold text-center"
+              className="bg-red-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg text-lg font-semibold text-center"
             >
-              Explore Courses
-            </a> */}
+              Demo Video
+            </a>
           </div>
         </div>
 

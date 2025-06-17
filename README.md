@@ -7,7 +7,7 @@
 ## Demo
 **Website:** [https://learnify-ten-zeta.vercel.app](https://learnify-ten-zeta.vercel.app)
 
-**Demo Video:** [Watch on YouTube](https://youtu.be/your-demo-video-id)
+**Demo Video:** [Watch](https://drive.google.com/file/d/1DgrDrbEdsnVaIEhFgBdNru2W4vsuGShC/view?usp=drive_link)
 
 ---
 
@@ -123,3 +123,10 @@
 4. Environment Variables:
 
    Check ".env.sample" file in both frontend and backend
+
+## Dummy Accounts
+- instructor email:- instr@gmail.com
+- instructor password:- instr@123
+
+-student email:- stu@gmail.com
+-student password:- stu@123
