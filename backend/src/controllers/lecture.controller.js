@@ -49,7 +49,7 @@ const addVideoToLecture = asyncHandler(async (req, res) => {
   const lecture = await Lecture.findById(lectureId);
 
   if (!lecture) {
-    throw ApiError(404, "lecture not found");
+    throw new ApiError(404, "lecture not found");
   }
 
   lecture.duration = duration;

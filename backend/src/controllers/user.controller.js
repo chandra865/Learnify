@@ -300,7 +300,7 @@ const updateEducation = asyncHandler(async (req, res) => {
   );
 
   if (!updatedEducation) {
-    throw ApiError(404, "Education not found");
+    throw new ApiError(404, "Education not found");
   }
 
   return res
@@ -411,7 +411,7 @@ const updateExperience = asyncHandler(async (req, res) => {
   );
 
   if (!updatedExperience) {
-    throw ApiError(404, "Experience not found");
+    throw new ApiError(404, "Experience not found");
   }
 
   return res
@@ -489,19 +489,19 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // Important!
     };
 
-    const { accessToken, newRefreshToken } =
+    const { accessToken, refreshToken } =
       await generateAccessAndRefreshToken(user._id);
 
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", newRefreshToken, options)
+      .cookie("refreshToken", refreshToken, options)
       .json(
         new ApiResponse(
           200,
           {
             accessToken: accessToken,
-            refreshToken: newRefreshToken,
+            refreshToken: refreshToken,
           },
           "Access token refreshed"
         )
@@ -593,7 +593,7 @@ const deleteExpertise = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiError(200, user.expertise, "expertise removed successfully"));
+    .json(new ApiResponse(200, user.expertise, "expertise removed successfully"));
 });
 
 // get experties
@@ -608,7 +608,6 @@ const getExperties = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(200, user.expertise, "exprtise fetched successfully")
     );
-  res.json({ skills: user.skills });
 });
 
 const getInstructorStats = asyncHandler(async (req, res) => {
