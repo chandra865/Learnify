@@ -7,11 +7,13 @@ import {
   getOrderHistory,
 } from "../controllers/transaction.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { validate } from "../middlewares/validation.js";
+import { createOrderSchema, verifyPaymentSchema } from "../schema/transaction.schema.js";
 
 const router = Router();
 
-router.route("/create-order").post(verifyJWT, createOrder);
-router.route("/verify-payment").post(verifyJWT, verifyPayment);
+router.route("/create-order").post(verifyJWT, validate(createOrderSchema), createOrder);
+router.route("/verify-payment").post(verifyJWT, validate(verifyPaymentSchema), verifyPayment);
 router
   .route("/get-user-instructor-transactions/:instructorId")
   .get(verifyJWT, getUserInstructorTransactions);

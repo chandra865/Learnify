@@ -75,21 +75,21 @@ import otpRouter from "./routes/otp.routes.js";
 import PasswordResetTokenRouter from "./routes/PasswordResetToken.routes.js";
 
 //routes declaration
-app.use("/api/v1/user", userRouter);
-app.use("/api/v1/course",courseRouter);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/courses",courseRouter);
 app.use("/api/v1/media",mediaRouter);
-app.use("/api/v1/review",reviewRouter);
+app.use("/api/v1/reviews",reviewRouter);
 app.use("/api/v1/progress",progressRouter);
-app.use("/api/v1/quiz",quizRouter);
-app.use("/api/v1/category",category);
-app.use("/api/v1/cart",cartRouter);
-app.use("/api/v1/transaction",transactionRouter);
-app.use("/api/v1/coupon",couponRouter);
-app.use("/api/v1/lecture", lectureRouter);
-app.use("/api/v1/section",sectionRouter);
-app.use("/api/v1/enrollment", enrollmentRouter);
-app.use("/api/v1/otp", otpRouter);
-app.use("/api/v1/password-reset-request", PasswordResetTokenRouter);
+app.use("/api/v1/quizzes",quizRouter);
+app.use("/api/v1/categories",category);
+app.use("/api/v1/carts",cartRouter);
+app.use("/api/v1/transactions",transactionRouter);
+app.use("/api/v1/coupons",couponRouter);
+app.use("/api/v1/lectures", lectureRouter);
+app.use("/api/v1/sections",sectionRouter);
+app.use("/api/v1/enrollments", enrollmentRouter);
+app.use("/api/v1/otps", otpRouter);
+app.use("/api/v1/password-reset-requests", PasswordResetTokenRouter);
 
 
 
