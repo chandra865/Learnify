@@ -5,15 +5,14 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { persistor } from "../store/store.js";
 import axios from "axios";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
+import { userBaseUrl } from "../utils/endpoints";
 const Logout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   useEffect(() => {
     const logoutUser = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/v1/user/logout`, {
+        const response = await axios.get(`${userBaseUrl}/logout`, {
           withCredentials: true,
         });
 

@@ -4,7 +4,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import {toast} from "react-toastify";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { userBaseUrl } from "../utils/endpoints";
 
 const Education = () => {
   const [education, setEducation] = useState([]);
@@ -25,7 +25,7 @@ const Education = () => {
   const fetchEducation = async () => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/v1/user/get-education`,
+        `${userBaseUrl}/educations`,
         {
           withCredentials: true,
         }
@@ -42,8 +42,8 @@ const Education = () => {
   const handleAddOrUpdateEducation = async () => {
     try {
       const url = editingId
-        ? `${API_BASE_URL}/api/v1/user/update-education/${editingId}`
-        : `${API_BASE_URL}/api/v1/user/add-education`;
+        ? `${userBaseUrl}/educations/${editingId}`
+        : `${userBaseUrl}/educations`;
 
       const payload = {
         ...formData,
@@ -86,7 +86,7 @@ const Education = () => {
   const handleDelete = async (eduId) => {
     try {
       const response = await axios.delete(
-        `${API_BASE_URL}/api/v1/user/delete-education/${eduId}`,
+        `${userBaseUrl}/educations/${eduId}`,
         {
           withCredentials: true,
         }

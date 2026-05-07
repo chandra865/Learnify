@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { quizBaseUrl } from "../utils/endpoints"
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const GiveQuiz = ({ Id, type }) => {
   const [quizzes, setQuizzes] = useState([]);
@@ -9,7 +10,7 @@ const GiveQuiz = ({ Id, type }) => {
     const fetchQuizzes = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/quiz/get-all-quiz/${Id}?quizFor=${type}`,
+          `${quizBaseUrl}/get-all-quiz/${Id}?quizFor=${type}`,
           {
             withCredentials: true,
           }

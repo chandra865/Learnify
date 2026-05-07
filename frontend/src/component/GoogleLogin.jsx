@@ -1,9 +1,9 @@
 import React from "react";
 import { FcGoogle } from "react-icons/fc";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { userBaseUrl } from "../utils/endpoints";
 const GoogleLogin = () => {
   const handleLogin = () => {
-    window.open(`${API_BASE_URL}/api/v1/user/auth/google`, "_self");
+    window.open(`${userBaseUrl}/auth/google`, "_self");
   };
   return (
     <button

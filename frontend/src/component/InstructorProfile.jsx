@@ -2,6 +2,7 @@ import { FaStar, FaUserGraduate, FaBookOpen, FaUser } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { userBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const InstructorProfile = () => {
@@ -16,7 +17,7 @@ const InstructorProfile = () => {
   const fetchInstructorCourseStudent = async () => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/v1/user/get-instructor-stats/${instructorId}`,
+        `${userBaseUrl}/stats/${instructorId}`,
         {
           withCredentials: true,
         }   
@@ -36,7 +37,7 @@ const InstructorProfile = () => {
   const fetchInstructorRatingReviews = async () => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/v1/user/get-instructor-rating-and-reviews/${instructorId}`,
+        `${userBaseUrl}/${instructorId}/rating-reviews`,
         {
           withCredentials: true,
         }

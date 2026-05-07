@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { courseBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const PublishCourse = () => {
 
@@ -12,7 +13,7 @@ const PublishCourse = () => {
   const fetchCourse = async () => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/v1/course/fetchcourse/${course._id}`,
+        `${courseBaseUrl}/${course._id}`,
         { withCredentials: true }
       );
       
@@ -30,7 +31,7 @@ const PublishCourse = () => {
     }
     try {
       const response = await axios.patch(
-        `${API_BASE_URL}/api/v1/course/change-publish-status/${course._id}`,
+        `${courseBaseUrl}/status/${course._id}`,
         null,
         { withCredentials: true }
       );

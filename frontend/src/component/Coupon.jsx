@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { couponBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Coupon = () => {
@@ -25,7 +26,7 @@ const Coupon = () => {
   const fetchCoupons = async () => {
     try {
       const res = await axios.get(
-        `${API_BASE_URL}/api/v1/coupon/get-coupon/${courseId}`,
+        `${couponBaseUrl}/${courseId}`,
         {
           withCredentials: true,
         }
@@ -46,7 +47,7 @@ const Coupon = () => {
   const handleToggleStatus = async (couponId) => {
     try {
       await axios.patch(
-        `${API_BASE_URL}/api/v1/coupon/toggle-coupon/${couponId}`,
+        `${couponBaseUrl}/${couponId}`,
         {},
         { withCredentials: true }
       );
@@ -105,7 +106,7 @@ const Coupon = () => {
 
     try {
       const res = await axios.post(
-          `${API_BASE_URL}/api/v1/coupon/create-coupon`,
+          `${couponBaseUrl}`,
         payload,
         { withCredentials: true }
       );
@@ -134,7 +135,7 @@ const Coupon = () => {
   const handleDelete = async (couponId) => {
     try {
       await axios.delete(
-        `${API_BASE_URL}/api/v1/coupon/delete-coupon/${couponId}`,
+        `${couponBaseUrl}/${couponId}`,
         {
           withCredentials: true,
         }

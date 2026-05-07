@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import GoogleLogin from "../component/GoogleLogin";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL; 
+import { userBaseUrl } from "../utils/endpoints";
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/api/v1/user/login`,
+        `${userBaseUrl}/login`,
         formData,
         {
           headers: { "Content-Type": "application/json" }, // Use JSON for regular form data
@@ -97,7 +97,7 @@ const Login = () => {
         <GoogleLogin />
 
         <p className="text-center text-gray-400 mt-4">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <a href="/register" className="text-blue-500 hover:underline">
             Register here
           </a>

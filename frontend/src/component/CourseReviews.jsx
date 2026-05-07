@@ -8,6 +8,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { toast } from "react-toastify";
+import { reviewBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Testimonials = () => {
@@ -18,7 +19,7 @@ const Testimonials = () => {
     const fetchReviews = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/review/get-review/${courseId}`,
+          `${reviewBaseUrl}/${courseId}`,
           { withCredentials: true }
         );
         setReviews(response.data.data);

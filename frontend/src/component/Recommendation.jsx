@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { FaStar, FaUser } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { courseBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Recommendation = () => {
@@ -17,7 +18,7 @@ const Recommendation = () => {
 
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/course/recommend/${courseId}`
+          `${courseBaseUrl}/recommend/${courseId}`
         );
         setCourses(response.data.data);
       } catch (error) {

@@ -14,6 +14,7 @@ import {
   FaGlobe,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { enrollmentBaseUrl, sectionBaseUrl} from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CourseContent = () => {
   const [expandedSections, setExpandedSections] = useState({});
@@ -29,7 +30,7 @@ const CourseContent = () => {
   const checkEnrollment = async () => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/v1/enrollment/check-user-enrollment/${user._id}/${courseId}`,
+        `${enrollmentBaseUrl}/${user._id}/${courseId}`,
         {
           withCredentials: true,
         }
@@ -52,7 +53,7 @@ const CourseContent = () => {
   const fetchSection = async () => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/v1/section/get-section-by-course/${courseId}`,
+        `${sectionBaseUrl}/${courseId}`,
         {
           withCredentials: true,
         }

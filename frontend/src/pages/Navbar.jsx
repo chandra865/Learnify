@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import { login } from "../store/slice/userSlice";
 import axios from "axios";
 import siteLogo from "../assets/logo.png";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { userBaseUrl } from "../utils/endpoints";
 
 const Navbar = () => {
   const { status, userData } = useSelector((state) => state.user);
@@ -36,8 +36,8 @@ const Navbar = () => {
     const newRole = user.role === "student" ? "instructor" : "student";
     try {
       setSwitching(true);
-      const response = await axios.put(
-        `${API_BASE_URL}/api/v1/user/switch-user-role`,
+      const response = await axios.patch(
+        `${userBaseUrl}/${user._id}/role`,
         { newRole },
         { withCredentials: true }
       );

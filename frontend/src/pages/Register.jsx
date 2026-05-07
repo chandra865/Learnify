@@ -3,8 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import GoogleLogin from "../component/GoogleLogin";
-
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { userBaseUrl, otpBaseUrl } from "../utils/endpoints";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -27,7 +26,7 @@ const Register = () => {
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_BASE_URL}/api/v1/user/register`, formData, {
+      await axios.post(`${userBaseUrl}/register`, formData, {
         headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });
@@ -35,7 +34,7 @@ const Register = () => {
       toast.success("OTP sent to your email");
       setStep("otp");
 
-      await axios.post(`${API_BASE_URL}/api/v1/otp/send-otp`, {
+      await axios.post(`${otpBaseUrl}/send`, {
         email: formData.email,
       });
      
@@ -49,7 +48,7 @@ const Register = () => {
     e.preventDefault();
     try {
       const joinedOtp = otp.join("");
-      const res = await axios.post(`${API_BASE_URL}/api/v1/otp/verify-otp`, {
+      const res = await axios.post(`${otpBaseUrl}/verify`, {
         email: formData.email,
         otp: joinedOtp,
       });
