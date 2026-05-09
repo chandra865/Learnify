@@ -1,13 +1,10 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import StarRating from "./StarRating";
-import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { courseBaseUrl, transactionBaseUrl} from "../utils/endpoints";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
 const Payment = () => {
   const { userId, courseId } = useParams();
 
@@ -37,7 +34,12 @@ const Payment = () => {
       // 1. Create Razorpay Order
       const orderResponse = await axios.post(
         `${transactionBaseUrl}/order`,
-        { amount: course.price === course.finalPrice ? course.price : course.finalPrice },
+        {
+          amount:
+            course.price === course.finalPrice ? course.price : course.finalPrice,
+          type: "single",
+          courseId: courseId,
+        },
         { withCredentials: true }
       );
 
@@ -54,7 +56,7 @@ const Payment = () => {
             response;
 
           // 2. Verify Payment
-          const res = await axios.post(
+          await axios.post(
               `${transactionBaseUrl}/payment`,
               {
               razorpay_payment_id,

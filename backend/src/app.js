@@ -48,7 +48,14 @@ app.use(fileUpload({
     useTempFiles : true,
     tempFileDir : "/tmp/"
 }));
-app.use(express.json({limit:"36kb"})); // when data coming in json formate 
+app.use(express.json({
+    limit: "36kb",
+    verify: (req, res, buf) => {
+        if (req.originalUrl.includes("/webhook")) {
+            req.rawBody = buf;
+        }
+    }
+})); // when data coming in json formate 
 app.use(express.urlencoded({extended:true, limit:"36kb"})) //when data coming from url
 app.use(express.static("public")) //public folder adding file
 app.use(cookieParser());//for performing operation on cookie  

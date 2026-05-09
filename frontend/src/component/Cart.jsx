@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import StarRating from "./StarRating";
 import { cartBaseUrl, transactionBaseUrl } from "../utils/endpoints";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const Cart = () => {
   const userId = useSelector((state) => state.user.userData?._id);
   const [cart, setCart] = useState(null);
@@ -23,7 +22,7 @@ const Cart = () => {
       setCart(response.data.data);
       setLoading(true);
     } catch (error) {
-      console.log(response.data.error || "cart not fetched");
+      console.log(error.response?.data?.error || "cart not fetched");
     }
   };
 
@@ -43,7 +42,7 @@ const Cart = () => {
       //console.log(response.data.data);
       setCart(response.data.data);
     } catch (error) {
-      console.log(response?.data.error || "cart not fetched");
+      console.log(error.response?.data?.error || "cart not fetched");
     }
   };
 
@@ -54,7 +53,11 @@ const Cart = () => {
       // 1. Create Razorpay Order
       const orderResponse = await axios.post(
         `${transactionBaseUrl}/order`,
-        { amount: cart.totalAmount },
+        {
+          amount: cart.totalAmount,
+          type: "cart",
+          courseId: null,
+        },
         { withCredentials: true }
       );
 
@@ -86,7 +89,7 @@ const Cart = () => {
           );
 
           alert("Cart payment successful! You're now enrolled in all courses.");
-          window.location.href = "/dashboard/enrolled-courses"; // or your route
+          window.location.href = "/dashboard/enrolled"; // or your route
         },
         prefill: {
           name: "Student",
@@ -121,7 +124,10 @@ const Cart = () => {
                 {cart.courses.length} course in cart
               </p>
               {cart.courses.map((course) => (
-                <div className="flex my-2 p-2 border-b-2 hover:bg-gray-700 transform transition duration-300 hover:scale-102">
+                <div 
+                  key={course._id}
+                  className="flex my-2 p-2 border-b-2 hover:bg-gray-700 transform transition duration-300 hover:scale-102"
+                >
                   {/* Course Image */}
                   <div className="w-35 h-20 flex-shrink-0">
                     <img

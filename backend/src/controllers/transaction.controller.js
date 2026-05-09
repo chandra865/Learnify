@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import { Transaction } from "../models/transactionSchema.model.js";
@@ -10,7 +11,35 @@ import { Enrollment } from "../models/enrollment.model.js";
 import { Cart } from "../models/cart.model.js";
 
 const createOrder = asyncHandler(async (req, res) => {
-  const { amount } = req.body;
+  const { amount, type, courseId, discountCode } = req.body;
+  const userId = req.user._id;
+
+  // Check if user is already enrolled (for single course purchase)
+  if (type === "single" && courseId) {
+    const existingEnrollment = await Enrollment.findOne({
+      user: userId,
+      course: courseId,
+    });
+    if (existingEnrollment) {
+      throw new ApiError(400, "You are already enrolled in this course");
+    }
+  } else if (type === "cart") {
+    // Optional: Check if all courses in cart are already enrolled
+    const cart = await Cart.findOne({ userId }).populate("courses");
+    if (!cart || cart.courses.length === 0) {
+      throw new ApiError(400, "Cart is empty");
+    }
+    
+    const courseIdsInCart = cart.courses.map(c => c._id);
+    const existingEnrollments = await Enrollment.find({
+      user: userId,
+      course: { $in: courseIdsInCart }
+    });
+    
+    if (existingEnrollments.length === cart.courses.length) {
+      throw new ApiError(400, "You are already enrolled in all courses in your cart");
+    }
+  }
 
   const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -18,8 +47,14 @@ const createOrder = asyncHandler(async (req, res) => {
   });
 
   const options = {
-    amount: amount * 100, // amount in smallest currency unit
+    amount: Math.round(amount * 100), // amount in smallest currency unit
     currency: "INR",
+    notes: {
+      userId: userId.toString(),
+      type,
+      courseId: courseId || "",
+      discountCode: discountCode || "",
+    }
   };
 
   const order = await razorpay.orders.create(options);
@@ -32,95 +67,129 @@ const createOrder = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, order, "Order created successfully"));
 });
 
-// const verifyPayment = asyncHandler(async (req, res) => {
-//   const {
-//     razorpay_order_id,
-//     razorpay_payment_id,
-//     razorpay_signature,
-//     userId,
-//     courseId,
-//     amount,
-//     paymentMethod,
-//     discountCode,
-//   } = req.body;
+/**
+ * Shared logic to process successful payment, enroll users, and ensure idempotency.
+ * Now optimized for Atomicity (using Sessions) and Performance (fixing N+1 problem).
+ */
+const processSuccessfulPayment = async (data) => {
+  const {
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+    userId,
+    type,
+    courseId,
+    amount, // amount in paise
+    paymentMethod = "unknown",
+    discountCode,
+  } = data;
 
-//   // Step 1: Verify Signature
-//   const sign = razorpay_order_id + "|" + razorpay_payment_id;
-//   const expectedSignature = crypto
-//     .createHmac("sha256", process.env.RAZORPAY_SECRET_KEY)
-//     .update(sign)
-//     .digest("hex");
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-//   const isValid = expectedSignature === razorpay_signature;
-//   if (!isValid) {
-//     throw new ApiError(400, "Invalid signature");
-//   }
+  try {
+    // Idempotency check: Check if transaction already exists
+    const existingTransaction = await Transaction.findOne({
+      "razorpay.paymentId": razorpay_payment_id,
+    }).session(session);
 
-//   // Step 2: Store in DB
-//   const course = await Course.findById(courseId);
-//   if (!course) {
-//     throw new ApiError(404, "Course not found");
-//   }
+    if (existingTransaction) {
+      await session.endSession();
+      return existingTransaction;
+    }
 
-//   const transaction = await Transaction.create({
-//     userId,
-//     courseId,
-//     instructorId: course?.instructor,
-//     razorpay: {
-//       orderId: razorpay_order_id,
-//       paymentId: razorpay_payment_id,
-//       signature: razorpay_signature,
-//     },
-//     amount,
-//     currency: "INR",
-//     discountCode: discountCode || null,
-//     finalPrice: amount,
-//     status: "success",
-//     paymentMethod,
-//     courseAccessGranted: true,
-//   });
+    let courseIds = [];
+    if (type === "single") {
+      if (!courseId)
+        throw new ApiError(400, "Course ID is required for single payment");
+      courseIds.push(courseId);
+    } else if (type === "cart") {
+      const cart = await Cart.findOne({ userId })
+        .populate("courses")
+        .session(session);
+      if (!cart || cart.courses.length === 0) {
+        throw new ApiError(400, "Cart is empty or already processed");
+      }
+      courseIds = cart.courses.map((course) => course._id);
+    } else {
+      throw new ApiError(400, "Invalid payment type");
+    }
 
-//   if (!transaction) {
-//     throw new ApiError(500, "Transaction not created");
-//   }
+    // N+1 Optimization: Filter courses that need enrollment
+    const existingEnrollments = await Enrollment.find({
+      user: userId,
+      course: { $in: courseIds },
+    }).session(session);
 
-//   if (transaction.courseAccessGranted) {
-//     const course = await Course.findById(courseId);
-//     if (!course) throw new ApiError(404, "course not found");
+    const enrolledCourseIds = existingEnrollments.map((e) =>
+      e.course.toString()
+    );
+    const coursesToEnroll = courseIds.filter(
+      (id) => !enrolledCourseIds.includes(id.toString())
+    );
 
-//     const existing = await Enrollment.findOne({
-//       user: userId,
-//       course: courseId,
-//     });
+    // Create Transaction (create returns an array when session is used)
+    const transactionRecord = await Transaction.create(
+      [
+        {
+          userId,
+          courses: courseIds,
+          razorpay: {
+            orderId: razorpay_order_id,
+            paymentId: razorpay_payment_id,
+            signature: razorpay_signature,
+          },
+          amount: amount / 100, // store in rupees
+          currency: "INR",
+          discountCode: discountCode || null,
+          status: "success",
+          paymentMethod,
+          courseAccessGranted: true,
+        },
+      ],
+      { session }
+    );
 
-//     if (existing) {
-//       throw new ApiError(400, "You are already enrolled in this course");
-//     }
+    if (coursesToEnroll.length > 0) {
+      // Bulk create enrollments
+      await Enrollment.insertMany(
+        coursesToEnroll.map((cId) => ({ user: userId, course: cId })),
+        { session }
+      );
 
-//     // Create new enrollment
-//     const enrollment = new Enrollment({
-//       user: userId,
-//       course: courseId,
-//     });
+      // Bulk update course student counts
+      await Course.updateMany(
+        { _id: { $in: coursesToEnroll } },
+        { $inc: { studentenrolled: 1 } },
+        { session }
+      );
 
-//     await enrollment.save();
+      // Update user enrolled courses count in one go
+      await User.findByIdAndUpdate(
+        userId,
+        { $inc: { coursesEnrolled: coursesToEnroll.length } },
+        { session }
+      );
+    }
 
-//     if (!enrollment) {
-//       throw new ApiError(404, "enrollment not created");
-//     }
+    // Clear Cart (if it's a cart purchase)
+    if (type === "cart") {
+      await Cart.findOneAndDelete({ userId }, { session });
+    }
 
-//     await Course.findByIdAndUpdate(courseId, {
-//       $inc: { studentenrolled: 1 },
-//     });
-//     await User.findByIdAndUpdate(userId, {
-//       $inc: { coursesEnrolled: 1 },
-//     });
-//   }
+    await session.commitTransaction();
+    await session.endSession();
+    
+    return transactionRecord[0];
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    // Log error for debugging if needed
+    console.error("Payment processing error (aborted):", error);
+    throw error;
+  }
+};
 
-//   return res
-//     .status(200)
-//     .json(new ApiResponse(200, transaction, "Payment verified successfully"));
-// });
 
 const verifyPayment = asyncHandler(async (req, res) => {
   const {
@@ -128,9 +197,9 @@ const verifyPayment = asyncHandler(async (req, res) => {
     razorpay_payment_id,
     razorpay_signature,
     userId,
-    type, // "single" or "cart"
+    type,
     courseId,
-    amount,
+    amount, // amount in rupees from frontend
     paymentMethod,
     discountCode,
   } = req.body;
@@ -145,68 +214,63 @@ const verifyPayment = asyncHandler(async (req, res) => {
   const isValid = expectedSignature === razorpay_signature;
   if (!isValid) throw new ApiError(400, "Invalid Razorpay signature");
 
-  let courseIds = [];
-
-  if (type === "single") {
-    if (!courseId) throw new ApiError(400, "Course ID is required for single payment");
-    courseIds.push(courseId);
-  } else if (type === "cart") {
-    const cart = await Cart.findOne({ userId }).populate("courses");
-    if (!cart || cart.courses.length === 0) {
-      throw new ApiError(400, "Cart is empty");
-    }
-
-    courseIds = cart.courses.map(course => course._id);
-  } else {
-    throw new ApiError(400, "Invalid payment type");
-  }
-
-  // Step 2: Create Transaction
-  const transaction = await Transaction.create({
+  // Step 2: Use shared logic
+  const transaction = await processSuccessfulPayment({
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
     userId,
-    courses: courseIds,
-    razorpay: {
-      orderId: razorpay_order_id,
-      paymentId: razorpay_payment_id,
-      signature: razorpay_signature,
-    },
-    amount,
-    currency: "INR",
-    discountCode: discountCode || null,
-    status: "success",
+    type,
+    courseId,
+    amount: amount * 100, // convert to paise for helper
     paymentMethod,
-    courseAccessGranted: true,
+    discountCode,
   });
-
-  if (!transaction) throw new ApiError(500, "Transaction creation failed");
-
-  // Step 3: Enroll user in courses
-  for (const courseId of courseIds) {
-    const course = await Course.findById(courseId);
-    if (!course) continue;
-
-    const alreadyEnrolled = await Enrollment.findOne({ user: userId, course: courseId });
-    if (!alreadyEnrolled) {
-      const enrollment = new Enrollment({
-        user: userId,
-        course: courseId,
-      });
-
-      await enrollment.save();
-
-      await Course.findByIdAndUpdate(courseId, { $inc: { studentenrolled: 1 } });
-      await User.findByIdAndUpdate(userId, { $inc: { coursesEnrolled: 1 } });
-    }
-  }
-
-  // Step 4: Clear Cart (if it's a cart purchase)
-  if (type === "cart") {
-    await Cart.findOneAndDelete({ userId });
-  }
 
   return res
     .status(200)
-    .json(new ApiResponse(200, transaction, "Payment verified and courses enrolled"));
+    .json(new ApiResponse(200, transaction, "Payment verified and processed successfully"));
+});
+
+const handleWebhook = asyncHandler(async (req, res) => {
+  const signature = req.headers["x-razorpay-signature"];
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
+  if (!signature) {
+    throw new ApiError(400, "Webhook signature missing");
+  }
+
+  // Verify Webhook Signature
+  const expectedSignature = crypto
+    .createHmac("sha256", secret)
+    .update(req.rawBody)
+    .digest("hex");
+
+  if (expectedSignature !== signature) {
+    throw new ApiError(400, "Invalid webhook signature");
+  }
+
+  const payload = req.body;
+
+  // Only handle payment.captured event
+  if (payload.event === "payment.captured") {
+    const payment = payload.payload.payment.entity;
+    const { userId, type, courseId, discountCode } = payment.notes;
+
+    await processSuccessfulPayment({
+      razorpay_order_id: payment.order_id,
+      razorpay_payment_id: payment.id,
+      razorpay_signature: signature, // Webhook signature is different but we use it as placeholder or capture from payment entity if available
+      userId,
+      type,
+      courseId: courseId || null,
+      amount: payment.amount,
+      paymentMethod: payment.method,
+      discountCode: discountCode || null,
+    });
+  }
+
+  return res.status(200).json({ status: "ok" });
 });
 
 const getUserInstructorTransactions = asyncHandler(async (req, res) => {
@@ -269,6 +333,7 @@ const getOrderHistory = asyncHandler(async (req, res) => {
 export {
   createOrder,
   verifyPayment,
+  handleWebhook,
   getCourseTransactions,
   getUserInstructorTransactions,
   getOrderHistory
