@@ -1,141 +1,129 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Loading from "../component/Loading";
 import CourseCard from "../component/CourseCard";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { Navigation, Pagination } from "swiper/modules";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
+import { ChevronRight, Filter, Search as SearchIcon } from "lucide-react";
 import { courseBaseUrl } from "../utils/endpoints";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import Button from "../component/ui/Button";
+
 const Courses = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeCategory, setActiveCategory] = useState(null);
-  const [categoryCourses, setCategoryCourses] = useState([]);
-  const swiperRef = useRef(null);
+  const [activeCategory, setActiveCategory] = useState("All Domains");
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await axios.get(
-          `${courseBaseUrl}`
-        );
-        const courseData = response.data.data;
-        const filteredCourses = courseData.filter(course => course.published === true);
-        setCourses(filteredCourses);
-
-        const defaultCategory = filteredCourses[0]?.category;
-        setActiveCategory(defaultCategory);
-
-        if (defaultCategory) {
-          setCategoryCourses(
-            filteredCourses.filter(course => course.category === defaultCategory)
-          );
+        const response = await axios.get(courseBaseUrl);
+        const filtered = response.data.data.filter(course => course.published);
+        setCourses(filtered);
+        if (filtered.length > 0 && activeCategory === "All Domains") {
+          // Keep it as All Domains or set to first category
         }
       } catch (err) {
-        setError("Failed to fetch courses");
+        setError("Catalog synchronization failed");
       } finally {
         setLoading(false);
       }
     };
-
     fetchCourses();
   }, []);
 
-  const handleCategoryChange = (category) => {
-    setActiveCategory(category);
-    setCategoryCourses(courses.filter(course => course.category === category));
-  };
-
   if (loading) return <Loading />;
 
-  const categories = [...new Set(courses.map(course => course.category))];
+  const categories = ["All Domains", ...new Set(courses.map(course => course.category))];
+  
+  const filteredCourses = activeCategory === "All Domains" 
+    ? courses 
+    : courses.filter(course => course.category === activeCategory);
 
   return (
-    <div className="bg-gray-900 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-7xl mx-auto text-white">
-        <h2 className="text-3xl font-extrabold text-center mb-8">
-          Explore Our Courses
-        </h2>
+    <div className="bg-[#fafafa] min-h-screen pt-24 pb-20 px-6 mt-[-64px]">
+      <div className="max-w-[1440px] mx-auto space-y-12">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-slate-200 pb-10">
+          <div className="space-y-4">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">Curriculum Matrix</p>
+            <h2 className="text-4xl font-black text-slate-900 tracking-tighter leading-tight">
+               Industrial Course <br />
+               <span className="text-slate-400">Inventory</span>
+            </h2>
+          </div>
+          
+          <div className="flex items-center gap-3">
+             <div className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm text-xs font-bold text-slate-600">
+                <Filter size={16} className="text-slate-400" />
+                Capacity: {filteredCourses.length} Nodes
+             </div>
+             <div className="hidden sm:block h-6 w-[1px] bg-slate-200 mx-2" />
+             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 hidden sm:block">
+                Sync Status: Operational
+             </p>
+          </div>
+        </div>
 
-        {error ? (
-          <p className="text-center text-red-500">{error}</p>
-        ) : categories.length === 0 ? (
-          <p className="text-center text-gray-400">No courses available</p>
-        ) : (
-          <>
-            {/* Category Tabs Slider */}
-            <div className="relative mb-6">
-              <Swiper
-                ref={swiperRef}
-                spaceBetween={20}
-                slidesPerView={3}
-                loop={true}
-                modules={[Navigation, Pagination]}
-                breakpoints={{
-                  480: { slidesPerView: 3 },
-                  640: { slidesPerView: 4 },
-                  768: { slidesPerView: 5 },
-                  1024: { slidesPerView: 6 },
-                }}
-              >
-                {categories.map((category, index) => (
-                  <SwiperSlide key={index}>
-                    <div
-                      className={`cursor-pointer text-center py-3 px-4 rounded-full transition-all duration-300 whitespace-nowrap ${
-                        activeCategory === category
-                          ? "bg-black text-white"
-                          : "bg-gray-700 text-gray-300"
-                      }`}
-                      onClick={() => handleCategoryChange(category)}
+        <div className="flex flex-col lg:flex-row gap-12">
+          {/* Persistent Sidebar Filter */}
+          <aside className="lg:w-64 space-y-8 flex-shrink-0">
+            <div className="space-y-6">
+               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Domain Architecture</h3>
+               <nav className="space-y-1">
+                  {categories.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveCategory(cat)}
+                      className={`
+                        w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all
+                        ${activeCategory === cat 
+                          ? "bg-slate-900 text-white shadow-lg shadow-slate-200 translate-x-1" 
+                          : "text-slate-500 hover:bg-slate-200/50 hover:text-slate-900"}
+                      `}
                     >
-                      {category}
-                    </div>
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-
-              {/* Custom Navigation Buttons */}
-              <div
-                className="absolute top-1/2 left-0 transform -translate-y-1/2 cursor-pointer text-xl text-white hover:text-blue-500"
-                style={{ zIndex: 10, left: "-30px" }}
-                onClick={() => swiperRef.current.swiper.slidePrev()}
-              >
-                <FaChevronLeft />
-              </div>
-              <div
-                className="absolute top-1/2 right-0 transform -translate-y-1/2 cursor-pointer text-xl text-white hover:text-blue-500"
-                style={{ zIndex: 10, right: "-30px" }}
-                onClick={() => swiperRef.current.swiper.slideNext()}
-              >
-                <FaChevronRight />
-              </div>
+                      {cat}
+                      <ChevronRight size={14} className={activeCategory === cat ? "opacity-100" : "opacity-0 group-hover:opacity-100"} />
+                    </button>
+                  ))}
+               </nav>
             </div>
 
-            {/* Courses Grid */}
-            {categoryCourses.length > 0 && (
-              <div>
-                <h3 className="text-2xl font-extrabold text-center mb-6">
-                  Top Courses in {activeCategory}
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {categoryCourses.slice(0, 12).map((course) => (
-                    <CourseCard
-                      key={course._id}
-                      course={course}
-                      layout="vertical"
-                    />
-                  ))}
-                </div>
+            <div className="p-6 bg-blue-600 rounded-3xl text-white space-y-4 shadow-xl shadow-blue-100">
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Infrastructure Note</p>
+                <p className="text-xs font-bold leading-relaxed">
+                  All nodes are verified for industrial compliance and production-ready implementation.
+                </p>
+                <Button variant="outline" size="sm" className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20">
+                  Documentation
+                </Button>
+            </div>
+          </aside>
+
+          {/* Main Catalog Grid */}
+          <main className="flex-1 space-y-8">
+            {error ? (
+              <div className="p-12 text-center rounded-3xl bg-rose-50 border border-rose-100 text-rose-600 font-bold">
+                {error}
+              </div>
+            ) : filteredCourses.length === 0 ? (
+              <div className="p-20 text-center rounded-[40px] bg-slate-100 border border-slate-200 space-y-4">
+                <SearchIcon size={48} className="mx-auto text-slate-300" />
+                <p className="text-lg font-bold text-slate-400 italic">No node clusters found in this domain</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredCourses.map((course) => (
+                  <CourseCard
+                    key={course._id}
+                    course={course}
+                    layout="vertical"
+                  />
+                ))}
               </div>
             )}
-          </>
-        )}
+          </main>
+        </div>
       </div>
     </div>
   );

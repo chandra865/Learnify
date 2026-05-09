@@ -43,9 +43,9 @@ const CategoryMenu = () => {
     <div className="relative">
       <button
         onMouseEnter={() => setIsMenuOpen(true)}
-        className="text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
+        className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all"
       >
-        Explore
+        Explore Matrix
       </button>
 
       {isMenuOpen && (

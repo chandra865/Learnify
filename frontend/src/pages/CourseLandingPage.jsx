@@ -1,336 +1,335 @@
-import React from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Play, 
+  Check, 
+  User, 
+  Calendar, 
+  Globe, 
+  X, 
+  ShieldCheck, 
+  ShoppingCart, 
+  ArrowRight,
+  Info,
+  Clock,
+  Layout,
+  Award,
+  Terminal,
+  ChevronRight
+} from "lucide-react";
 import Loading from "../component/Loading";
 import StarRating from "../component/StarRating";
 import Recommendation from "../component/Recommendation";
 import CourseReviews from "../component/CourseReviews";
 import AddReview from "../component/AddReview";
-import { useDispatch } from "react-redux";
 import CourseContent from "../component/CourseContent";
-import {
-  FaTimes,
-  FaPlay,
-  FaCheck,
-  FaUser,
-  FaCalendarAlt,
-  FaGlobe,
-} from "react-icons/fa";
 import InstructorProfile from "../component/InstructorProfile";
+import Button from "../component/ui/Button";
+import Card from "../component/ui/Card";
+import Badge from "../component/ui/Badge";
 import { courseBaseUrl, enrollmentBaseUrl, sectionBaseUrl, cartBaseUrl } from "../utils/endpoints";
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CourseLandingPage = () => {
   const user = useSelector((state) => state.user.userData);
-  console.log(user);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-
   const { course_id } = useParams();
+  
   const [course, setCourse] = useState(null);
-  const [section, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [reviewRating, setReviewRating] = useState(null);
-  const [reviewComment, setReviewComment] = useState(null);
-  const [courseProgress, setCourseProgress] = useState(false);
-  const [isCourseCompleted, setIsCourseCompleted] = useState(false);
-
-  const [couponCode, setCouponCode] = useState("");
-  const [isCouponValid, setIsCouponValid] = useState(true);
-  const [discountApplied, setDiscountApplied] = useState(0);
-
   const proRef = useRef(null);
-  //console.log(isEnrolled);
 
- 
-  const date = new Date(course?.updatedAt);
-  const formattedDate = date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-  });
+  const formattedDate = course?.updatedAt 
+    ? new Date(course.updatedAt).toLocaleDateString("en-US", { year: "numeric", month: "long" })
+    : "Recently Updated";
 
-  const checkEnrollment = async () => {
-    try {
-      const response = await axios.get(
-        `${enrollmentBaseUrl}/${user._id}/${course_id}`,
-        {
-          withCredentials: true,
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        setLoading(true);
+        const courseRes = await axios.get(`${courseBaseUrl}/${course_id}`, { withCredentials: true });
+        setCourse(courseRes.data.data);
+
+        if (user) {
+          const enrollRes = await axios.get(`${enrollmentBaseUrl}/${user._id}/${course_id}`, { withCredentials: true });
+          setIsEnrolled(enrollRes.data.data.enrollmentStatus);
         }
-      );
-
-      const status = response.data.data.enrollmentStatus;
-      setIsEnrolled(status);
-    } catch (error) {
-      // console.log(error);
-    }
-  };
-  useEffect(() => {
-    if (user && course_id) {
-      checkEnrollment();
-    }
-  }, [user, course_id]);
-
-  useEffect(() => {
-    const fetchCourse = async () => {
-      try {
-        const response = await axios.get(
-          `${courseBaseUrl}/${course_id}`,
-          { withCredentials: true }
-        );   
-        setCourse(response.data.data);
-      } catch (error) {
-        toast.error(
-          error?.response?.data.message || "Error fetching course data"
-        );
+      } catch (err) {
+        // Silently fail or handle error
+      } finally {
+        setLoading(false);
       }
     };
+    fetchInitialData();
+  }, [course_id, user]);
 
-    fetchCourse();
-  }, [course_id]);
-
-  useEffect(() => {
-
-    const fetchSection = async () => {
-      try {
-        const response = await axios.get(
-          `${sectionBaseUrl}/${course_id}`,
-          {
-            withCredentials: true,
-          }
-        );
-        setSections(response.data.data);
-      } catch (error) {
-        toast.error(
-          error?.response?.data.message || "Error fetching course sections"
-        );
-      }
-    };
-    // if (isEnrolled !== null) {
-    //   fetchSection();
-    // }
-    fetchSection();
-  }, [isEnrolled, course_id]);
-
-  const handlePreviewClick = () => {
-    setShowPreview(true);
-  };
-  const handleProfileClick = () => {
-    proRef.current?.scrollIntoView({ behavior: "smooth" });
-  }
-
-  const handleCart = async (price) => {
+  const handleCart = async () => {
+    if (!user) return navigate("/login");
     try {
-      const response = await axios.post(
-        `${cartBaseUrl}`,
-        {
-          userId: user._id,
-          courseId: course_id,
-          price: price,
-        },
-        { withCredentials: true }
-      );
-      // console.log(response.data.data);
-      toast.success(response?.data?.message || "Added to cart successfully");
+      const price = course.finalPrice || course.price;
+      await axios.post(cartBaseUrl, { userId: user._id, courseId: course_id, price }, { withCredentials: true });
+      toast.success("Synchronization successful: Course added to cart");
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Error adding to cart";
-      toast.error(errorMessage);
+      toast.error(error.response?.data?.message || "Cart synchronization failed");
     }
   };
+
+  if (loading) return <Loading />;
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-gray-900">
-      <div className="h-[300px] bg-gray-700 bg-gradient-to-t from-black via-black/50 to-black/0 transition-opacity">
-        <div className=" mx-50 pt-10 text-white flex flex-row gap-15">
-          {/* course info */}
-          <div className="pt-10 w-4/5">
-            {/* Course Title */}
-            <h1 className="text-3xl font-extrabold">{course?.title}</h1>
-
-            {/* Course subtitle */}
-            <h2 className="mt-3 text-xl leading-relaxed">{course?.subtitle}</h2>
-
-            <p className="mt-4 flex items-center text-sm">
-              <FaUser className="text-white mr-2" />
-              {"Created by"}
-              <span 
-              onClick={handleProfileClick}
-              className="ml-1 underline cursor-pointer">{course?.instructor?.name}</span>
-            </p>
-            <p className="flex items-center text-sm">
-              <FaCalendarAlt className="text-white mr-2" /> Last update{" "}
-              {formattedDate}
-            </p>
-            <p className="flex items-center text-sm">
-              <FaGlobe className="text-white mr-2" /> {course?.language}
-            </p>
-
-            {/* What You Will Learn */}
-            <div className="mt-6 bg-gray-800 p-8">
-              <h2 className="text-2xl font-bold text-gray-200">
-                What You'll Learn
-              </h2>
-              <ul className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                {course?.whatYouWillLearn?.map((item, index) => (
-                  <li
-                    key={index}
-                    className="flex items-start text-white text-sm"
-                  >
-                    <div className="pt-1 text-gray-500 mr-2">
-                      <FaCheck size={12} />
-                    </div>
-                    <div className="text-sm leading-snug">{item}</div>
-                  </li>
-                ))}
-              </ul>
+    <div className="min-h-screen bg-[#fafafa]">
+      {/* Cinematic Header Node */}
+      <div className="relative bg-slate-950 text-white pt-32 pb-20 overflow-hidden">
+        {/* Abstract Background Elements */}
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-600/10 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+        
+        <div className="max-w-[1440px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 relative z-10">
+          <div className="lg:col-span-8 space-y-8">
+            <div className="space-y-4">
+               <motion.div 
+                 initial={{ opacity: 0, x: -20 }}
+                 animate={{ opacity: 1, x: 0 }}
+                 className="flex flex-wrap gap-2"
+               >
+                  <Badge variant="primary" className="bg-blue-600/20 border-blue-500/30 text-blue-400">
+                    {course?.category}
+                  </Badge>
+                  <Badge variant="outline" className="border-slate-700 text-slate-400">
+                    Industrial Level: {course?.level || "Advance"}
+                  </Badge>
+               </motion.div>
+               
+               <motion.h1 
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-[1.1]"
+               >
+                 {course?.title}
+               </motion.h1>
+               
+               <motion.p 
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ delay: 0.1 }}
+                 className="text-lg md:text-xl text-slate-400 font-medium max-w-3xl leading-relaxed"
+               >
+                 {course?.subtitle}
+               </motion.p>
             </div>
 
-            {/* Course Includes */}
-            <div className="mt-6 bg-gray-800 p-8">
-              <h2 className="text-2xl font-bold text-white mb-4">
-                This Course Includes
-              </h2>
-              <ul className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                {course?.courseIncludes?.map((item, index) => (
-                  <li
-                    key={index}
-                    className="flex items-start text-sm text-white"
-                  >
-                    <div className="pt-1 text-gray-500 mr-2">
-                      <FaCheck size={12} />
-                    </div>
-                    <div className="text-sm leading-snug">{item}</div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <div className="flex flex-wrap items-center gap-6 pt-4">
+               <div className="flex items-center gap-2 text-xs font-bold">
+                  <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
+                    <User size={14} className="text-blue-400" />
+                  </div>
+                  <span className="text-slate-400">Led by</span>
+                  <button onClick={() => proRef.current?.scrollIntoView({ behavior: "smooth" })} className="text-white hover:text-blue-400 underline transition-colors decoration-slate-700">
+                    {course?.instructor?.name}
+                  </button>
+               </div>
+               
+               <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
+                  <Calendar size={14} />
+                  <span>Last Sync {formattedDate}</span>
+               </div>
+               
+               <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
+                  <Globe size={14} />
+                  <span>Deployed in {course?.language || "English"}</span>
+               </div>
 
-            {/* Lectures List */}
-
-            <CourseContent/>
-            <div className="mt-10">
-              <p className="text-xl font-bold mb-4">Description</p>
-              <p className="text-sm">{course?.description}</p>
+               <div className="flex items-center gap-2">
+                  <StarRating rating={course?.averageRating || 0} />
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">({course?.reviews?.length || 0} Syncs)</span>
+               </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            <Recommendation  />
-            <CourseReviews  />
-            <div ref={proRef}>
-            <InstructorProfile  />
-            </div>
+      {/* Main Content Hub */}
+      <div className="max-w-[1440px] mx-auto px-6 -mt-12 relative z-20 pb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          
+          {/* Detailed Specifications */}
+          <div className="lg:col-span-8 space-y-12">
             
+            {/* Learning Matrix */}
+            <Card className="p-8 space-y-8 bg-white border-slate-200">
+              <div className="space-y-6">
+                <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                  <Terminal size={20} className="text-blue-600" />
+                  Knowledge Node Matrix
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+                  {course?.whatYouWillLearn?.map((item, index) => (
+                    <div key={index} className="flex gap-3 group">
+                       <div className="mt-1 flex-shrink-0 w-5 h-5 rounded-md bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                          <Check size={12} strokeWidth={3} />
+                       </div>
+                       <p className="text-sm text-slate-600 font-medium leading-relaxed">{item}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="h-[1px] bg-slate-100" />
+
+              <div className="space-y-6">
+                <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                  <ShieldCheck size={20} className="text-blue-600" />
+                  Framework Inclusions
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {course?.courseIncludes?.map((item, index) => (
+                    <div key={index} className="flex items-center gap-4 p-3 rounded-xl border border-slate-50 bg-slate-50/30">
+                       <Layout size={18} className="text-slate-400" />
+                       <span className="text-sm font-bold text-slate-700">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Card>
+
+            {/* Curriculum Accordion */}
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Curriculum Topology</h2>
+                    <Badge variant="outline" className="font-bold">{course?.sections?.length || 0} Domain Modules</Badge>
+                </div>
+                <CourseContent />
+            </div>
+
+            {/* Comprehensive Detail */}
+            <div className="space-y-6">
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Technical brief</h2>
+                <Card className="p-8">
+                    <p className="text-slate-600 font-medium leading-relaxed whitespace-pre-line">
+                      {course?.description}
+                    </p>
+                </Card>
+            </div>
+
+            <Recommendation />
+            <CourseReviews />
+            <div ref={proRef} className="pt-12">
+               <InstructorProfile />
+            </div>
             <AddReview />
           </div>
 
-          {/* course side bar */}
-          <div className="bg-gray-800 w-2/5 text-white shadow-lg lg:sticky top-4 h-fit">
-            {/* Course Preview */}
-            <div className="relative">
-              {showPreview ? (
-                <div
-                  className="fixed inset-0 flex items-center justify-center bg-gray bg-opacity-50 backdrop-blur-sm z-50"
-                  role="dialog"
-                >
-                  <div className="bg-gray-900 p-6 shadow-lg w-full max-w-2xl relative">
-                    <div className="flex flex-row justify-between items-center mb-4">
-                      <h1 className="text-xl font-bold text-white">
-                        Course Preview
-                      </h1>
-
-                      {/* Close Button */}
-                      <button
-                        onClick={() => setShowPreview(false)}
-                        className="w-8 h-8 cursor-pointer flex items-center justify-center bg-white text-gray-800 rounded-full shadow-md hover:bg-gray-200 transition"
+          {/* Conversion Station Sidebar */}
+          <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-28 h-fit">
+            <Card className="overflow-hidden border-slate-200 shadow-2xl shadow-slate-200/50">
+               <div className="relative group overflow-hidden h-52">
+                   <img 
+                      src={course?.thumbnail?.url || "https://via.placeholder.com/600x400"} 
+                      alt="Thumbnail" 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                   />
+                   <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <button 
+                        onClick={() => setShowPreview(true)}
+                        className="w-14 h-14 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform"
                       >
-                        <FaTimes size={16} />
+                         <Play size={24} className="ml-1 fill-current" />
                       </button>
-                    </div>
-                    <h1 className="text-xl font-bold text-white mb-4">
-                      {course.title}
-                    </h1>
-                    {/* Video Player */}
-                    <video controls className="w-full">
-                      <source src={course?.preview?.url} type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
+                   </div>
+                   <div className="absolute top-4 right-4 animate-pulse">
+                      <Badge className="bg-rose-600 text-white border-transparent py-1 px-3">Live Protocol</Badge>
+                   </div>
+               </div>
+
+               <div className="p-6 space-y-8">
+                  <div className="flex items-center justify-between">
+                     <div className="space-y-1">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Terminal Access</p>
+                        <div className="flex items-center gap-3">
+                           <span className="text-3xl font-black text-slate-900 tracking-tighter">₹{course?.finalPrice}</span>
+                           {course?.price !== course?.finalPrice && (
+                             <span className="text-lg font-bold text-slate-300 line-through decoration-rose-500/30">₹{course?.price}</span>
+                           )}
+                        </div>
+                     </div>
+                     <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl border border-blue-100">
+                        <Award size={24} />
+                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="relative w-full h-48">
-                  <img
-                    src={
-                      course?.thumbnail?.url ||
-                      "https://via.placeholder.com/300"
-                    }
-                    alt="Course Thumbnail"
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-black via-black/50 to-black/0 transition-opacity">
-                    <button
-                      className="w-12 h-12 cursor-pointer flex items-center justify-center bg-white text-black rounded-full text-xl font-bold shadow-lg hover:scale-110 transition"
-                      onClick={handlePreviewClick}
+
+                  <div className="space-y-3">
+                    <Button 
+                      className="w-full h-14 rounded-2xl text-base" 
+                      onClick={handleCart}
+                      disabled={isEnrolled}
                     >
-                      <span className="w-10 h-10 flex items-center justify-center bg-gray-800 text-white rounded-full">
-                        <FaPlay size={16} />
-                      </span>
-                    </button>
-                    <span className="mt-2 text-white text-gl font-bold">
-                      Preview this course
-                    </span>
+                      {isEnrolled ? "Access Initialized" : "Initialize Synchronization"} 
+                      {!isEnrolled && <ShoppingCart size={20} className="ml-2" />}
+                    </Button>
+                    
+                    {!isEnrolled && (
+                      <Button 
+                        variant="secondary" 
+                        className="w-full h-14 rounded-2xl text-base"
+                        onClick={() => navigate(`/payment/${user._id}/${course_id}`)}
+                      >
+                        Execute Deployment
+                      </Button>
+                    )}
                   </div>
-                </div>
-              )}
-            </div>
 
-            {/* Price & Enroll Button */}
-            <div className="p-4">
-              <StarRating rating={course?.averageRating || 0} />
-              <div className="flex items-center gap-2 my-2">
-                {course?.finalPrice === course?.price ? (
-                  <span className="text-2xl font-bold text-white">
-                    ₹{course?.price}
-                  </span>
-                ) : (
-                  <>
-                    <span className="text-2xl font-bold text-white">
-                      ₹{course?.finalPrice}
-                    </span>
-                    <span className="text-lg text-gray-400 line-through">
-                      ₹{course?.price}
-                    </span>
-                  </>
-                )}
-              </div>
+                  <div className="space-y-1 py-1">
+                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Protocol Constraints</p>
+                     <p className="text-[11px] text-slate-500 font-bold text-center leading-normal">
+                        Full architectural access confirmed. Industrial-grade support dispatched upon initialization.
+                     </p>
+                  </div>
+               </div>
+            </Card>
 
-             
-              <button
-                disabled={isEnrolled || !user}
-                className={`text-lg w-full px-6 py-3 border-1 rounded-[5px] font-bold  hover:bg-gray-600
-                    ${isEnrolled || !user? "cursor-not-allowed" : "cursor-pointer"}
-                  `}
-                onClick={() => handleCart(course?.finalPrice === course?.price ? course?.price : course?.finalPrice)}
-              >
-                Add to cart
-              </button>
-              <button
-                onClick={() => {
-                  navigate(`/payment/${user._id}/${course_id}`);
-                }}
-                disabled={isEnrolled || !user}
-                className={`w-full px-6 py-3 text-lg font-bold mt-2 rounded-[5px] text-white transition ${
-                  isEnrolled || !user
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-500 hover:bg-blue-600 cursor-pointer"
-                }`}
-              >
-                {isEnrolled  ? "Already Enrolled" : "Enroll Now"}
-              </button>
-            </div>
+            <AnimatePresence>
+               {showPreview && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/90 backdrop-blur-md"
+                  >
+                     <motion.div 
+                        initial={{ scale: 0.9, y: 20 }}
+                        animate={{ scale: 1, y: 0 }}
+                        exit={{ scale: 0.9, y: 20 }}
+                        className="bg-black w-full max-w-4xl rounded-[40px] border border-white/10 overflow-hidden shadow-2xl"
+                     >
+                        <div className="p-6 flex items-center justify-between border-b border-white/10">
+                           <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500 flex items-center justify-center text-blue-400">
+                                 <Play size={20} />
+                              </div>
+                              <h3 className="font-black tracking-tight text-white uppercase text-xs tracking-widest">Protocol Simulation</h3>
+                           </div>
+                           <button 
+                             onClick={() => setShowPreview(false)}
+                             className="p-2 text-slate-400 hover:text-white transition-colors"
+                           >
+                              <X size={24} />
+                           </button>
+                        </div>
+                        <div className="aspect-video bg-black flex items-center justify-center">
+                           <video controls autoPlay className="w-full h-full object-contain">
+                              <source src={course?.preview?.url} type="video/mp4" />
+                              Simulation Failure: Browser mismatch.
+                           </video>
+                        </div>
+                     </motion.div>
+                  </motion.div>
+               )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

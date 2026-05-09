@@ -1,149 +1,210 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useState } from "react";
 import axios from "axios";
-import StarRating from "./StarRating";
+import { 
+  ShieldCheck, 
+  CreditCard, 
+  Trash2, 
+  ArrowLeft, 
+  Lock, 
+  Zap, 
+  CheckCircle,
+  Terminal,
+  Info
+} from "lucide-react";
 import { toast } from "react-toastify";
-import { courseBaseUrl, transactionBaseUrl} from "../utils/endpoints";
+import { courseBaseUrl, transactionBaseUrl } from "../utils/endpoints";
+import StarRating from "./StarRating";
+import Card from "./ui/Card";
+import Button from "./ui/Button";
+import Badge from "./ui/Badge";
+
 const Payment = () => {
   const { userId, courseId } = useParams();
-
   const [loading, setLoading] = useState(false);
   const [course, setCourse] = useState(null);
-
   const navigate = useNavigate();
-  const fetchCourse = async () => {
-    try {
-      const response = await axios.get(
-        `${courseBaseUrl}/${courseId}`,
-        { withCredentials: true }
-      );
-      setCourse(response.data.data);
-    } catch (error) {
-      toast.error(error?.response?.data.message || "Error fetching course data");
-    }
-  };
 
   useEffect(() => {
+    const fetchCourse = async () => {
+      try {
+        const response = await axios.get(`${courseBaseUrl}/${courseId}`, { withCredentials: true });
+        setCourse(response.data.data);
+      } catch (error) {
+        toast.error("Error fetching node manifest");
+      }
+    };
     fetchCourse();
   }, [courseId]);
 
   const handlePayment = async () => {
     setLoading(true);
     try {
-      // 1. Create Razorpay Order
-      const orderResponse = await axios.post(
-        `${transactionBaseUrl}/order`,
-        {
-          amount:
-            course.price === course.finalPrice ? course.price : course.finalPrice,
-          type: "single",
-          courseId: courseId,
-        },
-        { withCredentials: true }
-      );
+      const amount = course.price === course.finalPrice ? course.price : course.finalPrice;
+      const orderResponse = await axios.post(`${transactionBaseUrl}/order`, {
+        amount,
+        type: "single",
+        courseId: courseId,
+      }, { withCredentials: true });
 
       const data = orderResponse.data.data;
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID, // from env
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: data.amount,
         currency: "INR",
-        name: "LMS Payment",
-        description: "Course Payment",
+        name: "Learnify Protocol",
+        description: "Node Subscription Synchronization",
         order_id: data.id,
         handler: async function (response) {
-          const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
-            response;
+          const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = response;
+          await axios.post(`${transactionBaseUrl}/payment`, {
+            razorpay_payment_id,
+            razorpay_order_id,
+            razorpay_signature,
+            userId,
+            courseId,
+            type: "single",
+            amount,
+            discountCode: null,
+            paymentMethod: "Razorpay",
+          }, { withCredentials: true });
 
-          // 2. Verify Payment
-          await axios.post(
-              `${transactionBaseUrl}/payment`,
-              {
-              razorpay_payment_id,
-              razorpay_order_id,
-              razorpay_signature,
-              userId,
-              courseId,
-              type: "single",
-              amount: course.price === course.finalPrice ? course.price : course.finalPrice,
-              discountCode: null, // Add discount code if applicable
-              paymentMethod: "Razorpay",
-            },
-            { withCredentials: true }
-          );
-
-          alert("Payment successful! Course access granted.");
-          navigate(`/course/enroll/${courseId}`); // Redirect to My Courses page
+          toast.success("Transaction verified. Course access protocol enabled.");
+          navigate(`/course/enroll/${courseId}`);
         },
-        prefill: {
-          name: "Student",
-          email: "student@example.com",
-        },
-        theme: {
-          color: "#6366f1",
-        },
+        prefill: { name: "Operator", email: "operator@learnify.io" },
+        theme: { color: "#2563eb" },
       };
-      console.log(options);
       const razorpay = new window.Razorpay(options);
       razorpay.open();
     } catch (err) {
-      toast.error(
-        err?.response?.data.message || "Error processing payment. Please try again."
-      );
+      toast.error("Transactional protocol error. Request aborted.");
     } finally {
       setLoading(false);
     }
   };
 
+  if (!course) return null;
+
+  const finalAmount = course.price === course.finalPrice ? course.price : course.finalPrice;
+
   return (
-    <div className="w-full  min-h-screen bg-gray-900 p-10 flex flex-row text-white justify-evenly">
-      <div className="h-[130px] flex my-2 p-2 border-b-2 hover:bg-gray-700 transform transition duration-300 hover:scale-102">
-        {/* Course Image */}
-        <div className="w-35 h-20 flex-shrink-0">
-          <img
-            src={course?.thumbnail.url}
-            alt={course?.title}
-            className="w-full h-full object-cover rounded"
-          />
-        </div>
+    <div className="min-h-screen bg-[#fafafa] pt-32 pb-20 px-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex flex-col lg:flex-row gap-12">
+          
+          {/* Transactional Architecture */}
+          <div className="flex-1 space-y-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                 <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="p-2 -ml-2">
+                    <ArrowLeft size={18} />
+                 </Button>
+                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">Transactional Protocol</p>
+              </div>
+              <h2 className="text-4xl font-black text-slate-900 tracking-tighter leading-tight">
+                 Checkout <br />
+                 <span className="text-slate-400">Synchronization</span>
+              </h2>
+            </div>
 
-        {/* Course Details */}
-        <div className="flex flex-row w-full justify-between">
-          <div className="w-full px-4">
-            <h1 className="text-xl font-bold">{course?.title}</h1>
+            <Card className="p-8 border-slate-200 bg-white group hover:shadow-xl transition-all">
+              <div className="flex flex-col md:flex-row gap-8 items-start">
+                 <div className="w-full md:w-48 h-28 rounded-2xl overflow-hidden border border-slate-100 shadow-sm shrink-0">
+                    <img src={course.thumbnail.url} alt="Manifest Visual" className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all" />
+                 </div>
+                 <div className="flex-1 space-y-4">
+                    <div className="space-y-1">
+                       <h3 className="text-2xl font-black text-slate-900 tracking-tight">{course.title}</h3>
+                       <p className="text-sm font-bold text-slate-400">Lead Architect: {course.instructor?.name}</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                       <StarRating rating={course.averageRating || 0} />
+                       <div className="h-4 w-[1px] bg-slate-200" />
+                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Node v4.0 Active</p>
+                    </div>
+                 </div>
+                 <div className="text-right">
+                    <p className="text-xl font-black text-slate-900 tracking-tighter italic">₹{finalAmount}</p>
+                    {course.price > course.finalPrice && (
+                       <p className="text-xs font-bold text-slate-400 line-through">₹{course.price}</p>
+                    )}
+                 </div>
+              </div>
+            </Card>
 
-            <div>
-              {/* <p className="text-white text-sm">{course.description}</p> */}
-              <p className="text-white-500 text-sm my-1">
-                {course?.instructor?.name || "Unknown Instructor"}
-              </p>
-
-              {/* Rating */}
-              <StarRating rating={course?.averageRating || 0} />
-
-              {/* Course Meta Info */}
-              {/* <p className="text-white-500 text-sm my-1">
-                {course?.lecture?.length || 0} Lectures
-              </p> */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="flex items-start gap-4 p-6 bg-slate-900 rounded-[32px] text-white">
+                  <div className="p-3 bg-blue-600/20 text-blue-400 rounded-2xl border border-blue-500/20">
+                     <ShieldCheck size={24} />
+                  </div>
+                  <div className="space-y-1">
+                     <h4 className="text-sm font-black uppercase tracking-widest">Secure Handshake</h4>
+                     <p className="text-[11px] text-slate-400 leading-relaxed">256-bit SSL encrypted transactional protocol ensuring node data integrity.</p>
+                  </div>
+               </div>
+               <div className="flex items-start gap-4 p-6 bg-slate-50 rounded-[32px] border border-slate-200">
+                  <div className="p-3 bg-white text-slate-400 rounded-2xl border border-slate-200 flex items-center justify-center">
+                     <Lock size={24} />
+                  </div>
+                  <div className="space-y-1">
+                     <h4 className="text-sm font-black uppercase tracking-widest text-slate-900">Access Persistence</h4>
+                     <p className="text-[11px] text-slate-400 leading-relaxed">Permanent node deployment following successful transactional verification.</p>
+                  </div>
+               </div>
             </div>
           </div>
-          <p className="px-4 text-xl font-extrabold ">₹{course?.price === course?.finalPrice ? course?.price : course?.finalPrice}</p>
-          
+
+          {/* Operational Dispatch */}
+          <aside className="w-full lg:w-80 shrink-0">
+             <Card className="p-8 border-slate-200 bg-white sticky top-32 space-y-8">
+                <div className="space-y-2">
+                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Protocol Dispatch</p>
+                   <div className="flex items-baseline justify-between">
+                      <span className="text-sm font-bold text-slate-500">Gross Total</span>
+                      <span className="text-lg font-black text-slate-900 tracking-tighter italic">₹{finalAmount}</span>
+                   </div>
+                   <div className="flex items-baseline justify-between border-t border-slate-100 pt-4">
+                      <span className="text-lg font-black text-slate-900 tracking-tight">Final Dispatch</span>
+                      <span className="text-2xl font-black text-blue-600 tracking-tighter italic">₹{finalAmount}</span>
+                   </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t border-dashed border-slate-200">
+                   <div className="flex items-center gap-3 text-xs font-bold text-slate-600">
+                      <CheckCircle size={16} className="text-blue-600" />
+                      Manifest verification active
+                   </div>
+                   <div className="flex items-center gap-3 text-xs font-bold text-slate-600">
+                      <Zap size={16} className="text-blue-600" />
+                      Instant propagation enabled
+                   </div>
+                </div>
+
+                <Button 
+                   onClick={handlePayment} 
+                   disabled={loading} 
+                   className="w-full h-14 text-lg shadow-2xl shadow-blue-200"
+                >
+                   {loading ? (
+                     <div className="flex items-center gap-2">
+                       <Terminal size={18} className="animate-pulse" />
+                       Authorizing...
+                     </div>
+                   ) : (
+                     <div className="flex items-center gap-2">
+                       <CreditCard size={20} />
+                       Commit Protocol
+                     </div>
+                   )}
+                </Button>
+
+                <p className="text-[10px] text-center font-black uppercase tracking-widest text-slate-400"> Verified by Razorpay Network </p>
+             </Card>
+          </aside>
+
         </div>
       </div>
-
-      <div className="p-4 w-1/5">
-            <p className="text-2xl font-bold">Total:</p>
-            <p className="text-3xl font-extrabold my-2">₹{course?.price === course?.finalPrice ? course?.price : course?.finalPrice}</p>    
-            <button
-                onClick={handlePayment}
-                disabled={loading}
-                className="w-full px-6 py-3 text-lg font-bold mt-2 rounded-[5px] text-white bg-blue-500 hover:bg-blue-600 cursor-pointer"
-              >
-                 {loading ? "Processing..." : "Pay Now"}
-              </button>
-      </div>
-      
     </div>
   );
 };

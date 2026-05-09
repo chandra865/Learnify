@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import GoogleLogin from "../component/GoogleLogin";
 import { userBaseUrl, otpBaseUrl } from "../utils/endpoints";
@@ -89,8 +89,8 @@ const Register = () => {
   };
 
   return (
-    <div className="flex justify-center items-center w-full min-h-screen bg-gray-600 text-white">
-      <div className="bg-gray-900 p-6 mb-20 rounded shadow-lg w-90 text-white">
+    <div className="flex justify-center items-center w-full min-h-screen bg-[#fafafa] p-6 pt-32 pb-20">
+      <div className="bg-white p-10 rounded-[40px] border border-slate-200 shadow-2xl shadow-blue-900/5 w-full max-w-md space-y-8">
         <h2 className="text-2xl font-bold text-center mb-6">
           {step === "register" ? "Register" : "Verify OTP"}
         </h2>
@@ -180,11 +180,11 @@ const Register = () => {
           <>
             <p className="text-center text-lg text-gray-300 my-2">or</p>
             <GoogleLogin />
-            <p className="text-center text-gray-400 mt-4">
+            <p className="text-center text-xs font-bold text-slate-400 mt-6 uppercase tracking-widest">
               Already have an account?{" "}
-              <a href="/login" className="text-blue-500 hover:underline">
-                Login
-              </a>
+              <Link to="/login" className="text-blue-600 hover:text-blue-700">
+                Login Terminal
+              </Link>
             </p>
           </>
         )}

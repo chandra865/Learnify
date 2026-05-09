@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { login } from "../store/slice/userSlice";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import GoogleLogin from "../component/GoogleLogin";
 import { userBaseUrl } from "../utils/endpoints";
@@ -49,9 +49,9 @@ const Login = () => {
   };
 
   return (
-    <div className="flex justify-center items-center w-full min-h-screen bg-gray-600 text-white">
-      <div className="bg-gray-900 p-8 rounded shadow-lg w-96 mb-10">
-        <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
+    <div className="flex justify-center items-center w-full min-h-screen bg-[#fafafa] p-6 pt-32 pb-20">
+      <div className="bg-white p-10 rounded-[40px] border border-slate-200 shadow-2xl shadow-blue-900/5 w-full max-w-md space-y-8">
+        <h2 className="text-4xl font-black text-slate-900 tracking-tighter text-center uppercase">Login</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email Field */}
           <div>
@@ -80,8 +80,8 @@ const Login = () => {
               required
             />
           </div>
-          <p className="text-right text-sm text-blue-400 hover:underline mt-1">
-            <a href="/forgot-password">Forgot Password?</a>
+          <p className="text-right">
+            <Link to="/forgot-password" size="sm" className="text-[10px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-700">Forgot Password Matrix?</Link>
           </p>
 
           {/* Submit Button */}
@@ -96,11 +96,11 @@ const Login = () => {
         <p className="text-center text-lg text-gray-300 my-2">or</p>
         <GoogleLogin />
 
-        <p className="text-center text-gray-400 mt-4">
+        <p className="text-center text-xs font-bold text-slate-400 mt-6 uppercase tracking-widest">
           Don&apos;t have an account?{" "}
-          <a href="/register" className="text-blue-500 hover:underline">
-            Register here
-          </a>
+          <Link to="/register" className="text-blue-600 hover:text-blue-700">
+            Register hub
+          </Link>
         </p>
       </div>
     </div>

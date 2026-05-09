@@ -3,7 +3,7 @@ import Navbar from "./pages/Navbar"
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
-import { use, useEffect } from "react";
+import { useEffect } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { login } from "./store/slice/userSlice";
