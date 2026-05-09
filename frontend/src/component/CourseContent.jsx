@@ -1,21 +1,15 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronUp, PlayCircle, Lock, Unlock } from "lucide-react";
+import { ChevronDown, ChevronUp, Play, Lock, Unlock, Clock, FileText, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import VideoPlayer1 from "./VideoPlayer1";
-import {
-  FaTimes,
-  FaPlay,
-  FaCheck,
-  FaUser,
-  FaCalendarAlt,
-  FaGlobe,
-} from "react-icons/fa";
 import { toast } from "react-toastify";
-import { enrollmentBaseUrl, sectionBaseUrl} from "../utils/endpoints";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { enrollmentBaseUrl, sectionBaseUrl } from "../utils/endpoints";
+import Card from "./ui/Card";
+import Badge from "./ui/Badge";
+
 const CourseContent = () => {
   const [expandedSections, setExpandedSections] = useState({});
   const [isEnrolled, setIsEnrolled] = useState(false);
@@ -25,86 +19,55 @@ const CourseContent = () => {
 
   const courseId = useSelector((state) => state.course.selectedCourse._id);
   const user = useSelector((state) => state.user.userData);
-
   const navigate = useNavigate();
-  const checkEnrollment = async () => {
-    try {
-      const response = await axios.get(
-        `${enrollmentBaseUrl}/${user._id}/${courseId}`,
-        {
-          withCredentials: true,
-        }
-      );
 
-      const status = response.data.data.enrollmentStatus;
-      setIsEnrolled(status);
+  const checkEnrollment = async () => {
+    if (!user || !courseId) return;
+    try {
+      const response = await axios.get(`${enrollmentBaseUrl}/${user._id}/${courseId}`, { withCredentials: true });
+      setIsEnrolled(response.data.data.enrollmentStatus);
     } catch (error) {
-      toast.error(
-        error?.response?.data.message || "Error checking enrollment status"
-      );
+      // Quiet fail
     }
   };
+
   useEffect(() => {
-    if (user && courseId) {
-      checkEnrollment();
-    }
+    checkEnrollment();
   }, [user, courseId]);
 
   const fetchSection = async () => {
+    if (!courseId) return;
     try {
-      const response = await axios.get(
-        `${sectionBaseUrl}/${courseId}`,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.get(`${sectionBaseUrl}/${courseId}`, { withCredentials: true });
       setCourseContent(response.data.data);
-
-      // Initialize all sections as collapsed
+      
       const initialExpandState = {};
-      response.data.data.forEach((section) => {
-        initialExpandState[section._id] = false;
+      response.data.data.forEach((section, idx) => {
+        initialExpandState[section._id] = idx === 0; // Default first section expanded
       });
       setExpandedSections(initialExpandState);
     } catch (error) {
-      toast.error(
-        error?.response?.data.message || "Error fetching course sections"
-      );
-
+      toast.error("Module synchronization failed");
     }
   };
+
   useEffect(() => {
-    if (courseId) {
-      fetchSection();
-    }
+    fetchSection();
   }, [courseId]);
 
-  const handleCourseWatch = async (courseId, section, lecture) => {
+  const handleCourseWatch = (section, lecture) => {
     if (isEnrolled) {
       navigate(`/course-watch/${courseId}/${section._id}/${lecture._id}`);
-    }
-    else if (lecture.isFree) {
+    } else if (lecture.isFree) {
       setSelectedLecture(lecture);
       setShowPreview(true);
     } else {
-      toast.error("Please enroll in the course to watch this lecture.");
-
+      toast.error("Verification Required: Please acquire a license to access this terminal node.");
     }
   };
+
   const toggleSection = (sectionId) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [sectionId]: !prev[sectionId],
-    }));
-  };
-
-  const toggleAllSections = () => {
-    const allExpanded = Object.values(expandedSections).every((val) => val);
-    const updatedState = {};
-    for (const key in expandedSections) {
-      updatedState[key] = !allExpanded;
-    }
-    setExpandedSections(updatedState);
+    setExpandedSections((prev) => ({ ...prev, [sectionId]: !prev[sectionId] }));
   };
 
   const formatDuration = (seconds) => {
@@ -113,55 +76,59 @@ const CourseContent = () => {
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   };
 
-  const totalLectures = courseContent.reduce(
-    (acc, section) => acc + section.lectures.length,
-    0
-  );
-  const totalDurationSeconds = courseContent.reduce(
-    (acc, section) => acc + section.duration,
-    0
-  );
+  const totalLectures = courseContent.reduce((acc, section) => acc + section.lectures.length, 0);
+  const totalDurationSeconds = courseContent.reduce((acc, section) => acc + section.duration, 0);
   const totalHours = Math.floor(totalDurationSeconds / 3600);
   const totalMinutes = Math.floor((totalDurationSeconds % 3600) / 60);
 
   return (
-    <div className="mt-20">
-      <h1 className="text-3xl text-white font-extrabold">Course content</h1>
-      <div className="py-3 flex justify-between items-center text-white">
-        <div className="font-medium">
-          {courseContent.length} sections • {totalLectures} lectures •{" "}
-          {totalHours}h {totalMinutes}m total length
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Curriculum Architecture</h2>
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-widest">
+            <span>{courseContent.length} Braces</span>
+            <span className="opacity-30">•</span>
+            <span>{totalLectures} Terminal Nodes</span>
+            <span className="opacity-30">•</span>
+            <span>{totalHours > 0 ? `${totalHours}h ` : ""}{totalMinutes}m Total Capacity</span>
+          </div>
         </div>
         <button
-          onClick={toggleAllSections}
-          className="text-blue-400 hover:underline text-sm cursor-pointer"
+          onClick={() => {
+            const allExpanded = Object.values(expandedSections).every(v => v);
+            const newState = {};
+            courseContent.forEach(s => newState[s._id] = !allExpanded);
+            setExpandedSections(newState);
+          }}
+          className="text-xs font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest transition-colors"
         >
-          {Object.values(expandedSections).every((val) => val)
-            ? "Collapse all sections"
-            : "Expand all sections"}
+          {Object.values(expandedSections).every(v => v) ? "Collapse All" : "Expand All"}
         </button>
       </div>
 
-      <div className="max-w-4xl mx-auto text-white shadow-sm border border-gray-700 overflow-hidden ">
+      <div className="divide-y divide-slate-100 border border-slate-200 rounded-lg overflow-hidden bg-white shadow-sm">
         {courseContent
           .filter((section) => section.published)
           .map((section) => (
-            <div key={section._id} className="border-b border-gray-700">
+            <div key={section._id} className="group">
               <div
-                className="flex items-center justify-between px-4 py-3 cursor-pointer bg-gray-800 hover:bg-gray-700 transition"
+                className={`flex items-center justify-between px-5 py-4 cursor-pointer transition-colors ${
+                  expandedSections[section._id] ? "bg-slate-50/50" : "hover:bg-slate-50"
+                }`}
                 onClick={() => toggleSection(section._id)}
               >
-                <div className="flex items-center">
-                  {expandedSections[section._id] ? (
-                    <ChevronUp size={20} className="text-gray-400" />
-                  ) : (
-                    <ChevronDown size={20} className="text-gray-400" />
-                  )}
-                  <h3 className="ml-2 font-medium">{section.title}</h3>
+                <div className="flex items-center gap-3">
+                  <div className={`transition-transform duration-200 ${expandedSections[section._id] ? "rotate-180" : ""}`}>
+                    <ChevronDown size={16} className="text-slate-400" />
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">
+                    {section.title}
+                  </h3>
                 </div>
-                <div className="text-gray-400 text-sm">
-                  {section.lectures.length} lectures •{" "}
-                  {Math.floor(section.duration / 60)} min
+                <div className="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">
+                  <span className="hidden sm:inline">{section.lectures.length} Nodes</span>
+                  <span>{Math.floor(section.duration / 60)}m Capacity</span>
                 </div>
               </div>
 
@@ -171,42 +138,40 @@ const CourseContent = () => {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="overflow-hidden bg-gray-900"
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
                   >
-                    {section.lectures.map((lecture) => (
-                      <div
-                        key={lecture._id}
-                        onClick={(e) =>
-                          handleCourseWatch(courseId, section, lecture)
-                        }
-                        className={`px-6 py-3 flex items-center justify-between ${
-                          lecture.isFree || isEnrolled ? "cursor-pointer" : ""
-                        } hover:bg-gray-800 transition `}
-                      >
-                        <div className="flex items-center">
-                          <PlayCircle size={18} className="text-white mr-3" />
-                          <span
-                            className={`text-white text-sm ${
-                              lecture.isFree ? "text-blue-400" : ""
-                            }`}
-                          >
-                            {lecture.title}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                          {lecture.isFree && (
-                            <span className="text-blue-400 underline text-sm ">
-                              Preview
+                    <div className="bg-white divide-y divide-slate-50">
+                      {section.lectures.map((lecture) => (
+                        <div
+                          key={lecture._id}
+                          onClick={() => handleCourseWatch(section, lecture)}
+                          className={`
+                            px-6 py-3.5 flex items-center justify-between group/lesson transition-colors
+                            ${lecture.isFree || isEnrolled ? "cursor-pointer hover:bg-slate-50" : "opacity-60 grayscale"}
+                          `}
+                        >
+                          <div className="flex items-center gap-4 flex-1">
+                            <div className="shrink-0 text-slate-300 group-hover/lesson:text-blue-600 transition-colors">
+                              {lecture.isFree || isEnrolled ? <Play size={14} className="fill-current" /> : <Lock size={14} />}
+                            </div>
+                            <span className="text-sm font-medium text-slate-600 group-hover/lesson:text-slate-900 transition-colors line-clamp-1">
+                              {lecture.title}
                             </span>
-                          )}
-
-                          <span className="text-xs text-gray-400">
-                            {formatDuration(lecture.duration)}
-                          </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-6">
+                            {lecture.isFree && !isEnrolled && (
+                              <Badge variant="primary" className="bg-blue-50 text-blue-600 border-blue-100">Open Access</Badge>
+                            )}
+                            <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400">
+                               <Clock size={12} />
+                               {formatDuration(lecture.duration)}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -215,29 +180,21 @@ const CourseContent = () => {
       </div>
 
       {showPreview && selectedLecture && (
-        <div
-          className="fixed inset-0 flex items-center justify-center bg-gray bg-opacity-50 backdrop-blur-sm z-50"
-          role="dialog"
-        >
-          <div className="bg-gray-900 p-6 shadow-lg w-full max-w-2xl relative">
-            <div className="flex flex-row justify-between items-center mb-4">
-              <h1 className="text-xl font-bold text-white">Lecture Preview</h1>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowPreview(false);
-                  setSelectedLecture(null);
-                }}
-                className="w-8 h-8 cursor-pointer flex items-center justify-center bg-white text-gray-800 rounded-full shadow-md hover:bg-gray-200 transition"
-              >
-                <FaTimes size={16} />
-              </button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+          <Card className="w-full max-w-4xl bg-slate-900 border-white/10 overflow-hidden relative">
+            <div className="p-6 border-b border-white/5 flex items-center justify-between">
+               <div className="space-y-1">
+                  <h3 className="text-white font-bold text-lg tracking-tight">Open Access Node: {selectedLecture.title}</h3>
+                  <p className="text-slate-400 text-xs font-medium uppercase tracking-widest">Protocol Preview Matrix</p>
+               </div>
+               <button onClick={() => { setShowPreview(false); setSelectedLecture(null); }} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-colors">
+                  <X size={20} />
+               </button>
             </div>
-            <h1 className="text-xl font-bold text-white mb-4">
-              {selectedLecture.title}
-            </h1>
-            <VideoPlayer1 src={selectedLecture.videoUrl} />
-          </div>
+            <div className="aspect-video bg-black">
+               <VideoPlayer1 src={selectedLecture.videoUrl} />
+            </div>
+          </Card>
         </div>
       )}
     </div>

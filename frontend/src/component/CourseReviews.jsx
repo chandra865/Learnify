@@ -1,100 +1,80 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import { useSelector } from "react-redux";
 import StarRating from "./StarRating";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 import { toast } from "react-toastify";
 import { reviewBaseUrl } from "../utils/endpoints";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import Card from "./ui/Card";
+import { MessageSquare, User, Quote } from "lucide-react";
 
-const Testimonials = () => {
+const CourseReviews = () => {
   const courseId = useSelector((state) => state.course.selectedCourse._id);
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
     const fetchReviews = async () => {
+      if (!courseId) return;
       try {
-        const response = await axios.get(
-          `${reviewBaseUrl}/${courseId}`,
-          { withCredentials: true }
-        );
+        const response = await axios.get(`${reviewBaseUrl}/${courseId}`, { withCredentials: true });
         setReviews(response.data.data);
       } catch (error) {
-        toast.error(
-          error?.response?.data.message || "Error fetching reviews"
-        );
+        toast.error("Review synchronization failed");
       }
     };
     fetchReviews();
   }, [courseId]);
 
   return (
-    <div className="max-w-5xl my-20 w-[700px]">
-      <h3 className="text-2xl font-bold mb-8">Testimonials</h3>
+    <div className="space-y-10">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-bold text-slate-900 tracking-tight">Peer Validations</h3>
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+          {reviews?.length || 0} Authenticated Entries
+        </span>
+      </div>
 
       {reviews?.length > 0 ? (
-        <Swiper
-          modules={[Navigation, Pagination, Autoplay]}
-          spaceBetween={20}
-          slidesPerView={1} // On mobile, show 1 review
-          breakpoints={{
-            640: { slidesPerView: 1 }, // Small screens
-            768: { slidesPerView: 2 }, // Tablets
-            1024: { slidesPerView: 3 }, // Desktop (3 reviews at a time)
-          }}
-          navigation={{ clickable: true }}
-          pagination={{ clickable: true }}
-          autoplay={{ delay: 3000 }}
-          loop={true}
-          className="w-full"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reviews.map(({ _id, userId, rating, comment }) => (
-            <SwiperSlide key={_id}>
-              <div className="p-6 bg-gray-800  w-[200] text-center flex flex-col ">
-                {/* User Info */}
-                <div className="flex items-center gap-2">
-                  {/* User Avatar */}
-                  <img
-                    src={userId?.profilePicture?.url ||"https://cdn-icons-png.flaticon.com/512/149/149071.png"}
-                    alt="User"
-                    className="w-12 h-12 rounded-full border-2 border-white shadow-md"
-                  />
-
-                  {/* User Name & Rating */}
-                  <div className="text-white text-left">
-                    <span className="text-sm font-bold">
-                      {userId?.name}
-                    </span>
-                    <div className="flex">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <span
-                          key={i}
-                          className={`text-yellow-400 text-xl ${
-                            i < rating ? "" : "opacity-30"
-                          }`}
-                        >
-                          ★
-                        </span>
-                      ))}
+            <Card key={_id} className="p-6 bg-white border-slate-200 flex flex-col justify-between group">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <img
+                            src={userId?.profilePicture?.url || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                            alt={userId?.name || "Participant"}
+                            className="w-8 h-8 rounded-full border border-slate-100 object-cover"
+                        />
+                        <div className="flex flex-col">
+                            <span className="text-xs font-bold text-slate-900 leading-none">
+                                {userId?.name || "Verified Participant"}
+                            </span>
+                            <span className="text-[9px] font-medium text-slate-400 uppercase tracking-widest mt-1">
+                                Platform User
+                            </span>
+                        </div>
                     </div>
-                  </div>
+                    <StarRating rating={rating} />
                 </div>
-
-                {/* User Comment */}
-                <p className="italic mt-4 text-left text-sm">"{comment}"</p>
+                
+                <div className="relative">
+                    <Quote size={12} className="absolute -top-1 -left-1 text-blue-100 -z-10" />
+                    <p className="text-sm text-slate-600 font-medium leading-relaxed italic line-clamp-4">
+                        "{comment}"
+                    </p>
+                </div>
               </div>
-            </SwiperSlide>
+            </Card>
           ))}
-        </Swiper>
+        </div>
       ) : (
-        <p className="text-center text-gray-400">No reviews yet.</p>
+        <div className="p-16 border border-dashed border-slate-200 rounded-2xl text-center space-y-4 bg-white">
+           <MessageSquare size={32} className="mx-auto text-slate-200" />
+           <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No validation entries found for this module</p>
+        </div>
       )}
     </div>
   );
 };
 
-export default Testimonials;
+export default CourseReviews;

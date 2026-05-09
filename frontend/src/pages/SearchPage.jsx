@@ -4,11 +4,12 @@ import axios from "axios";
 import CourseCard from "../component/CourseCard";
 import { toast } from "react-toastify";
 import { courseBaseUrl } from "../utils/endpoints";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL; //Base URL for API
+import { Search as SearchIcon, Filter, Star, Tag, Globe } from "lucide-react";
+import Card from "../component/ui/Card";
 
 const SearchPage = () => {
   const [searchParams] = useSearchParams();
-  const query = searchParams.get("query"); //Get search query from URL
+  const query = searchParams.get("query");
   const [courses, setCourses] = useState([]);
   const [totalResults, setTotalResults] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -21,26 +22,18 @@ const SearchPage = () => {
 
   useEffect(() => {
     fetchCourses(filters);
-  }, [filters]); //Fetch courses when filters change
+  }, [filters]);
 
   const fetchCourses = async (filters) => {
-    console.log(filters);
-    setLoading(true); //Show loading before fetching
+    setLoading(true);
     try {
-      const response = await axios.get(
-        `${courseBaseUrl}/search`,
-        {
-          params: filters,
-        }
-      );
+      const response = await axios.get(`${courseBaseUrl}/search`, { params: filters });
       setCourses(response.data.data);
-      setTotalResults(response.data.data.length || 0); //Set total results
+      setTotalResults(response.data.data.length || 0);
     } catch (error) {
-      toast.error(
-        error?.response?.data.message || "Error fetching courses"
-      );
+      toast.error(error?.response?.data.message || "Query synchronization failed");
     } finally {
-      setLoading(false); //Hide loading after fetching
+      setLoading(false);
     }
   };
 
@@ -49,80 +42,107 @@ const SearchPage = () => {
   };
 
   return (
-    <div className="container mx-auto bg-gray-900 text-white min-h-screen pd-20" >
-      {/* Search Results Header */}
-      <h2 className="text-2xl font-extrabold mb-4 ml-5 pt-10">
-        {loading
-          ? "Loading results..."
-          : `${totalResults.toLocaleString()} results for “${filters.title}”`}
-      </h2>
-
-      <div className="md:flex">
-        {/* Sidebar Filters (Fixed) */}
-        <div className="w-full md:w-1/4 p-4 bg-gray-800 rounded-lg md:sticky md:top-6 h-fit ml-5 z-0">
-          <h3 className="text-xl font-bold mb-3">Filters</h3>
-
-          {/* Rating Filter */}
-          <label className="block text-sm font-semibold mb-1">Rating</label>
-          <select
-            name="rating"
-            value={filters.rating}
-            onChange={handleChange}
-            className="w-full p-2 border rounded mb-3 bg-gray-800"
-          >
-            <option value="">Any</option>
-            <option value="5">⭐ 5</option>
-            <option value="4">⭐ 4 & above</option>
-            <option value="3">⭐ 3 & above</option>
-          </select>
-
-          {/* Price Filter */}
-          <label className="block text-sm font-semibold mb-1">Price</label>
-          <select
-            name="price"
-            value={filters.price}
-            onChange={handleChange}
-            className="w-full p-2 border rounded mb-3 bg-gray-800"
-          >
-            <option value="">Any</option>
-            <option value="0">Free</option>
-            <option value="500">₹500+</option>
-            <option value="1000">₹1000+</option>
-            <option value="5000">₹5000+</option>
-            <option value="10000">₹10,000+</option>
-            <option value="20000">₹20,000+</option>
-          </select>
-
-          {/* Language Filter */}
-          <label className="block text-sm font-semibold mb-1">Language</label>
-          <select
-            name="language"
-            onChange={handleChange}
-            className="w-full p-2 border rounded mb-3 bg-gray-800"
-          >
-            <option value="">Select Language</option>
-            <option value="English">English</option>
-            <option value="Hindi">Hindi</option>
-          </select>
-        </div>
-
-        {/* Course List (Scrollable) */}
-        <div className="w-full px-5">
-          {loading ? (
-            <p className="text-center text-lg font-semibold">
-              Fetching courses...
-            </p>
-          ) : courses.length > 0 ? (
-            <div className="grid gap-6">
-              {courses.map((course) => (
-                <CourseCard key={course.id} course={course} />
-              ))}
+    <div className="bg-[#fafafa] min-h-screen pb-20">
+      <div className="bg-white border-b border-slate-200 pt-12 pb-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-wider">
+               <SearchIcon size={12} /> Live Inventory Search
             </div>
-          ) : (
-            <p className="text-center text-lg font-semibold text-gray-500">
-              No courses found.
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900 leading-tight">
+               Found {totalResults.toLocaleString()} results for <span className="text-blue-600">"{filters.title}"</span>
+            </h1>
+            <p className="text-slate-500 text-sm font-medium leading-relaxed">
+               Showing high-density results from our global domain clusters. Refine your query below.
             </p>
-          )}
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 mt-12">
+        <div className="flex flex-col lg:flex-row gap-8">
+          
+          {/* Filter Station */}
+          <aside className="w-full lg:w-72 space-y-8">
+            <Card className="p-6 bg-white border-slate-200 shadow-sm space-y-6">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">
+                <Filter size={14} /> Refine Matrix
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <Star size={12} /> Quality Rating
+                  </label>
+                  <select
+                    name="rating"
+                    value={filters.rating}
+                    onChange={handleChange}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-md py-2 px-3 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-all font-semibold"
+                  >
+                    <option value="">Any Assessment</option>
+                    <option value="5">4.5 & Above</option>
+                    <option value="4">4.0 & Above</option>
+                    <option value="3">3.0 & Above</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <Tag size={12} /> Pricing Node
+                  </label>
+                  <select
+                    name="price"
+                    value={filters.price}
+                    onChange={handleChange}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-md py-2 px-3 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-all font-semibold"
+                  >
+                    <option value="">Any Price</option>
+                    <option value="0">Gratis</option>
+                    <option value="500">₹500+</option>
+                    <option value="1000">₹1,000+</option>
+                    <option value="5000">₹5,000+</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <Globe size={12} /> Instruction Node
+                  </label>
+                  <select
+                    name="language"
+                    onChange={handleChange}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-md py-2 px-3 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-all font-semibold"
+                  >
+                    <option value="">Select Protocol</option>
+                    <option value="English">English</option>
+                    <option value="Hindi">Hindi</option>
+                  </select>
+                </div>
+              </div>
+            </Card>
+          </aside>
+
+          {/* Results Feed */}
+          <main className="flex-1 space-y-6">
+            {loading ? (
+              <div className="p-20 text-center space-y-4">
+                 <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
+                 <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">Synchronizing results...</p>
+              </div>
+            ) : courses.length > 0 ? (
+              <div className="grid grid-cols-1 gap-6">
+                {courses.map((course) => (
+                  <CourseCard key={course._id} course={course} layout="horizontal" />
+                ))}
+              </div>
+            ) : (
+              <div className="p-20 border border-dashed border-slate-200 rounded-2xl text-center space-y-4 bg-white">
+                 <SearchIcon size={32} className="mx-auto text-slate-300" />
+                 <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No modules found for your query</p>
+              </div>
+            )}
+          </main>
         </div>
       </div>
     </div>
