@@ -12,7 +12,6 @@ import {
 } from "recharts";
 import { toast } from "react-toastify";
 import { transactionBaseUrl } from "../utils/endpoints";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const monthNames = [
   "Jan",
   "Feb",
@@ -28,6 +27,8 @@ const monthNames = [
   "Dec",
 ];
 
+import Pagination from "../component/Pagination";
+
 const Earning = () => {
   const [monthlyRevenue, setMonthlyRevenue] = useState([]);
   const [courseStats, setCourseStats] = useState([]);
@@ -35,88 +36,92 @@ const Earning = () => {
   const [thisMonthRevenue, setThisMonthRevenue] = useState(0);
   const [totalStudents, setTotalStudents] = useState(0);
   const [coursesSold, setCoursesSold] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    totalPages: 1,
+    currentPage: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  });
 
   const user = useSelector((state) => state.user.userData);
 
   useEffect(() => {
     const fetchInstructorCourseTransaction = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
           `${transactionBaseUrl}/instructor/${user._id}`,
-          { withCredentials: true }
+          { 
+            params: { page: currentPage, limit: 10 },
+            withCredentials: true 
+          }
         );
 
-        const transactions = response.data?.data || [];
-        console.log(transactions);
-        const earningsByMonth = Array(12).fill(0);
+        const { list: transactions, stats, pagination: pagData } = response.data?.data || {};
+        
+        // Use backend stats for summary cards
+        setTotalRevenue(stats.totalRevenue || 0);
+        setTotalStudents(stats.totalStudents || 0);
+        setCoursesSold(stats.coursesSold || 0);
+        setPagination(pagData);
+
+        // Process table data (current page only)
         const courseMap = {};
-        const studentSet = new Set();
-        let total = 0;
-        let monthRevenue = 0;
-        const currentMonth = new Date().getMonth();
-
         transactions.forEach((tx) => {
-          const createdAt = new Date(tx.createdAt);
-          const month = createdAt.getMonth();
-
-          studentSet.add(tx.userId);
-
           tx.courses.forEach((course) => {
             const courseId = course._id;
-            const originalPrice = course.price || 0;
-            const finalPrice = course.finalPrice || originalPrice; // Use finalPrice if available
-            const rating = course.averageRating || 0;
-
-            // Track overall and monthly revenue
-            total += finalPrice;
-            earningsByMonth[month] += finalPrice;
-            if (month === currentMonth) {
-              monthRevenue += finalPrice;
-            }
-
-            // Initialize course entry
             if (!courseMap[courseId]) {
               courseMap[courseId] = {
                 name: course.title,
-                originalPrice,
+                originalPrice: course.price,
                 totalRevenue: 0,
                 students: new Set(),
-                rating,
-                finalPrice,
+                rating: course.averageRating,
+                finalPrice: course.finalPrice || course.price,
               };
             }
-
-            courseMap[courseId].totalRevenue += finalPrice;
+            courseMap[courseId].totalRevenue += course.finalPrice || course.price;
             courseMap[courseId].students.add(tx.userId);
           });
         });
-
-        const monthlyData = monthNames.map((month, index) => ({
-          month,
-          revenue: earningsByMonth[index],
-        }));
 
         const courseStatsArr = Object.values(courseMap).map((course) => ({
           ...course,
           revenue: `₹${course.totalRevenue.toLocaleString()}`,
           students: course.students.size,
         }));
-
-        setMonthlyRevenue(monthlyData);
         setCourseStats(courseStatsArr);
-        setTotalRevenue(total);
-        setThisMonthRevenue(monthRevenue);
-        setTotalStudents(studentSet.size);
-        setCoursesSold(transactions.length);
-      } catch (error) {
-        toast.error(
-          error?.response?.data?.message || "Failed to fetch transactions"
-        );
+
+        // Note: Chart still expects full history which isn't paginated here.
+        // For now, it will only reflect the current page of data.
+        const earningsByMonth = Array(12).fill(0);
+        transactions.forEach(tx => {
+          const month = new Date(tx.createdAt).getMonth();
+          earningsByMonth[month] += tx.amount;
+        });
+        const monthlyData = monthNames.map((month, index) => ({
+          month,
+          revenue: earningsByMonth[index],
+        }));
+        setMonthlyRevenue(monthlyData);
+        setThisMonthRevenue(earningsByMonth[new Date().getMonth()]);
+
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to fetch transactions");
+      } finally {
+        setLoading(false);
       }
     };
 
     if (user?._id) fetchInstructorCourseTransaction();
-  }, [user]);
+  }, [user, currentPage]);
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
 
   return (
     <div className="p-6 bg-gray-900 text-white min-h-screen">
@@ -168,33 +173,48 @@ const Earning = () => {
       {/* Course Earnings Table */}
       <div className="bg-gray-800 p-4 rounded-lg shadow-md">
         <h2 className="text-lg font-semibold mb-4">Course Earnings</h2>
-        <table className="w-full text-left">
-          <thead>
-            <tr className="border-b border-gray-700">
-              <th className="p-2">Course</th>
-              <th className="p-2">Original Price</th>
-              <th className="p-2">Sold At</th>
-              <th className="p-2">Revenue</th>
-              <th className="p-2">Students</th>
-              <th className="p-2">Rating</th>
-            </tr>
-          </thead>
-          <tbody>
-            {courseStats.map((course, index) => (
-              <tr
-                key={index}
-                className="border-b border-gray-700 hover:bg-gray-700"
-              >
-                <td className="p-2">{course.name}</td>
-                <td className="p-2">₹{course.originalPrice}</td>
-                <td className="p-2">{course.finalPrice}</td>
-                <td className="p-2">{course.revenue}</td>
-                <td className="p-2">{course.students}</td>
-                <td className="p-2">{course.rating} ⭐</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {loading ? (
+          <div className="flex justify-center py-10">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : (
+          <>
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-gray-700">
+                  <th className="p-2">Course</th>
+                  <th className="p-2">Original Price</th>
+                  <th className="p-2">Sold At</th>
+                  <th className="p-2">Revenue</th>
+                  <th className="p-2">Students</th>
+                  <th className="p-2">Rating</th>
+                </tr>
+              </thead>
+              <tbody>
+                {courseStats.map((course, index) => (
+                  <tr
+                    key={index}
+                    className="border-b border-gray-700 hover:bg-gray-700"
+                  >
+                    <td className="p-2">{course.name}</td>
+                    <td className="p-2">₹{course.originalPrice}</td>
+                    <td className="p-2">{course.finalPrice}</td>
+                    <td className="p-2">{course.revenue}</td>
+                    <td className="p-2">{course.students}</td>
+                    <td className="p-2">{course.rating} ⭐</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <Pagination 
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+              hasNextPage={pagination.hasNextPage}
+              hasPrevPage={pagination.hasPrevPage}
+            />
+          </>
+        )}
       </div>
     </div>
   );

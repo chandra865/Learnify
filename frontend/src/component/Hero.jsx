@@ -1,4 +1,5 @@
 import heroImage from "../assets/lms-hero.png"; // Adjust the path as necessary
+import { Link } from "react-router-dom";
 const Hero = () => {
   return (
     <section className="bg-gray-900 text-white py-16 px-4 sm:px-6">
@@ -15,12 +16,12 @@ const Hero = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row justify-center md:justify-start gap-4 mt-4">
-            <a
-              href="/register"
-              className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg text-lg font-semibold text-center"
+            <Link
+              to="/register"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg text-lg font-semibold text-center transition"
             >
               Get Started
-            </a>
+            </Link>
             <a
               href="https://drive.google.com/file/d/1DgrDrbEdsnVaIEhFgBdNru2W4vsuGShC/view?usp=drive_link"
               target="_blank"

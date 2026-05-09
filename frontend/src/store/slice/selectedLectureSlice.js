@@ -15,6 +15,9 @@ const selectedLectureSlice = createSlice({
       state.selectedLecture = null;
     },
   },
+  extraReducers: (builder) => {
+    builder.addCase("user/logout", () => initialState);
+  },
 });
 
 export const { setSelectedLecture, clearSelectedLecture } = selectedLectureSlice.actions;

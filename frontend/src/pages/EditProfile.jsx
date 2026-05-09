@@ -48,29 +48,29 @@ const EditProfile = () => {
   // Handle Form Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
+    const updateData = {
+      name,
+      bio,
+      profilePicture,
+      socialLinks: JSON.stringify(socialLinks)
+    };
 
-    formData.append("name",name);
-    formData.append("bio",bio);
-    formData.append("profilePicture",profilePicture);
-    formData.append("socialLinks",JSON.stringify(socialLinks));
-    console.log(profilePicture);
-    try{
+    try {
       const response = await axios.put(
         `${userBaseUrl}/profile`,
-        formData,
+        updateData,
         {
           withCredentials: true,
           headers: {
-            "Content-Type": "multipart/form-data", // Important for file upload
+            "Content-Type": "application/json",
           },
         }
       )
       alert(response.data.message || "profile updated successfully");
       dispatch(login(response.data.data));
       navigate("/dashboard/profile");
-    }catch(error){
-      alert(error.response.data.message||"error occur while updataing profile")
+    } catch (error) {
+      alert(error.response.data.message || "error occur while updataing profile")
     }
   };
 

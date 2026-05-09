@@ -27,14 +27,39 @@ const addReview = asyncHandler(async (req, res) => {
 
 const getCourseReviews = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
-  const reviews = await Review.find({ courseId }).populate("userId", "name profilePicture.url");
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const totalItems = await Review.countDocuments({ courseId });
+  const reviews = await Review.find({ courseId })
+    .populate("userId", "name profilePicture.url")
+    .skip(skip)
+    .limit(limit);
 
   if (!reviews) {
     throw new ApiError(404, "Reveiw not found");
   }
-  return res
-    .status(200)
-    .json(new ApiResponse(201, reviews, "Review fetched successfully"));
+
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        list: reviews,
+        pagination: {
+          totalItems,
+          totalPages,
+          currentPage: page,
+          limit,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+      },
+      "Review fetched successfully"
+    )
+  );
 });
 
 const deleteReview = asyncHandler(async (req, res) => {

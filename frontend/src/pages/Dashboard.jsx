@@ -1,10 +1,8 @@
-import React from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, Outlet, useLocation } from "react-router-dom";
 import {
   FaUser,
   FaBook,
-  FaChalkboardTeacher,
   FaPlusCircle,
   FaSignOutAlt,
   FaDollarSign,
@@ -32,16 +30,16 @@ const Dashboard = () => {
         { title: "Profile", path: "/dashboard/profile", icon: <FaUser /> },
         { title: "Created Courses", path: "/dashboard/created", icon: <FaBook /> },
         { title: "Create Course", path: "/dashboard/create", icon: <FaPlusCircle /> },
-        { title: "Earning", path: "/dashboard/Earning", icon: <FaDollarSign /> },
+        { title: "Earning", path: "/dashboard/earning", icon: <FaDollarSign /> },
         { title: "Logout", path: "/logout", icon: <FaSignOutAlt /> },
       ];
       
   // Check if current path matches item path for active class
   const isActive = (path) => location.pathname === path ? "bg-gray-700" : "";
   return (
-    <div className="flex min-h-screen">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-900">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white p-6">
+      <aside className="w-full md:w-64 bg-gray-900 text-white p-6 border-b md:border-b-0 md:border-r border-gray-700">
         <h2 className="text-xl font-bold mb-6">Dashboard</h2>
         <ul>
           {sidebarItems.map((item) => (
@@ -58,7 +56,7 @@ const Dashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-3 bg-gray-300">
+      <main className="flex-1 p-3 bg-gray-800 text-white">
         <Outlet />
       </main>
     </div>

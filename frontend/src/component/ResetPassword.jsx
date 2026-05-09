@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { passwordResetBaseUrl } from "../utils/endpoints";
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -23,13 +23,12 @@ const ResetPassword = () => {
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/v1/password-reset-requests/password-reset`, {
+      await axios.post(`${passwordResetBaseUrl}/password-reset`, {
         email,
         token,
         newPassword
       });
 
-      console.log(response);
 
       toast.success("Password reset successful");
       navigate("/login");

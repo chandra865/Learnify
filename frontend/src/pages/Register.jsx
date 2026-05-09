@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import GoogleLogin from "../component/GoogleLogin";
 import { userBaseUrl, otpBaseUrl } from "../utils/endpoints";
@@ -89,14 +89,27 @@ const Register = () => {
   };
 
   return (
-    <div className="flex justify-center items-center w-full min-h-screen bg-gray-600 text-white">
-      <div className="bg-gray-900 p-6 mb-20 rounded shadow-lg w-90 text-white">
+    <div className="flex justify-center items-center w-full min-h-screen bg-gray-900 text-white">
+      <div className="bg-gray-800 p-6 rounded shadow-lg w-full max-w-md text-white">
         <h2 className="text-2xl font-bold text-center mb-6">
           {step === "register" ? "Register" : "Verify OTP"}
         </h2>
 
         {step === "register" ? (
           <form onSubmit={handleRegisterSubmit} className="space-y-4">
+            <div>
+              <label className="block font-medium">Name</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter your name"
+                required
+              />
+            </div>
+
             <div>
               <label className="block font-medium">Email</label>
               <input
@@ -121,6 +134,21 @@ const Register = () => {
                 placeholder="Enter your password"
                 required
               />
+            </div>
+
+            <div>
+              <label className="block font-medium">Role</label>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800"
+                required
+              >
+                <option value="">Select Role</option>
+                <option value="student">Student</option>
+                <option value="instructor">Instructor</option>
+              </select>
             </div>
 
             <button
@@ -182,9 +210,9 @@ const Register = () => {
             <GoogleLogin />
             <p className="text-center text-gray-400 mt-4">
               Already have an account?{" "}
-              <a href="/login" className="text-blue-500 hover:underline">
+              <Link to="/login" className="text-blue-500 hover:underline">
                 Login
-              </a>
+              </Link>
             </p>
           </>
         )}

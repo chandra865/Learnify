@@ -3,13 +3,8 @@ import axios from "axios";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import { useSelector } from "react-redux";
-import StarRating from "./StarRating";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import { toast } from "react-toastify";
 import { reviewBaseUrl } from "../utils/endpoints";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { toast } from "react-toastify";
 
 const Testimonials = () => {
   const courseId = useSelector((state) => state.course.selectedCourse._id);
@@ -22,7 +17,7 @@ const Testimonials = () => {
           `${reviewBaseUrl}/${courseId}`,
           { withCredentials: true }
         );
-        setReviews(response.data.data);
+        setReviews(response.data.data.list || []);
       } catch (error) {
         toast.error(
           error?.response?.data.message || "Error fetching reviews"
@@ -85,7 +80,7 @@ const Testimonials = () => {
                 </div>
 
                 {/* User Comment */}
-                <p className="italic mt-4 text-left text-sm">"{comment}"</p>
+                <p className="italic mt-4 text-left text-sm">&quot;{comment}&quot;</p>
               </div>
             </SwiperSlide>
           ))}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import axios from "axios";
 import StarRating from "./StarRating";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 import { courseBaseUrl, transactionBaseUrl} from "../utils/endpoints";
 const Payment = () => {
   const { userId, courseId } = useParams();
@@ -11,20 +12,21 @@ const Payment = () => {
   const [loading, setLoading] = useState(false);
   const [course, setCourse] = useState(null);
 
+  const { userData } = useSelector((state) => state.user);
   const navigate = useNavigate();
-  const fetchCourse = async () => {
-    try {
-      const response = await axios.get(
-        `${courseBaseUrl}/${courseId}`,
-        { withCredentials: true }
-      );
-      setCourse(response.data.data);
-    } catch (error) {
-      toast.error(error?.response?.data.message || "Error fetching course data");
-    }
-  };
-
   useEffect(() => {
+    const fetchCourse = async () => {
+      try {
+        const response = await axios.get(
+          `${courseBaseUrl}/${courseId}`,
+          { withCredentials: true }
+        );
+        setCourse(response.data.data);
+      } catch (error) {
+        toast.error(error?.response?.data.message || "Error fetching course data");
+      }
+    };
+
     fetchCourse();
   }, [courseId]);
 
@@ -48,7 +50,7 @@ const Payment = () => {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID, // from env
         amount: data.amount,
         currency: "INR",
-        name: "LMS Payment",
+        name: "Learnify Payment",
         description: "Course Payment",
         order_id: data.id,
         handler: async function (response) {
@@ -72,12 +74,12 @@ const Payment = () => {
             { withCredentials: true }
           );
 
-          alert("Payment successful! Course access granted.");
+          toast.success("Payment successful! Course access granted.");
           navigate(`/course/enroll/${courseId}`); // Redirect to My Courses page
         },
         prefill: {
-          name: "Student",
-          email: "student@example.com",
+          name: userData?.name || "Student",
+          email: userData?.email || "student@example.com",
         },
         theme: {
           color: "#6366f1",

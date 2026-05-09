@@ -275,25 +275,75 @@ const handleWebhook = asyncHandler(async (req, res) => {
 
 const getUserInstructorTransactions = asyncHandler(async (req, res) => {
   const { instructorId } = req.params;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
 
   const instructorCourses = await Course.find({ instructor: instructorId });
   const instructorCourseIds = instructorCourses.map(course => course._id.toString());
   
+  // Aggregated Stats (Total Revenue, Students, etc.)
+  // Note: We compute these for ALL time because they power the dashboard cards
+  const stats = await Transaction.aggregate([
+    { 
+      $match: { 
+        courses: { $in: instructorCourseIds.map(id => new mongoose.Types.ObjectId(id)) },
+        status: "success"
+      } 
+    },
+    {
+      $group: {
+        _id: null,
+        totalRevenue: { $sum: "$amount" },
+        totalTransactions: { $sum: 1 },
+        studentIds: { $addToSet: "$userId" }
+      }
+    }
+  ]);
+
+  const totalItems = await Transaction.countDocuments({
+    courses: { $in: instructorCourseIds },
+    status: "success",
+  });
+
   const transactions = await Transaction.find({
     courses: { $in: instructorCourseIds },
-    status: "success", // optional: only successful transactions
-  }).populate("courses");
+    status: "success",
+  })
+    .populate("courses")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
 
-  
   if (!transactions) {
-    throw new ApiError(404, "No transactions found for this user");
+    throw new ApiError(404, "No transactions found for this instructor");
   }
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(200, transactions, "Transactions fetched successfully")
-    );
+  const totalPages = Math.ceil(totalItems / limit);
+  const resultStats = stats[0] || { totalRevenue: 0, totalTransactions: 0, studentIds: [] };
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        list: transactions,
+        stats: {
+          totalRevenue: resultStats.totalRevenue,
+          coursesSold: resultStats.totalTransactions,
+          totalStudents: resultStats.studentIds.length
+        },
+        pagination: {
+          totalItems,
+          totalPages,
+          currentPage: page,
+          limit,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+      },
+      "Transactions fetched successfully"
+    )
+  );
 });
 
 const getCourseTransactions = asyncHandler(async (req, res) => {
@@ -313,20 +363,42 @@ const getCourseTransactions = asyncHandler(async (req, res) => {
 
 const getOrderHistory = asyncHandler(async (req, res) => {
   const userId = req.user._id;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
 
+  const totalItems = await Transaction.countDocuments({ userId });
   const transactions = await Transaction.find({ userId })
     .sort({ createdAt: -1 })
     .populate({
       path: "courses",
       select: "title thumbnail price finalPrice",
-    });
+    })
+    .skip(skip)
+    .limit(limit);
 
   if (!transactions) {
     return res.status(404).json(new ApiError(404, "No transactions found"));
   }
 
+  const totalPages = Math.ceil(totalItems / limit);
+
   return res.status(200).json(
-    new ApiResponse(200, transactions, "Transactions fetched successfully")
+    new ApiResponse(
+      200, 
+      {
+        list: transactions,
+        pagination: {
+          totalItems,
+          totalPages,
+          currentPage: page,
+          limit,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        }
+      }, 
+      "Transactions fetched successfully"
+    )
   );
 });
 

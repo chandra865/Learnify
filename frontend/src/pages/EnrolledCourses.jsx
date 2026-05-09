@@ -1,60 +1,70 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import Loading from "../component/Loading";
 import ProgressBar from "../component/ProgressBar";
 import { Link } from "react-router-dom";
 import StarRating from "../component/StarRating";
-import { CircularProgressbar } from "react-circular-progressbar";
 import { toast } from "react-toastify";
 import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 import { useDispatch } from "react-redux";
 import { enrollmentBaseUrl } from "../utils/endpoints";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import SkeletonLoader from "../component/SkeletonLoader";
+import { getErrorMessage } from "../utils/errorUtils";
+import Pagination from "../component/Pagination";
 
 const EnrolledCourses = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const userId = useSelector((state) => state.user.userData?._id);
-  const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    totalPages: 1,
+    currentPage: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  });
 
   useEffect(() => {
     const fetchEnrolledCourses = async () => {
       try {
         const response = await axios.get(
           `${enrollmentBaseUrl}/${userId}`,
-          { withCredentials: true }
+          { 
+            params: { page: currentPage, limit: 10 },
+            withCredentials: true 
+          }
         );
 
-        setCourses(response.data.data);
-      } catch (err) {
-        toast.error(
-          err?.response?.data.message || "Error fetching enrolled courses"
-        );
+        const { list, pagination: pagData } = response.data.data;
+        setCourses(list);
+        setPagination(pagData);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Failed to fetch enrolled courses"));
       } finally {
         setLoading(false);
       }
     };
-    fetchEnrolledCourses();
-  }, [userId]);
+    if (userId) fetchEnrolledCourses();
+  }, [userId, currentPage]);
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
 
   const dispatch = useDispatch();
   const handleClick = (course) => dispatch(setSelectedCourse(course));
 
-  if (loading) return <Loading />;
-
   return (
-    <div className="min-h-screen p-6 bg-gray-800 text-white">
-      <h2 className="text-2xl font-extrabold text-center mb-8">
-        Enrolled Courses
-      </h2>
-
-      {courses.length > 0 ? (
-        <div className="">
-          {courses.map((course) => (
+    <div className="min-h-screen p-6 bg-gray-900">
+      <h2 className="text-2xl font-extrabold text-center mb-6 text-white">Enrolled Courses</h2>
+      <div className="max-w-5xl mx-auto">
+        {loading ? (
+          <SkeletonLoader type="card" count={4} />
+        ) : courses.length > 0 ? (
+          <div className="">
+            {courses.map((course) => (
               <Link 
+              key={course._id}
               onClick={() => handleClick(course)}
               to={`/course/enroll/${course._id}`}>
                 <div className="flex mb-4 border-b-2 hover:bg-gray-700 transform transition duration-300 hover:scale-102">
@@ -96,10 +106,18 @@ const EnrolledCourses = () => {
                 </div>
               </Link>
             ))}
+            <Pagination 
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+              hasNextPage={pagination.hasNextPage}
+              hasPrevPage={pagination.hasPrevPage}
+            />
         </div>
       ) : (
         <p className="text-center text-gray-400">No enrolled courses found.</p>
       )}
+      </div>
     </div>
   );
 };

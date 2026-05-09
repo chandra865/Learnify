@@ -50,7 +50,7 @@ const CategoryMenu = () => {
 
       {isMenuOpen && (
         <div
-          className="absolute left-0 top-full mt-2 flex bg-gray-900 text-white rounded-lg shadow-xl z-50"
+          className="absolute left-0 top-full mt-2 flex bg-gray-900 text-white rounded-lg shadow-xl z-[1001]"
           onMouseLeave={resetMenu}
         >
           {/* Column 1: Categories */}

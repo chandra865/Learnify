@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { passwordResetBaseUrl } from "../utils/endpoints";
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -10,7 +10,7 @@ const ForgotPassword = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      await axios.post(`${API_BASE_URL}/api/v1/password-reset-requests/password-reset-token`, { email });
+      await axios.post(`${passwordResetBaseUrl}/password-reset-token`, { email });
       setEmail("");
       setLoading(false);
       toast.success("Reset link sent to your email");

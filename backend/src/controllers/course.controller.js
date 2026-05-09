@@ -147,13 +147,9 @@ const instructorCourses = asyncHandler(async (req, res) => {
 
   const courses = await Course.find({ instructor: instructorId });
 
-  if (!courses || courses.length === 0) {
-    throw new ApiError(404, "No courses found for this instructor");
-  }
-
   return res
     .status(200)
-    .json(new ApiResponse(200, courses, "Courses fetched successfully"));
+    .json(new ApiResponse(200, courses || [], "Courses fetched successfully"));
 });
 
 //not using because we do this is payment
@@ -200,12 +196,39 @@ const stuCourses = asyncHandler(async (req, res) => {
 });
 
 const getAllCourses = asyncHandler(async (req, res) => {
-  const course = await Course.find({}).populate("instructor","name profilePicture bio");
+  const { category } = req.query;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
 
-  if (!course) throw new ApiError(404, "failed to fetch course");
-  return res
-    .status(201)
-    .json(new ApiResponse(200, course, "Courses fetched successfully"));
+  let query = {};
+  if (category) query.category = category;
+
+  const totalItems = await Course.countDocuments(query);
+  const courses = await Course.find(query)
+    .populate("instructor", "name profilePicture bio")
+    .skip(skip)
+    .limit(limit);
+
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        list: courses || [],
+        pagination: {
+          totalItems,
+          totalPages,
+          currentPage: page,
+          limit,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+      },
+      "Courses fetched successfully"
+    )
+  );
 });
 
 // Function to handle quiz completion
@@ -365,6 +388,9 @@ const courseRecommend = asyncHandler(async (req, res) => {
 
 const courseSearch = asyncHandler(async (req, res) => {
   const { title, rating, price, language } = req.query;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
 
   let query = {};
 
@@ -374,11 +400,11 @@ const courseSearch = asyncHandler(async (req, res) => {
 
   // Flexible search logic for 'title'
   if (title) {
-    const words = title.trim().split(/\s+/); // Split by whitespace
+    const words = title.trim().split(/\s+/);
     query.$or = [];
 
     for (const word of words) {
-      const regex = new RegExp(word, "i"); // Case-insensitive partial match
+      const regex = new RegExp(word, "i");
       query.$or.push(
         { title: { $regex: regex } },
         { subtitle: { $regex: regex } },
@@ -388,17 +414,32 @@ const courseSearch = asyncHandler(async (req, res) => {
     }
   }
 
+  const totalItems = await Course.countDocuments(query);
   const courses = await Course.find(query)
-    .populate("instructor", "name") // Only show instructor name
+    .populate("instructor", "name")
+    .skip(skip)
+    .limit(limit)
     .exec();
 
-  if (!courses.length) {
-    throw new ApiError(404, "Courses Not found");
-  }
+  const totalPages = Math.ceil(totalItems / limit);
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, courses, "Courses fetched successfully"));
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        list: courses || [],
+        pagination: {
+          totalItems,
+          totalPages,
+          currentPage: page,
+          limit,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+      },
+      "Courses fetched successfully"
+    )
+  );
 });
 
 
