@@ -7,25 +7,23 @@ import {
   BookOpen,
   FileText,
   Medal,
-  CheckCircle,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
 import VideoPlayer1 from "../component/VideoPlayer1";
 import GiveQuiz from "../component/GiveQuiz";
 import logo from "../assets/logo.png";
 import { toast } from "react-toastify";
-import { progressBaseUrl, sectionBaseUrl, lectureBaseUrl, quizBaseUrl} from "../utils/endpoints";
-
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
+import { courseBaseUrl, progressBaseUrl, sectionBaseUrl, lectureBaseUrl, quizBaseUrl} from "../utils/endpoints";
 
 const CoursePlayer = () => {
+  const dispatch = useDispatch();
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [activeLecture, setActiveLecture] = useState(0);
   const [expandedSections, setExpandedSections] = useState({});
-  const { courseId, sectionId, lectureId } = useParams();
+  const { courseId, lectureId } = useParams();
   const [courseContent, setCourseContent] = useState([]);
   const [videoUrl, setVideoUrl] = useState(null);
   const videoPlayerRef = useRef(null);
@@ -36,13 +34,30 @@ const CoursePlayer = () => {
   // Progress tracking states
   const [courseProgress, setCourseProgress] = useState(0);
   const [completedLectures, setCompletedLectures] = useState([]);
-  const [completedSectionLectures, setCompletedSectionLectures] = useState([]);
   const [isCourseCompleted, setIsCourseCompleted] = useState(false);
   const [showCertificatePopup, setShowCertificatePopup] = useState(null);
   const [isCourseQuizTaken, setIsCourseQuizTaken] = useState(false);
   const course = useSelector((state) => state.course.selectedCourse);
   const user = useSelector((state) => state.user.userData);
   const userId = user?._id;
+
+  // Fetch course details if not present in Redux or if it's the wrong course
+  useEffect(() => {
+    const fetchCourse = async () => {
+      if (!courseId) return;
+      if (course && course._id === courseId) return;
+
+      try {
+        const response = await axios.get(`${courseBaseUrl}/${courseId}`, {
+          withCredentials: true,
+        });
+        dispatch(setSelectedCourse(response.data.data));
+      } catch (error) {
+        toast.error(error?.response?.data.message || "Error fetching course details");
+      }
+    };
+    fetchCourse();
+  }, [courseId, course, dispatch]);
 
   // Fetch course sections
   useEffect(() => {
@@ -174,6 +189,7 @@ const CoursePlayer = () => {
       }
     };
 
+
     if (video) {
       video.addEventListener("pause", saveProgress);
       video.addEventListener("ended", saveProgress);
@@ -185,7 +201,7 @@ const CoursePlayer = () => {
         window.removeEventListener("beforeunload", saveProgress);
       };
     }
-  }, [userId, courseId, lectureId, isCourseCompleted, videoPlayerRef]);
+  }, [userId, courseId, lectureId, isCourseCompleted, videoPlayerRef, totalLectures]);
 
   const handleMarkUncomplete = async (lectureId) => {
     try {
@@ -212,8 +228,8 @@ const CoursePlayer = () => {
       if (isCourseCompleted && newProgress < 100) {
         setIsCourseCompleted(false);
       }
-    } catch (err) {
-      alert("Error marking uncomplete");
+    } catch (error) {
+      toast.error("Error marking uncomplete");
     }
   };
 
@@ -283,11 +299,7 @@ const CoursePlayer = () => {
     }));
   };
 
-  const formatDuration = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-  };
+
 
 
   const getAllLectures = () =>
@@ -361,7 +373,7 @@ const CoursePlayer = () => {
         videoElement.removeEventListener("ended", handleEnded);
       }
     };
-  }, [lectureId, courseContent, navigate, getNextLecture]);
+  }, [lectureId, courseContent, navigate, getNextLecture, navigateToLecture]);
 
   const prevLecture = getPrevLecture();
   const nextLecture = getNextLecture();
@@ -719,7 +731,7 @@ const CoursePlayer = () => {
                   You have successfully completed the course!
                 </p>
                 <p className="text-gray-300 mb-6">
-                  You've achieved {Math.round(courseProgress)}% course
+                  You&apos;ve achieved {Math.round(courseProgress)}% course
                   completion. Your certificate is ready for download.
                 </p>
                 <div className="flex justify-center space-x-4">
@@ -740,7 +752,7 @@ const CoursePlayer = () => {
             ) : (
               <>
                 <p className="text-lg text-white mb-4">
-                  You've completed all lectures, but you need to pass the quiz
+                  You&apos;ve completed all lectures, but you need to pass the quiz
                   to get your certificate.
                 </p>
                 <p className="text-gray-300 mb-6">

@@ -19,15 +19,17 @@ const addCart = asyncHandler(async (req, res) => {
     (c) => c.toString() === courseId.toString()
   );
 
-  if (!isAlreadyInCart) {
-    cart.courses.push(courseId);
-    cart.totalAmount += price;
-    await cart.save();
+  if (isAlreadyInCart) {
+    throw new ApiError(400, "Course already in cart");
   }
+
+  cart.courses.push(courseId);
+  cart.totalAmount += price;
+  await cart.save();
 
   return res
     .status(200)
-    .json(new ApiResponse(200, cart, "Course added to cart"));
+    .json(new ApiResponse(200, cart, "Course added to cart successfully"));
 });
 
 

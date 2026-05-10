@@ -1,4 +1,3 @@
-import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
@@ -20,9 +19,9 @@ import {
   FaGlobe,
 } from "react-icons/fa";
 import InstructorProfile from "../component/InstructorProfile";
-import { courseBaseUrl, enrollmentBaseUrl, sectionBaseUrl, cartBaseUrl } from "../utils/endpoints";
-
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { courseBaseUrl, enrollmentBaseUrl, cartBaseUrl } from "../utils/endpoints";
+import { setCart } from "../store/slice/cartSlice";
+import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 const CourseLandingPage = () => {
   const user = useSelector((state) => state.user.userData);
   console.log(user);
@@ -31,19 +30,9 @@ const CourseLandingPage = () => {
 
   const { course_id } = useParams();
   const [course, setCourse] = useState(null);
-  const [section, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [reviewRating, setReviewRating] = useState(null);
-  const [reviewComment, setReviewComment] = useState(null);
-  const [courseProgress, setCourseProgress] = useState(false);
-  const [isCourseCompleted, setIsCourseCompleted] = useState(false);
-
-  const [couponCode, setCouponCode] = useState("");
-  const [isCouponValid, setIsCouponValid] = useState(true);
-  const [discountApplied, setDiscountApplied] = useState(0);
-
   const proRef = useRef(null);
   //console.log(isEnrolled);
 
@@ -54,67 +43,34 @@ const CourseLandingPage = () => {
     month: "long",
   });
 
-  const checkEnrollment = async () => {
-    try {
-      const response = await axios.get(
-        `${enrollmentBaseUrl}/${user._id}/${course_id}`,
-        {
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(`${courseBaseUrl}/${course_id}`, {
           withCredentials: true,
-        }
-      );
-
-      const status = response.data.data.enrollmentStatus;
-      setIsEnrolled(status);
-    } catch (error) {
-      // console.log(error);
-    }
-  };
-  useEffect(() => {
-    if (user && course_id) {
-      checkEnrollment();
-    }
-  }, [user, course_id]);
-
-  useEffect(() => {
-    const fetchCourse = async () => {
-      try {
-        const response = await axios.get(
-          `${courseBaseUrl}/${course_id}`,
-          { withCredentials: true }
-        );   
+        });
         setCourse(response.data.data);
+        dispatch(setSelectedCourse(response.data.data));
+        
+        if (user) {
+          const enrollRes = await axios.get(
+            `${enrollmentBaseUrl}/${user._id}/${course_id}`,
+            { withCredentials: true }
+          );
+          setIsEnrolled(enrollRes.data.data.enrollmentStatus);
+        }
       } catch (error) {
-        toast.error(
-          error?.response?.data.message || "Error fetching course data"
-        );
+        toast.error(error?.response?.data.message || "Error fetching course data");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchCourse();
-  }, [course_id]);
-
-  useEffect(() => {
-
-    const fetchSection = async () => {
-      try {
-        const response = await axios.get(
-          `${sectionBaseUrl}/${course_id}`,
-          {
-            withCredentials: true,
-          }
-        );
-        setSections(response.data.data);
-      } catch (error) {
-        toast.error(
-          error?.response?.data.message || "Error fetching course sections"
-        );
-      }
-    };
-    // if (isEnrolled !== null) {
-    //   fetchSection();
-    // }
-    fetchSection();
-  }, [isEnrolled, course_id]);
+    if (course_id) {
+      fetchData();
+    }
+  }, [course_id, user, dispatch]);
 
   const handlePreviewClick = () => {
     setShowPreview(true);
@@ -123,7 +79,17 @@ const CourseLandingPage = () => {
     proRef.current?.scrollIntoView({ behavior: "smooth" });
   }
 
+  const { cartItems } = useSelector((state) => state.cart);
+
+  const isInCart = cartItems.some(
+    (item) => (item._id || item) === course_id
+  );
+
   const handleCart = async (price) => {
+    if (isInCart) {
+      navigate("/dashboard/cart");
+      return;
+    }
     try {
       const response = await axios.post(
         `${cartBaseUrl}`,
@@ -134,7 +100,8 @@ const CourseLandingPage = () => {
         },
         { withCredentials: true }
       );
-      // console.log(response.data.data);
+      // Update global cart state
+      dispatch(setCart(response.data.data));
       toast.success(response?.data?.message || "Added to cart successfully");
     } catch (error) {
       const errorMessage =
@@ -143,8 +110,12 @@ const CourseLandingPage = () => {
     }
   };
 
+  if (loading) {
+    return <Loading />;
+  }
+
   return (
-    <div className="min-h-screen overflow-y-auto bg-gray-900">
+    <div className={`min-h-screen overflow-y-auto bg-gray-900 transition-opacity duration-700 ${loading ? "opacity-0" : "opacity-100"}`}>
       <div className="h-[300px] bg-gray-700 bg-gradient-to-t from-black via-black/50 to-black/0 transition-opacity">
         <div className=" mx-50 pt-10 text-white flex flex-row gap-15">
           {/* course info */}
@@ -173,7 +144,7 @@ const CourseLandingPage = () => {
             {/* What You Will Learn */}
             <div className="mt-6 bg-gray-800 p-8">
               <h2 className="text-2xl font-bold text-gray-200">
-                What You'll Learn
+                What You&apos;ll Learn
               </h2>
               <ul className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                 {course?.whatYouWillLearn?.map((item, index) => (
@@ -315,7 +286,7 @@ const CourseLandingPage = () => {
                   `}
                 onClick={() => handleCart(course?.finalPrice === course?.price ? course?.price : course?.finalPrice)}
               >
-                Add to cart
+                {isInCart ? "Go to cart" : "Add to cart"}
               </button>
               <button
                 onClick={() => {

@@ -13,7 +13,7 @@ const transactionSchema = new mongoose.Schema({
 
   razorpay: {
     orderId: String,
-    paymentId: String,
+    paymentId: { type: String, unique: true, sparse: true },
     signature: String,
   },
   amount: {

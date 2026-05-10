@@ -1,49 +1,63 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
-import StarRating from "./StarRating";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { cartBaseUrl, transactionBaseUrl } from "../utils/endpoints";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import Loading from "./Loading";
+import { getErrorMessage } from "../utils/errorUtils";
+import { Link } from "react-router-dom";
+import StarRating from "./StarRating";
+import { useDispatch } from "react-redux";
+import { setCart as setGlobalCart } from "../store/slice/cartSlice";
+
 const Cart = () => {
-  const userId = useSelector((state) => state.user.userData?._id);
+  const { userData } = useSelector((state) => state.user);
+  const userId = userData?._id;
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [cart, setCart] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  const fetchCart = async () => {
-    try {
-      const response = await axios.get(
-        `${cartBaseUrl}/${userId}`,
-
-        {
-          withCredentials: true,
-        }
-      );
-
-      // console.log(response.data.data);
-      setCart(response.data.data);
-      setLoading(true);
-    } catch (error) {
-      console.log(response.data.error || "cart not fetched");
-    }
-  };
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId) return;
+    const fetchCart = async () => {
+      try {
+        const response = await axios.get(
+          `${cartBaseUrl}/${userId}`,
+          { withCredentials: true }
+        );
+        const cartData = response.data.data;
+        setCart(cartData);
+        dispatch(setGlobalCart(cartData));
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Failed to fetch cart"));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
     fetchCart();
-  }, [userId]);
+  }, [userId, dispatch]);
 
   const handleRemoveFromCart = async (courseId) => {
     try {
       const response = await axios.patch(
         `${cartBaseUrl}/${userId}/${courseId}`,
+        {},
         {
           withCredentials: true,
         }
       );
-      //console.log(response.data.data);
-      setCart(response.data.data);
+      const cartData = response.data.data;
+      setCart(cartData);
+      dispatch(setGlobalCart(cartData));
+      toast.success("Item removed from cart");
     } catch (error) {
-      console.log(response?.data.error || "cart not fetched");
+      toast.error(getErrorMessage(error, "Failed to remove item"));
     }
   };
 
@@ -54,7 +68,11 @@ const Cart = () => {
       // 1. Create Razorpay Order
       const orderResponse = await axios.post(
         `${transactionBaseUrl}/order`,
-        { amount: cart.totalAmount },
+        {
+          amount: cart.totalAmount,
+          type: "cart",
+          courseId: null,
+        },
         { withCredentials: true }
       );
 
@@ -63,7 +81,7 @@ const Cart = () => {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: data.amount,
         currency: "INR",
-        name: "LMS Cart Payment",
+        name: "Learnify Cart Payment",
         description: "Payment for courses in cart",
         order_id: data.id,
         handler: async function (response) {
@@ -71,7 +89,7 @@ const Cart = () => {
             response;
 
           // 2. Verify Payment
-          const verifyResponse = await axios.post(
+          await axios.post(
             `${transactionBaseUrl}/payment`,
             {
               razorpay_payment_id,
@@ -85,12 +103,12 @@ const Cart = () => {
             { withCredentials: true }
           );
 
-          alert("Cart payment successful! You're now enrolled in all courses.");
-          window.location.href = "/dashboard/enrolled-courses"; // or your route
+          toast.success("Cart payment successful! You're now enrolled in all courses.");
+          navigate("/dashboard/enrolled"); // or your route
         },
         prefill: {
-          name: "Student",
-          email: "student@example.com",
+          name: userData?.name || "Student",
+          email: userData?.email || "student@example.com",
         },
         theme: {
           color: "#6366f1",
@@ -100,16 +118,23 @@ const Cart = () => {
       const razorpay = new window.Razorpay(options);
       razorpay.open();
     } catch (error) {
-      console.error("Cart payment error:", error);
-      alert("Error processing cart payment. Try again.");
+      toast.error(getErrorMessage(error, "Error processing cart payment"));
     }
   };
 
   return (
     <div className="bg-gray-800 p-8 min-h-screen">
-      {!loading ? (
-        <div className="text-white">
-          <p>Cart is Empty........</p>
+      {loading ? (
+        <Loading small />
+      ) : !cart || cart.courses.length === 0 ? (
+        <div className="flex flex-col items-center justify-center text-white py-20">
+          <p className="text-2xl font-bold mb-4">Your cart is empty</p>
+          <Link 
+            to="/search" 
+            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 rounded-md font-bold transition"
+          >
+            Browse Courses
+          </Link>
         </div>
       ) : (
         <div>
@@ -118,10 +143,13 @@ const Cart = () => {
           <div className="flex flex-row bg-800 p-4 gap-4 rounded shadow-md text-white">
             <div className="p-4 w-4/5">
               <p className="text-xl font-bold my-1 border-b-1">
-                {cart.courses.length} course in cart
+                {cart.courses.length} {cart.courses.length === 1 ? "course" : "courses"} in cart
               </p>
               {cart.courses.map((course) => (
-                <div className="flex my-2 p-2 border-b-2 hover:bg-gray-700 transform transition duration-300 hover:scale-102">
+                <div 
+                  key={course._id}
+                  className="flex my-2 p-2 border-b-2 hover:bg-gray-700 transform transition duration-300 hover:scale-102"
+                >
                   {/* Course Image */}
                   <div className="w-35 h-20 flex-shrink-0">
                     <img

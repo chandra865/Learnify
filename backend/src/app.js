@@ -16,7 +16,7 @@ app.use(helmet());
 // Rate limiting configuration
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    max: 500, // Limit each IP to 500 requests per windowMs
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     message: "Too many requests from this IP, please try again after 15 minutes",
@@ -48,7 +48,14 @@ app.use(fileUpload({
     useTempFiles : true,
     tempFileDir : "/tmp/"
 }));
-app.use(express.json({limit:"36kb"})); // when data coming in json formate 
+app.use(express.json({
+    limit: "36kb",
+    verify: (req, res, buf) => {
+        if (req.originalUrl.includes("/webhook")) {
+            req.rawBody = buf;
+        }
+    }
+})); // when data coming in json formate 
 app.use(express.urlencoded({extended:true, limit:"36kb"})) //when data coming from url
 app.use(express.static("public")) //public folder adding file
 app.use(cookieParser());//for performing operation on cookie  

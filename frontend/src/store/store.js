@@ -2,6 +2,7 @@ import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import userReducer from "./slice/userSlice";
 import courseReducer from "./slice/selectedCourseSlice";
 import lectureReducer from "./slice/selectedLectureSlice";
+import cartReducer from "./slice/cartSlice";
 import {
   persistStore,
   persistReducer,
@@ -18,11 +19,13 @@ const appReducer = combineReducers({
   user: userReducer,
   course: courseReducer,
   lecture: lectureReducer,
+  cart: cartReducer,
 });
 
 const rootReducer = (state, action) => {
-  if (action.type === 'user/logout') { // when logout action is dispatched
-    state = undefined; // clear all redux state
+  // Clear all state on logout
+  if (action.type === "user/logout") {
+    state = undefined;
   }
   return appReducer(state, action);
 };

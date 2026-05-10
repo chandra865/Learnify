@@ -19,8 +19,7 @@ const registerSchema = z.object({
 });
 
 const updateProfileSchema = z.object({
-  firstName: z.string().min(1, "First name is required").optional(),
-  lastName: z.string().min(1, "Last name is required").optional(),
+  name: z.string().min(1, "Name is required").optional(),
   bio: z.string().max(500, "Bio is too long").optional(),
   profilePicture: z.string().optional(),
   socialLinks: z.string().optional(),

@@ -5,6 +5,7 @@ import {
   getCourseTransactions,
   getUserInstructorTransactions,
   getOrderHistory,
+  handleWebhook,
 } from "../controllers/transaction.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { validate } from "../middlewares/validation.js";
@@ -14,6 +15,7 @@ const router = Router();
 
 router.route("/order").post(verifyJWT, validate(createOrderSchema), createOrder);
 router.route("/payment").post(verifyJWT, validate(verifyPaymentSchema), verifyPayment);
+router.route("/webhook").post(handleWebhook);
 router
   .route("/instructor/:instructorId")
   .get(verifyJWT, getUserInstructorTransactions);

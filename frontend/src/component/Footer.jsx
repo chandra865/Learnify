@@ -1,4 +1,5 @@
 import { FaFacebook, FaTwitter, FaLinkedin, FaInstagram } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -19,16 +20,16 @@ const Footer = () => {
           <h2 className="text-2xl font-extrabold text-white mb-4">Quick Links</h2>
           <ul className="space-y-3">
             <li>
-              <a href="#" className="hover:text-blue-500 transition duration-300">Courses</a>
+              <Link to="/" className="hover:text-blue-500 transition duration-300">Courses</Link>
             </li>
             <li>
-              <a href="#" className="hover:text-blue-500 transition duration-300">About Us</a>
+              <Link to="/register" className="hover:text-blue-500 transition duration-300">Register</Link>
             </li>
             <li>
-              <a href="#" className="hover:text-blue-500 transition duration-300">Contact</a>
+              <Link to="/login" className="hover:text-blue-500 transition duration-300">Login</Link>
             </li>
             <li>
-              <a href="#" className="hover:text-blue-500 transition duration-300">FAQ</a>
+              <Link to="/search" className="hover:text-blue-500 transition duration-300">Search</Link>
             </li>
           </ul>
         </nav>
@@ -55,7 +56,7 @@ const Footer = () => {
 
       {/* Copyright */}
       <div className="mt-12 text-center text-gray-500 border-t border-gray-700 pt-6">
-        <p>© {new Date().getFullYear()} MyLMS. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Learnify. All rights reserved.</p>
       </div>
     </footer>
   );

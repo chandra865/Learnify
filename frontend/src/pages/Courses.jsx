@@ -1,60 +1,90 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
 import axios from "axios";
 import Loading from "../component/Loading";
 import CourseCard from "../component/CourseCard";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { Navigation, Pagination } from "swiper/modules";
+import { Navigation, Pagination as SwiperPagination } from "swiper/modules";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { courseBaseUrl } from "../utils/endpoints";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { courseBaseUrl, categoryBaseUrl } from "../utils/endpoints";
+import Pagination from "../component/Pagination";
+
 const Courses = () => {
-  const [courses, setCourses] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [coursesLoading, setCoursesLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState(null);
   const [categoryCourses, setCategoryCourses] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    totalPages: 1,
+    currentPage: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  });
   const swiperRef = useRef(null);
 
+  // Fetch Categories
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchCategories = async () => {
       try {
-        const response = await axios.get(
-          `${courseBaseUrl}`
-        );
-        const courseData = response.data.data;
-        const filteredCourses = courseData.filter(course => course.published === true);
-        setCourses(filteredCourses);
-
-        const defaultCategory = filteredCourses[0]?.category;
-        setActiveCategory(defaultCategory);
-
-        if (defaultCategory) {
-          setCategoryCourses(
-            filteredCourses.filter(course => course.category === defaultCategory)
-          );
+        const response = await axios.get(categoryBaseUrl);
+        const categoryData = response.data.data;
+        setCategories(categoryData.map(cat => cat.name));
+        if (categoryData.length > 0) {
+          setActiveCategory(categoryData[0].name);
         }
       } catch (err) {
+        console.error(err);
+        setError("Failed to fetch categories");
+        setLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Fetch Courses for active category and page
+  useEffect(() => {
+    if (!activeCategory) return;
+
+    const fetchCourses = async () => {
+      setCoursesLoading(true);
+      try {
+        const response = await axios.get(courseBaseUrl, {
+          params: {
+            category: activeCategory,
+            page: currentPage,
+            limit: 8
+          }
+        });
+        const { list, pagination: pagData } = response.data.data;
+        setCategoryCourses(list);
+        setPagination(pagData);
+      } catch (err) {
+        console.error(err);
         setError("Failed to fetch courses");
       } finally {
+        setCoursesLoading(false);
         setLoading(false);
       }
     };
 
     fetchCourses();
-  }, []);
+  }, [activeCategory, currentPage]);
 
   const handleCategoryChange = (category) => {
     setActiveCategory(category);
-    setCategoryCourses(courses.filter(course => course.category === category));
+    setCurrentPage(1); // Reset to page 1
   };
 
-  if (loading) return <Loading />;
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
 
-  const categories = [...new Set(courses.map(course => course.category))];
+  if (loading && !activeCategory) return <Loading />;
 
   return (
     <div className="bg-gray-900 py-10 px-4 sm:px-6 lg:px-8">
@@ -70,13 +100,13 @@ const Courses = () => {
         ) : (
           <>
             {/* Category Tabs Slider */}
-            <div className="relative mb-6">
+            <div className="relative mb-8">
               <Swiper
                 ref={swiperRef}
                 spaceBetween={20}
                 slidesPerView={3}
-                loop={true}
-                modules={[Navigation, Pagination]}
+                loop={categories.length > 6}
+                modules={[Navigation, SwiperPagination]}
                 breakpoints={{
                   480: { slidesPerView: 3 },
                   640: { slidesPerView: 4 },
@@ -87,10 +117,10 @@ const Courses = () => {
                 {categories.map((category, index) => (
                   <SwiperSlide key={index}>
                     <div
-                      className={`cursor-pointer text-center py-3 px-4 rounded-full transition-all duration-300 whitespace-nowrap ${
+                      className={`cursor-pointer text-center py-3 px-4 rounded-full transition-all duration-300 border-2 whitespace-nowrap ${
                         activeCategory === category
-                          ? "bg-black text-white"
-                          : "bg-gray-700 text-gray-300"
+                          ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-900/40"
+                          : "bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500"
                       }`}
                       onClick={() => handleCategoryChange(category)}
                     >
@@ -100,17 +130,14 @@ const Courses = () => {
                 ))}
               </Swiper>
 
-              {/* Custom Navigation Buttons */}
               <div
-                className="absolute top-1/2 left-0 transform -translate-y-1/2 cursor-pointer text-xl text-white hover:text-blue-500"
-                style={{ zIndex: 10, left: "-30px" }}
+                className="absolute top-1/2 -left-12 transform -translate-y-1/2 cursor-pointer text-2xl text-gray-400 hover:text-white transition-colors"
                 onClick={() => swiperRef.current.swiper.slidePrev()}
               >
                 <FaChevronLeft />
               </div>
               <div
-                className="absolute top-1/2 right-0 transform -translate-y-1/2 cursor-pointer text-xl text-white hover:text-blue-500"
-                style={{ zIndex: 10, right: "-30px" }}
+                className="absolute top-1/2 -right-12 transform -translate-y-1/2 cursor-pointer text-2xl text-gray-400 hover:text-white transition-colors"
                 onClick={() => swiperRef.current.swiper.slideNext()}
               >
                 <FaChevronRight />
@@ -118,22 +145,37 @@ const Courses = () => {
             </div>
 
             {/* Courses Grid */}
-            {categoryCourses.length > 0 && (
-              <div>
-                <h3 className="text-2xl font-extrabold text-center mb-6">
-                  Top Courses in {activeCategory}
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {categoryCourses.slice(0, 12).map((course) => (
-                    <CourseCard
-                      key={course._id}
-                      course={course}
-                      layout="vertical"
-                    />
-                  ))}
+            <div className="min-h-[400px]">
+              {coursesLoading ? (
+                <div className="flex justify-center items-center h-64">
+                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
                 </div>
-              </div>
-            )}
+              ) : categoryCourses.length > 0 ? (
+                <>
+                  <h3 className="text-2xl font-extrabold text-center mb-10">
+                    Courses in {activeCategory}
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-8">
+                    {categoryCourses.map((course) => (
+                      <CourseCard
+                        key={course._id}
+                        course={course}
+                        layout="vertical"
+                      />
+                    ))}
+                  </div>
+                  <Pagination 
+                    currentPage={pagination.currentPage}
+                    totalPages={pagination.totalPages}
+                    onPageChange={handlePageChange}
+                    hasNextPage={pagination.hasNextPage}
+                    hasPrevPage={pagination.hasPrevPage}
+                  />
+                </>
+              ) : (
+                <p className="text-center text-gray-500 py-20">No courses found in this category.</p>
+              )}
+            </div>
           </>
         )}
       </div>

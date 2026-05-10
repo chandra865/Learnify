@@ -512,11 +512,26 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 const updateProfile = asyncHandler(async (req, res) => {
-  const userId = req.user.id; // Assuming user ID is extracted from JWT middleware
+  const userId = req.user._id; 
   const { name, profilePicture, bio, socialLinks } = req.body;
 
-  const newProfilePicture = await JSON.parse(profilePicture);
-  const newSocialLinks = await JSON.parse(socialLinks);
+  let newProfilePicture = profilePicture;
+  if (typeof profilePicture === "string") {
+    try {
+      newProfilePicture = JSON.parse(profilePicture);
+    } catch (e) {
+      // Keep as string if parsing fails
+    }
+  }
+
+  let newSocialLinks = socialLinks;
+  if (typeof socialLinks === "string") {
+    try {
+      newSocialLinks = JSON.parse(socialLinks);
+    } catch (e) {
+      // Keep as string if parsing fails
+    }
+  }
 
   // Update fields
   const updatedUser = await User.findByIdAndUpdate(

@@ -13,3 +13,4 @@ export const progressBaseUrl = `${baseUrl}/api/v1/progress`;
 export const quizBaseUrl = `${baseUrl}/api/v1/quizzes`;
 export const reviewBaseUrl = `${baseUrl}/api/v1/reviews`;
 export const transactionBaseUrl = `${baseUrl}/api/v1/transactions`;
+export const passwordResetBaseUrl = `${baseUrl}/api/v1/password-reset-requests`;

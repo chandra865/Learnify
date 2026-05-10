@@ -22,7 +22,7 @@ const router = Router();
 
 router.route("/").post(verifyJWT, isAuthorized("instructor"), validate(createLectureSchema), createLecture);
 router
-  .route("/:sectionId")
+  .route("/section/:sectionId")
   .get(verifyJWT, getLecturesBySection);
 router.route("/:lectureId").delete(verifyJWT, isAuthorized("instructor"), deleteLecture);
 router.route("/:lectureId").patch(verifyJWT, isAuthorized("instructor"), validate(updateLectureSchema), updateLecture);

@@ -12,13 +12,9 @@ const getUserEnrollments = asyncHandler(async (req, res) => {
     .populate("progress.completedLectures");
 
 
-  if (!enrollments) {
-    throw new ApiError(404, "enrollments not found");
-  }
-
   res
     .status(200)
-    .json(new ApiResponse(200, enrollments, "enrollments fetch successfully"));
+    .json(new ApiResponse(200, enrollments || [], "enrollments fetch successfully"));
 });
 
 // Mark a lecture as completed
@@ -94,29 +90,43 @@ const getEnrolledCourseCountForUser = asyncHandler(async (req, res) => {
 
 // Controller function to fetch all courses the user is enrolled in
 const getEnrolledCourses = asyncHandler(async (req, res) => {
-  const { userId } = req.params; // Get the userId from the URL parameters
+  const { userId } = req.params;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
 
-  // Find all enrollments for the user
-  const enrollments = await Enrollment.find({ user: userId }).populate({
-    path:"course",
-    select : "",
-    populate: {
+  const totalItems = await Enrollment.countDocuments({ user: userId });
+  const enrollments = await Enrollment.find({ user: userId })
+    .populate({
+      path: "course",
+      populate: {
         path: "instructor",
         select: "name",
-    },
-  }
+      },
+    })
+    .skip(skip)
+    .limit(limit);
+
+  const courses = (enrollments || []).map((enrollment) => enrollment.course);
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        list: courses,
+        pagination: {
+          totalItems,
+          totalPages,
+          currentPage: page,
+          limit,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+      },
+      "courses fetched successfully"
+    )
   );
-
-  if (!enrollments || enrollments.length === 0) {
-    throw new ApiError(404, "No courses found for this user.");
-  }
-
-  // Extract the course details from the populated enrollments
-  const courses = enrollments.map((enrollment) => enrollment.course);
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, courses, "courses fetched successfully"));
 });
 export {
   getUserEnrollments,

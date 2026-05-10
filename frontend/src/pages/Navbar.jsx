@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Menu, X } from "lucide-react";
+import { Search, Menu, X, ShoppingCart } from "lucide-react";
 import { useDispatch } from "react-redux";
 import CategoryMenu from "../component/CategoryMenu";
 import { toast } from "react-toastify";
@@ -11,14 +11,15 @@ import siteLogo from "../assets/logo.png";
 import { userBaseUrl } from "../utils/endpoints";
 
 const Navbar = () => {
-  const { status, userData } = useSelector((state) => state.user);
+  const { status, userData: user } = useSelector((state) => state.user);
+  const { cartItems } = useSelector((state) => state.cart);
   const [searchQuery, setSearchQuery] = useState("");
   const [switching, setSwitching] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const user = useSelector((state) => state.user.userData);
+
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -53,7 +54,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-gray-800 text-white p-4 drop-shadow-[0_4px_4px_rgba(255,255,255,0.25)] border-b-2">
+    <nav className="bg-gray-800 text-white p-4 drop-shadow-[0_4px_4px_rgba(255,255,255,0.25)] border-b-2 sticky top-0 z-[1000]">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center gap-6">
         <div className="flex flex-row justify-between items-center gap-4 md:gap-10">
@@ -144,15 +145,30 @@ const Navbar = () => {
                 </button>
               </li>
 
-              {/* Profile Picture only if student */}
+              {/* Profile Picture */}
+              <li>
+                <Link to="/dashboard/profile">
+                  <img
+                    src={user?.profilePicture?.url || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full object-cover border-2 border-white hover:scale-105 transition"
+                  />
+                </Link>
+              </li>
               {user?.role === "student" && (
                 <li>
-                  <Link to="dashboard/profile">
-                    <img
-                      src={user.profilePicture?.url || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
-                      alt="Profile"
-                      className="w-8 h-8 rounded-full object-cover border-2 border-white hover:scale-105 transition"
-                    />
+                  <Link
+                    to="/dashboard/cart"
+                    className="group p-2 rounded-full hover:bg-gray-700 transition flex items-center justify-center"
+                  >
+                    <div className="relative">
+                      <ShoppingCart className="h-6 w-6" />
+                      {cartItems.length > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-gray-800">
+                          {cartItems.length}
+                        </span>
+                      )}
+                    </div>
                   </Link>
                 </li>
               )}
@@ -213,24 +229,44 @@ const Navbar = () => {
                     ? "Switching..."
                     : `${user?.role === "student" ? "Instructor" : "Student"}`}
                 </button>
-                {user?.role === "student" && (
+                <li>
                   <Link
-                    to="dashboard/profile"
+                    to="/dashboard/profile"
                     className="block py-2 hover:bg-gray-700 rounded"
                   >
                     <img
-                      src={user.profilePicture?.url || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                      src={user?.profilePicture?.url || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
                       alt="Profile"
                       className="w-8 h-8 rounded-full object-cover border-2 border-white"
                     />
                   </Link>
+                </li>
+                {user?.role === "student" && (
+                  <li>
+                    <Link
+                      to="/dashboard/cart"
+                      className="block py-2 hover:bg-gray-700 rounded flex items-center gap-2"
+                    >
+                      <div className="relative">
+                        <ShoppingCart className="h-5 w-5" />
+                        {cartItems.length > 0 && (
+                          <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center border-1 border-gray-800">
+                            {cartItems.length}
+                          </span>
+                        )}
+                      </div>
+                      <span>Cart</span>
+                    </Link>
+                  </li>
                 )}
-                <Link
-                  to="/logout"
-                  className="block py-2 hover:bg-gray-700 rounded"
-                >
-                  Logout
-                </Link>
+                <li>
+                  <Link
+                    to="/logout"
+                    className="block py-2 hover:bg-gray-700 rounded"
+                  >
+                    Logout
+                  </Link>
+                </li>
               </>
             )}
           </ul>

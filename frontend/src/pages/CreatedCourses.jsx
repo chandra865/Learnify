@@ -1,14 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Loading from "../component/Loading";
-import StarRating from "../component/StarRating";
 import EditCourse from "./EditCourse";
 import PublishCourse from "../component/PublishCourse";
 import AddResources from "../component/AddResources";
 import CourseAnalytics from "../component/CourseAnalytics";
-import CommentsFeedback from "../component/CommentsFeedback";
 import { useDispatch } from "react-redux";
 import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 import { FaArrowLeft } from "react-icons/fa";
@@ -16,7 +14,6 @@ import Coupon from "../component/Coupon";
 import CourseCurriculum from "../component/CourseCurriculum";
 import { courseBaseUrl } from "../utils/endpoints";
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CreatedCourses = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,9 +32,8 @@ const CreatedCourses = () => {
           `${courseBaseUrl}/${userId}/instructor`,
           { withCredentials: true }
         );
-        console.log(response.data.data);
         setCourses(response.data.data);
-      } catch (err) {
+      } catch {
         toast.error("Failed to fetch courses");
       } finally {
         setLoading(false);
@@ -55,7 +51,6 @@ const CreatedCourses = () => {
     { key: "coupon", label: "Add Coupon" },
     { key: "publish", label: "Publish Course" },
     { key: "analytics", label: "Course Analytics" },
-    { key: "feedback", label: "Comments & Feedback" },
   ];  
 
 
@@ -80,8 +75,6 @@ const CreatedCourses = () => {
         return <Coupon/>;
       case "analytics":
         return <CourseAnalytics/>;
-      case "feedback":
-        return <CommentsFeedback/>;
       default:
         return <EditCourse/>;
     }

@@ -15,6 +15,9 @@ const selectedCourseSlice = createSlice({
       state.selectedCourse = null;
     },
   },
+  extraReducers: (builder) => {
+    builder.addCase("user/logout", () => initialState);
+  },
 });
 
 export const { setSelectedCourse, clearSelectedCourse } = selectedCourseSlice.actions;

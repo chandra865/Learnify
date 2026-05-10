@@ -2,6 +2,9 @@ import {z} from "zod";
 
 const createOrderSchema = z.object({
     amount: z.preprocess((val) => Number(val), z.number().min(1)),
+    type: z.enum(["single", "cart"]),
+    courseId: z.string().nullable(),
+    discountCode: z.string().nullable().optional(),
 });
 
 const verifyPaymentSchema = z.object({
@@ -13,7 +16,7 @@ const verifyPaymentSchema = z.object({
     courseId: z.string().optional(),
     amount: z.preprocess((val) => Number(val), z.number().min(1)),
     paymentMethod: z.string().min(1, "Payment method is required"),
-    discountCode: z.string().optional(),
+    discountCode: z.string().nullable().optional(),
 });
 
 export {

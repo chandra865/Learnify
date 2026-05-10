@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { login } from "../store/slice/userSlice";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import GoogleLogin from "../component/GoogleLogin";
 import { userBaseUrl } from "../utils/endpoints";
@@ -10,7 +10,6 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    role: "", // Default role
     email: "",
     password: "",
   });
@@ -32,25 +31,25 @@ const Login = () => {
           withCredentials: true, // Include credentials if needed
         }
       );
-      //console.log(response.data); // Log only response data
+
       const user = response.data.data.user;
       dispatch(login(user));
 
       if (user.role === "instructor") {
-        navigate("/dashboard/profile"); // Redirect to instructor dashboard
+        navigate("/dashboard/profile");
       } else {
-        navigate("/"); // Redirect to homepage
+        navigate("/");
       }
       toast.success(response.data.message);
     } catch (error) {
-      console.error(error.response?.data || "Request failed"); // Handle errors properly
+      console.error(error.response?.data || "Request failed");
       toast.error(error.response?.data.message || "Request failed");
     }
   };
 
   return (
-    <div className="flex justify-center items-center w-full min-h-screen bg-gray-600 text-white">
-      <div className="bg-gray-900 p-8 rounded shadow-lg w-96 mb-10">
+    <div className="flex justify-center items-center w-full min-h-screen bg-gray-900 text-white">
+      <div className="bg-gray-800 p-6 rounded shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email Field */}
@@ -81,7 +80,7 @@ const Login = () => {
             />
           </div>
           <p className="text-right text-sm text-blue-400 hover:underline mt-1">
-            <a href="/forgot-password">Forgot Password?</a>
+            <Link to="/forgot-password">Forgot Password?</Link>
           </p>
 
           {/* Submit Button */}
@@ -98,9 +97,9 @@ const Login = () => {
 
         <p className="text-center text-gray-400 mt-4">
           Don&apos;t have an account?{" "}
-          <a href="/register" className="text-blue-500 hover:underline">
+          <Link to="/register" className="text-blue-500 hover:underline">
             Register here
-          </a>
+          </Link>
         </p>
       </div>
     </div>

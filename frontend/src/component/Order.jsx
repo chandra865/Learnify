@@ -1,21 +1,34 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { transactionBaseUrl } from "../utils/endpoints";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import Pagination from "./Pagination";
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    totalPages: 1,
+    currentPage: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  });
 
   useEffect(() => {
     const fetchOrderHistory = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
           `${transactionBaseUrl}/history`,
-          { withCredentials: true }
+          { 
+            params: { page: currentPage, limit: 10 },
+            withCredentials: true 
+          }
         );
-        setOrders(response.data.data);
+        const { list, pagination: pagData } = response.data.data;
+        setOrders(list);
+        setPagination(pagData);
       } catch (err) {
         toast.error(
           err?.response?.data.message || "Error fetching order history"
@@ -26,7 +39,11 @@ const OrderHistory = () => {
     };
 
     fetchOrderHistory();
-  }, []);
+  }, [currentPage]);
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
 
   if (loading) return <div className="p-4">Loading...</div>;
 
@@ -80,6 +97,13 @@ const OrderHistory = () => {
               </div>
             </div>
           ))}
+          <Pagination 
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            onPageChange={handlePageChange}
+            hasNextPage={pagination.hasNextPage}
+            hasPrevPage={pagination.hasPrevPage}
+          />
         </div>
       )}
     </div>
