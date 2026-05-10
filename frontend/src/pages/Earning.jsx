@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import {
@@ -30,6 +30,7 @@ const monthNames = [
 import Pagination from "../component/Pagination";
 
 const Earning = () => {
+  const today = useMemo(() => new Date(), []);
   const [monthlyRevenue, setMonthlyRevenue] = useState([]);
   const [courseStats, setCourseStats] = useState([]);
   const [totalRevenue, setTotalRevenue] = useState(0);
@@ -44,6 +45,8 @@ const Earning = () => {
     hasNextPage: false,
     hasPrevPage: false,
   });
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
   const user = useSelector((state) => state.user.userData);
 
@@ -54,7 +57,7 @@ const Earning = () => {
         const response = await axios.get(
           `${transactionBaseUrl}/instructor/${user._id}`,
           { 
-            params: { page: currentPage, limit: 10 },
+            params: { page: currentPage, limit: 10, year: selectedYear },
             withCredentials: true 
           }
         );
@@ -67,24 +70,26 @@ const Earning = () => {
         setCoursesSold(stats.coursesSold || 0);
         setPagination(pagData);
 
-        // Process table data (current page only)
+        // Process table data (current page only) - Filtered by current instructor
         const courseMap = {};
         transactions.forEach((tx) => {
-          tx.courses.forEach((course) => {
-            const courseId = course._id;
-            if (!courseMap[courseId]) {
-              courseMap[courseId] = {
-                name: course.title,
-                originalPrice: course.price,
-                totalRevenue: 0,
-                students: new Set(),
-                rating: course.averageRating,
-                finalPrice: course.finalPrice || course.price,
-              };
-            }
-            courseMap[courseId].totalRevenue += course.finalPrice || course.price;
-            courseMap[courseId].students.add(tx.userId);
-          });
+          tx.courses
+            .filter((c) => c.instructor.toString() === user._id.toString())
+            .forEach((course) => {
+              const courseId = course._id;
+              if (!courseMap[courseId]) {
+                courseMap[courseId] = {
+                  name: course.title,
+                  originalPrice: course.price,
+                  totalRevenue: 0,
+                  students: new Set(),
+                  rating: course.averageRating,
+                  finalPrice: course.finalPrice || course.price,
+                };
+              }
+              courseMap[courseId].totalRevenue += course.finalPrice || course.price;
+              courseMap[courseId].students.add(tx.userId);
+            });
         });
 
         const courseStatsArr = Object.values(courseMap).map((course) => ({
@@ -94,19 +99,20 @@ const Earning = () => {
         }));
         setCourseStats(courseStatsArr);
 
-        // Note: Chart still expects full history which isn't paginated here.
-        // For now, it will only reflect the current page of data.
-        const earningsByMonth = Array(12).fill(0);
-        transactions.forEach(tx => {
-          const month = new Date(tx.createdAt).getMonth();
-          earningsByMonth[month] += tx.amount;
+        // Use backend monthly stats for chart
+        const monthlyData = monthNames.map((month, index) => {
+          const matchedMonth = stats.monthlyRevenue?.find(m => m._id === index + 1);
+          return {
+            month,
+            revenue: matchedMonth ? matchedMonth.revenue : 0,
+          };
         });
-        const monthlyData = monthNames.map((month, index) => ({
-          month,
-          revenue: earningsByMonth[index],
-        }));
         setMonthlyRevenue(monthlyData);
-        setThisMonthRevenue(earningsByMonth[new Date().getMonth()]);
+        
+        // Accurate current month revenue for selected year
+        const currentMonthIdx = today.getMonth();
+        const isCurrentYear = today.getFullYear() === selectedYear;
+        setThisMonthRevenue(isCurrentYear ? monthlyData[currentMonthIdx].revenue : 0);
 
       } catch (err) {
         console.error(err);
@@ -117,7 +123,7 @@ const Earning = () => {
     };
 
     if (user?._id) fetchInstructorCourseTransaction();
-  }, [user, currentPage]);
+  }, [user, currentPage, selectedYear, today]);
 
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
@@ -125,18 +131,38 @@ const Earning = () => {
 
   return (
     <div className="p-6 bg-gray-900 text-white min-h-screen">
-      <h1 className="text-2xl font-bold mb-6">Earnings Dashboard</h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h1 className="text-2xl font-bold">Earnings Dashboard - {selectedYear}</h1>
+        
+        <div className="flex items-center gap-2 bg-gray-800 p-2 rounded-lg border border-gray-700">
+          <label htmlFor="year-select" className="text-sm font-medium text-gray-400">Select Year:</label>
+          <select
+            id="year-select"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            className="bg-gray-900 text-white border-none outline-none cursor-pointer text-sm font-bold"
+          >
+            {years.map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
           {
-            label: "Total Earnings",
+            label: "Total Earnings (All-Time)",
             value: `₹${totalRevenue.toLocaleString()}`,
           },
           {
-            label: "Earnings This Month",
-            value: `₹${thisMonthRevenue.toLocaleString()}`,
+            label: today.getFullYear() === selectedYear 
+              ? `Earnings (${monthNames[today.getMonth()]} ${selectedYear})`
+              : `Total Earnings (${selectedYear})`,
+            value: today.getFullYear() === selectedYear
+              ? `₹${thisMonthRevenue.toLocaleString()}`
+              : `₹${monthlyRevenue.reduce((acc, curr) => acc + curr.revenue, 0).toLocaleString()}`,
           },
           { label: "Total Students", value: totalStudents },
           { label: "Courses Sold", value: coursesSold },
@@ -153,7 +179,7 @@ const Earning = () => {
 
       {/* Earnings Chart */}
       <div className="bg-gray-800 p-4 rounded-lg shadow-md mb-6">
-        <h2 className="text-lg font-semibold mb-4">Monthly Earnings</h2>
+        <h2 className="text-lg font-semibold mb-4">Monthly Earnings ({selectedYear})</h2>
         <ResponsiveContainer width="100%" height={250}>
           <LineChart data={monthlyRevenue}>
             <CartesianGrid strokeDasharray="3 3" stroke="gray" />

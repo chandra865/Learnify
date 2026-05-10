@@ -1,13 +1,14 @@
-import { Routes, Route, Navigate } from "react-router-dom"
+import { Routes, Route } from "react-router-dom"
 import Navbar from "./pages/Navbar"
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import { useEffect } from "react";
 import axios from "axios";
-import { useDispatch, useSelector } from "react-redux";
-import { login } from "./store/slice/userSlice";
+import { useDispatch } from "react-redux";
+import { login, logout, setLoading } from "./store/slice/userSlice";
 import { ToastContainer } from "react-toastify";
+import ProtectedRoute from "./component/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import EnrolledCourses from "./pages/EnrolledCourses";
 import CreatedCourses from "./pages/CreatedCourses";
@@ -35,11 +36,6 @@ import Order from "./component/Order";
 import { setCart } from "./store/slice/cartSlice";
 import { userBaseUrl, cartBaseUrl } from "./utils/endpoints";
 
-const ProtectedRoute = ({ children }) => {
-  const { status } = useSelector((state) => state.user);
-  if (!status) return <Navigate to="/login" replace />;
-  return children;
-};
 function App() {
   const location = useLocation();
   const hiddenNavbarPaths = ["/course-watch", "/quiz"];
@@ -65,6 +61,7 @@ function App() {
 
   useEffect(() => {
     const fetchUserData = async () => {
+      dispatch(setLoading(true));
       try {
         const response = await axios.get(`${userBaseUrl}/get-user`, {
           withCredentials: true,
@@ -82,6 +79,7 @@ function App() {
         }
       } catch {
         // console.error("Error fetching initial data");
+        dispatch(logout());
       }
     };
 
@@ -93,8 +91,22 @@ function App() {
     {!shouldHideNavbar && <Navbar />}
     <Routes>
       <Route path="/" element={<Home/>}/>
-      <Route path="/register" element={<Register/>}/>
-      <Route path="/login" element={<Login/>}/>
+      <Route 
+        path="/register" 
+        element={
+          <ProtectedRoute authentication={false}>
+            <Register/>
+          </ProtectedRoute>
+        }
+      />
+      <Route 
+        path="/login" 
+        element={
+          <ProtectedRoute authentication={false}>
+            <Login/>
+          </ProtectedRoute>
+        }
+      />
       <Route path="/course/enroll/:course_id" element={<CourseLandingPage/>}/>
       <Route 
         path="/dashboard" 
@@ -106,13 +118,34 @@ function App() {
       >
           <Route path="profile" element={<UserProfile/>} />
           <Route path="enrolled" element={<EnrolledCourses />} />
-          <Route path="created" element={<CreatedCourses />} />
+          <Route 
+            path="created" 
+            element={
+              <ProtectedRoute allowedRoles={["instructor"]}>
+                <CreatedCourses />
+              </ProtectedRoute>
+            } 
+          />
             
           <Route path="cart" element={<Cart/>}/>
           <Route path="order" element={<Order/>}/>
-          <Route path="create" element={<CreateCourse />} />
+          <Route 
+            path="create" 
+            element={
+              <ProtectedRoute allowedRoles={["instructor"]}>
+                <CreateCourse />
+              </ProtectedRoute>
+            } 
+          />
           
-          <Route path="earning" element={<Earning/>}/>
+          <Route 
+            path="earning" 
+            element={
+              <ProtectedRoute allowedRoles={["instructor"]}>
+                <Earning/>
+              </ProtectedRoute>
+            }
+          />
           
       </Route>
 
@@ -124,7 +157,14 @@ function App() {
           </ProtectedRoute>
         } 
       />
-      <Route path="/add-lecture/:courseId" element={<LectureForm/>} />
+      <Route 
+        path="/add-lecture/:courseId" 
+        element={
+          <ProtectedRoute allowedRoles={["instructor"]}>
+            <LectureForm/>
+          </ProtectedRoute>
+        } 
+      />
       <Route 
         path="/edit-profile" 
         element={
@@ -136,9 +176,30 @@ function App() {
       <Route path="/search" element={<SearchPage/>} />
       <Route path="/course-watch/:courseId/:sectionId/:lectureId" element = {<CoursePlayer/>}/>
       <Route path="/curri" element={<CourseCurriculum/>}/>
-      <Route path="/lecturemanage/:lectureId" element={<LectureManage/>}/>
-      <Route path="/forgot-password" element={<ForgotPassword/>} />
-      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route 
+        path="/lecturemanage/:lectureId" 
+        element={
+          <ProtectedRoute allowedRoles={["instructor"]}>
+            <LectureManage/>
+          </ProtectedRoute>
+        }
+      />
+      <Route 
+        path="/forgot-password" 
+        element={
+          <ProtectedRoute authentication={false}>
+            <ForgotPassword/>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/reset-password" 
+        element={
+          <ProtectedRoute authentication={false}>
+            <ResetPassword />
+          </ProtectedRoute>
+        } 
+      />
       <Route path="/quiz/:quizId" element={<QuizPage />} />
       <Route path="/logout" element={<Logout/>} />
 

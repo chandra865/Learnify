@@ -149,27 +149,29 @@ const Navbar = () => {
               <li>
                 <Link to="/dashboard/profile">
                   <img
-                    src={user.profilePicture?.url || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                    src={user?.profilePicture?.url || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
                     alt="Profile"
                     className="w-8 h-8 rounded-full object-cover border-2 border-white hover:scale-105 transition"
                   />
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/dashboard/cart"
-                  className="group p-2 rounded-full hover:bg-gray-700 transition flex items-center justify-center"
-                >
-                  <div className="relative">
-                    <ShoppingCart className="h-6 w-6" />
-                    {cartItems.length > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-gray-800">
-                        {cartItems.length}
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              </li>
+              {user?.role === "student" && (
+                <li>
+                  <Link
+                    to="/dashboard/cart"
+                    className="group p-2 rounded-full hover:bg-gray-700 transition flex items-center justify-center"
+                  >
+                    <div className="relative">
+                      <ShoppingCart className="h-6 w-6" />
+                      {cartItems.length > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-gray-800">
+                          {cartItems.length}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
                   to="/logout"
@@ -233,28 +235,30 @@ const Navbar = () => {
                     className="block py-2 hover:bg-gray-700 rounded"
                   >
                     <img
-                      src={user.profilePicture?.url || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                      src={user?.profilePicture?.url || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
                       alt="Profile"
                       className="w-8 h-8 rounded-full object-cover border-2 border-white"
                     />
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    to="/dashboard/cart"
-                    className="block py-2 hover:bg-gray-700 rounded flex items-center gap-2"
-                  >
-                    <div className="relative">
-                      <ShoppingCart className="h-5 w-5" />
-                      {cartItems.length > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center border-1 border-gray-800">
-                          {cartItems.length}
-                        </span>
-                      )}
-                    </div>
-                    <span>Cart</span>
-                  </Link>
-                </li>
+                {user?.role === "student" && (
+                  <li>
+                    <Link
+                      to="/dashboard/cart"
+                      className="block py-2 hover:bg-gray-700 rounded flex items-center gap-2"
+                    >
+                      <div className="relative">
+                        <ShoppingCart className="h-5 w-5" />
+                        {cartItems.length > 0 && (
+                          <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center border-1 border-gray-800">
+                            {cartItems.length}
+                          </span>
+                        )}
+                      </div>
+                      <span>Cart</span>
+                    </Link>
+                  </li>
+                )}
                 <li>
                   <Link
                     to="/logout"

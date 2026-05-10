@@ -201,7 +201,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
 
-  let query = {};
+  let query = { published: true }; // Only fetch published courses
   if (category) query.category = category;
 
   const totalItems = await Course.countDocuments(query);
@@ -392,7 +392,7 @@ const courseSearch = asyncHandler(async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
 
-  let query = {};
+  let query = { published: true }; // Only fetch published courses
 
   if (language) query.language = language;
   if (rating) query.averageRating = { $gte: Number(rating) };

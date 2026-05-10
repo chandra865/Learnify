@@ -277,6 +277,7 @@ const getUserInstructorTransactions = asyncHandler(async (req, res) => {
   const { instructorId } = req.params;
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
+  const year = parseInt(req.query.year) || new Date().getFullYear(); // Dynamic year from query
   const skip = (page - 1) * limit;
 
   const instructorCourses = await Course.find({ instructor: instructorId });
@@ -291,12 +292,53 @@ const getUserInstructorTransactions = asyncHandler(async (req, res) => {
         status: "success"
       } 
     },
+    // Unwind to handle individual courses within a transaction
+    { $unwind: "$courses" },
+    // Filter to only include this instructor's courses
+    { 
+      $match: { 
+        courses: { $in: instructorCourseIds.map(id => new mongoose.Types.ObjectId(id)) } 
+      } 
+    },
+    // Join with Course model to get the price
     {
-      $group: {
-        _id: null,
-        totalRevenue: { $sum: "$amount" },
-        totalTransactions: { $sum: 1 },
-        studentIds: { $addToSet: "$userId" }
+      $lookup: {
+        from: "courses",
+        localField: "courses",
+        foreignField: "_id",
+        as: "courseInfo"
+      }
+    },
+    { $unwind: "$courseInfo" },
+    {
+      $facet: {
+        summary: [
+          {
+            $group: {
+              _id: null,
+              totalRevenue: { $sum: "$courseInfo.finalPrice" },
+              totalTransactions: { $sum: 1 }, 
+              studentIds: { $addToSet: "$userId" }
+            }
+          }
+        ],
+        monthlyRevenue: [
+          {
+            $match: {
+              createdAt: {
+                $gte: new Date(year, 0, 1),
+                $lte: new Date(year, 11, 31, 23, 59, 59)
+              }
+            }
+          },
+          {
+            $group: {
+              _id: { $month: "$createdAt" },
+              revenue: { $sum: "$courseInfo.finalPrice" }
+            }
+          },
+          { $sort: { "_id": 1 } }
+        ]
       }
     }
   ]);
@@ -320,7 +362,8 @@ const getUserInstructorTransactions = asyncHandler(async (req, res) => {
   }
 
   const totalPages = Math.ceil(totalItems / limit);
-  const resultStats = stats[0] || { totalRevenue: 0, totalTransactions: 0, studentIds: [] };
+  const resultStats = stats[0]?.summary[0] || { totalRevenue: 0, totalTransactions: 0, studentIds: [] };
+  const monthlyRevenue = stats[0]?.monthlyRevenue || [];
 
   return res.status(200).json(
     new ApiResponse(
@@ -330,7 +373,8 @@ const getUserInstructorTransactions = asyncHandler(async (req, res) => {
         stats: {
           totalRevenue: resultStats.totalRevenue,
           coursesSold: resultStats.totalTransactions,
-          totalStudents: resultStats.studentIds.length
+          totalStudents: resultStats.studentIds.length,
+          monthlyRevenue: monthlyRevenue
         },
         pagination: {
           totalItems,
