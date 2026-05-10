@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { login } from "../store/slice/userSlice";
+import { userBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const EditProfile = () => {
   const dispatch = useDispatch();
@@ -55,8 +56,8 @@ const EditProfile = () => {
     formData.append("socialLinks",JSON.stringify(socialLinks));
     console.log(profilePicture);
     try{
-      const response = await axios.post(
-        `${API_BASE_URL}/api/v1/user/update-profile`,
+      const response = await axios.put(
+        `${userBaseUrl}/profile`,
         formData,
         {
           withCredentials: true,

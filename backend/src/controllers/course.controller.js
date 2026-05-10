@@ -143,7 +143,7 @@ const addLecture = asyncHandler(async (req, res) => {
 });
 
 const instructorCourses = asyncHandler(async (req, res) => {
-  const instructorId = req.user._id;
+  const instructorId = req.params.instructorId;
 
   const courses = await Course.find({ instructor: instructorId });
 
@@ -186,8 +186,9 @@ const courseEnrollment = asyncHandler(async (req, res) => {
 });
 
 const stuCourses = asyncHandler(async (req, res) => {
+  const studentId = req.params.studentId;
   // Fetch user and populate enrolledCourses with full course details
-  const user = await User.findById(req.user._id).populate("enrolledCourses");
+  const user = await User.findById(studentId).populate("enrolledCourses");
 
   if (!user) throw new ApiError(404, "User not found");
 

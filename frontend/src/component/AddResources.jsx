@@ -5,6 +5,7 @@ import axios from "axios";
 import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 import CreateQuiz from "./CreateQuiz";
 import { toast } from "react-toastify";
+import { quizBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const AddResources = () => {
@@ -19,7 +20,7 @@ const AddResources = () => {
   const fetchQuizzes = async () => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/v1/quiz/get-all-quiz/${
+        `${quizBaseUrl}/get-all-quiz/${
           course._id
         }?quizFor=${"course"}`,
         {
@@ -56,7 +57,7 @@ const AddResources = () => {
   const deleteQuiz = async (quizId) => {
     try {
       await axios.delete(
-        `${API_BASE_URL}/api/v1/quiz/delete-quiz/${quizId}`,
+        `${quizBaseUrl}/${quizId}`,
         {
           withCredentials: true,
         }

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { courseBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const LectureForm = () => {
   const { courseId } = useParams();
@@ -19,7 +20,7 @@ const LectureForm = () => {
     e.preventDefault();
     try {
       await axios.post(
-        `${API_BASE_URL}/api/v1/course/add-lecture/${courseId}`,
+        `${courseBaseUrl}/lectures/${courseId}`,
         lectureData,
         { withCredentials: true }
       );

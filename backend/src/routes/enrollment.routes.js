@@ -9,9 +9,9 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.route("/get-course-enrollment/:courseId").get(verifyJWT, getEnrollmentCountForCourse);
-router.route("/get-user-enrollment/:userId").get(verifyJWT, getEnrolledCourseCountForUser);
-router.route("/check-user-enrollment/:userId/:courseId").get(verifyJWT, checkUserEnrollment);
-router.route("/get-enrolled-courses/:userId").get(verifyJWT, getEnrolledCourses);
+router.route("/course/:courseId").get(verifyJWT, getEnrollmentCountForCourse);
+router.route("/user/:userId").get(verifyJWT, getEnrolledCourseCountForUser);
+router.route("/:userId/:courseId").get(verifyJWT, checkUserEnrollment);
+router.route("/:userId").get(verifyJWT, getEnrolledCourses);
 
 export default router;

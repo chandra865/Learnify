@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { FaStar } from "react-icons/fa";
 import { useSelector } from "react-redux";
+import { reviewBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 import { toast } from "react-toastify";
 const AddReview = () => {
@@ -14,7 +15,7 @@ const AddReview = () => {
   const submitReview = async () => {
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/api/v1/review/add-review`,
+        `${reviewBaseUrl}`,
         { courseId, rating, comment },
         { withCredentials: true }
       );

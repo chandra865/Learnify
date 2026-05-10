@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { courseBaseUrl, quizBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const QuizPage = () => {
@@ -18,7 +19,7 @@ const QuizPage = () => {
     const fetchQuiz = async () => {
       try {
         const res = await axios.get(
-          `${API_BASE_URL}/api/v1/quiz/get-quiz/${quizId}`,
+          `${quizBaseUrl}/${quizId}`,
           { withCredentials: true }
         );
         setQuiz(res.data.data);
@@ -50,7 +51,7 @@ const QuizPage = () => {
     if (quiz.course && calculated >= quiz.passingScore) {
       try {
         const response = await axios.post(
-          `${API_BASE_URL}/api/v1/course/complete-quiz`,
+          `${courseBaseUrl}/quiz`,
           {
             courseId: quiz.course,
           },

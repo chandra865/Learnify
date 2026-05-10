@@ -5,6 +5,7 @@ import axios from "axios";
 import StarRating from "./StarRating";
 import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { courseBaseUrl, transactionBaseUrl} from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Payment = () => {
@@ -17,7 +18,7 @@ const Payment = () => {
   const fetchCourse = async () => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/v1/course/fetchcourse/${courseId}`,
+        `${courseBaseUrl}/${courseId}`,
         { withCredentials: true }
       );
       setCourse(response.data.data);
@@ -35,7 +36,7 @@ const Payment = () => {
     try {
       // 1. Create Razorpay Order
       const orderResponse = await axios.post(
-        `${API_BASE_URL}/api/v1/transaction/create-order`,
+        `${transactionBaseUrl}/order`,
         { amount: course.price === course.finalPrice ? course.price : course.finalPrice },
         { withCredentials: true }
       );
@@ -54,8 +55,8 @@ const Payment = () => {
 
           // 2. Verify Payment
           const res = await axios.post(
-            `${API_BASE_URL}/api/v1/transaction/verify-payment`,
-            {
+              `${transactionBaseUrl}/payment`,
+              {
               razorpay_payment_id,
               razorpay_order_id,
               razorpay_signature,

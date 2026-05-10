@@ -35,7 +35,7 @@ import { useLocation } from "react-router-dom";
 import UserProfile from "./pages/UserProfile";
 import QuizPage from "./pages/QuizPage";
 import Order from "./component/Order";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { userBaseUrl } from "./utils/endpoints";
 function App() {
   const location = useLocation();
   const hiddenNavbarPaths = ["/course-watch",  "/quiz"];
@@ -50,7 +50,7 @@ function App() {
     const fetchData = async () =>{
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/user/getuser`,
+          `${userBaseUrl}/get-user`,
           {
             withCredentials: true, // Include credentials if needed
           }

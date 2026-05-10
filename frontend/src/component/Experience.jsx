@@ -4,7 +4,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { userBaseUrl } from "../utils/endpoints";
 
 const Experience = () => {
   const [experience, setExperience] = useState([]);
@@ -25,7 +25,7 @@ const Experience = () => {
   const fetchExperience = async () => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/v1/user/get-experience`,
+        `${userBaseUrl}/experiences`,
         {
           withCredentials: true,
         }
@@ -41,9 +41,8 @@ const Experience = () => {
   const handleAddOrUpdateExperience = async () => {
     try {
       const url = editingId
-        ? `${API_BASE_URL}/api/v1/user/update-experience/${editingId}`
-        : `${API_BASE_URL}/api/v1/user/add-experience`;
-
+        ? `${userBaseUrl}/experiences/${editingId}`
+        : `${userBaseUrl}/experiences`;
       const payload = { 
         ...formData,
         startYear: formData.startYear.getFullYear(),
@@ -84,7 +83,7 @@ const Experience = () => {
   const handleDelete = async (expId) => {
     try {
       await axios.delete(
-        `${API_BASE_URL}/api/v1/user/delete-experience/${expId}`,
+        `${userBaseUrl}/experiences/${expId}`,
         {
           withCredentials: true,
         }

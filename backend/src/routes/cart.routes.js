@@ -6,8 +6,8 @@ import { addCartSchema } from "../schema/cart.schema.js";
 
 const router = Router();
 
-router.route("/add-cart").post(verifyJWT, validate(addCartSchema), addCart);
-router.route("/get-cart/:userId").get(verifyJWT, getCart);
-router.route("/remove-from-cart/:userId/:courseId").get(verifyJWT, removeFromCart);
+router.route("/").post(verifyJWT, validate(addCartSchema), addCart);
+router.route("/:userId").get(verifyJWT, getCart);
+router.route("/:userId/:courseId").patch(verifyJWT, removeFromCart);
 
 export default router;

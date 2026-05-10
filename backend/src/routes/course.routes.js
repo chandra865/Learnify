@@ -30,33 +30,33 @@ router
   .post(verifyJWT, isAuthorized("instructor"), validate(createCourseSchema), createCourse);
 
 router
-  .route("/Add-lecture/:courseId")
+  .route("/lectures/:courseId")
   .post(verifyJWT, isAuthorized("instructor"), validate(addLectureSchema), addLecture);
 
 router
-  .route("/inst-courses")
+  .route("/:instructorId/instructor")
   .get(verifyJWT, isAuthorized("instructor"), instructorCourses);
 
 router
-  .route("/enrolle/:courseId")
+  .route("/:courseId/enrollments")
   .post(verifyJWT, isAuthorized("student"), courseEnrollment);
 
 router
-  .route("/stu-courses")
+  .route("/:studentId/student")
   .get(verifyJWT, isAuthorized("student"), stuCourses);
 
 //pagenatation and sorting
-router.route("/all-courses").get(getAllCourses);
-router.route("/fetchcourse/:courseId").get(getCourse);
+router.route("/").get(getAllCourses);
+router.route("/:courseId").get(getCourse);
 
 //pagenatation and sorting
 router.route("/lectures/:courseId").get(verifyJWT, getLectures);
 router
-  .route("/change-publish-status/:courseId")
+  .route("/status/:courseId")
   .patch(verifyJWT, isAuthorized("instructor"), changePublishStatus);
 
 router
-    .route("/update-course/:courseId")
+    .route("/:courseId")
     .patch(verifyJWT, isAuthorized("instructor"), validate(updateCourseSchema), updateCourse);
 
 //pagenatation and sorting
@@ -65,9 +65,9 @@ router
 
 //pagenatation and sorting
 router
-    .route("/course-search").get(courseSearch);
+    .route("/search").get(courseSearch);
 router
-    .route("/complete-quiz")
+    .route("/quiz")
     .post(verifyJWT, isAuthorized("student"), validate(completeQuizSchema), completeQuiz);
 
 

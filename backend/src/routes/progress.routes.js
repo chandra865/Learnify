@@ -12,9 +12,9 @@ import { updateProgressSchema, markLectureCompleteSchema } from "../schema/progr
 
 const router = Router();
 
-router.route("/update-progress").post(verifyJWT, validate(updateProgressSchema), updateProgress);
-router.route("/get-progress/:userId/:courseId").get(verifyJWT, getProgress);
-router.route("/get-certificate/:userId/:courseId").get(verifyJWT, getCertificate);
+router.route("/").post(verifyJWT, validate(updateProgressSchema), updateProgress);
+router.route("/:userId/:courseId").get(verifyJWT, getProgress);
+router.route("/certificate/:userId/:courseId").get(verifyJWT, getCertificate);
 router.route("/complete").post(verifyJWT, validate(markLectureCompleteSchema), markLectureComplete);
 router.route("/uncomplete").post(verifyJWT, validate(markLectureCompleteSchema), unmarkLectureComplete);
 

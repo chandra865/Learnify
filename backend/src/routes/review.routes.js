@@ -7,8 +7,8 @@ import { addReviewSchema } from "../schema/review.schema.js";
 
 const router = Router();
 
-router.route("/add-review").post(verifyJWT, validate(addReviewSchema), addReview);
-router.route("/get-review/:courseId").get(getCourseReviews);
-router.route("/delete-review").delete(verifyJWT, deleteReview);
+router.route("/").post(verifyJWT, validate(addReviewSchema), addReview);
+router.route("/:courseId").get(getCourseReviews);
+router.route("/").delete(verifyJWT, deleteReview);
 
 export default router;

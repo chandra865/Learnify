@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-
+import { progressBaseUrl } from "../utils/endpoints"
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const ProgressBar = ({ userId, courseId }) => {
   const [progress, setProgress] = useState(0);
@@ -9,7 +9,7 @@ const ProgressBar = ({ userId, courseId }) => {
     const fetchProgress = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/progress/get-progress/${userId}/${courseId}`,
+          `${progressBaseUrl}/${userId}/${courseId}`,
           {
             withCredentials:true
           }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { categoryBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const CategoryMenu = () => {
@@ -16,7 +17,7 @@ const CategoryMenu = () => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/category/get-categories`
+          `${categoryBaseUrl}`
         );
         setCategories(response.data.data);
       } catch (error) {

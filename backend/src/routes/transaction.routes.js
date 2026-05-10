@@ -12,13 +12,13 @@ import { createOrderSchema, verifyPaymentSchema } from "../schema/transaction.sc
 
 const router = Router();
 
-router.route("/create-order").post(verifyJWT, validate(createOrderSchema), createOrder);
-router.route("/verify-payment").post(verifyJWT, validate(verifyPaymentSchema), verifyPayment);
+router.route("/order").post(verifyJWT, validate(createOrderSchema), createOrder);
+router.route("/payment").post(verifyJWT, validate(verifyPaymentSchema), verifyPayment);
 router
-  .route("/get-user-instructor-transactions/:instructorId")
+  .route("/instructor/:instructorId")
   .get(verifyJWT, getUserInstructorTransactions);
 router
-  .route("/get-course-transactions/:courseId")
+  .route("/course/:courseId")
   .get(verifyJWT, getCourseTransactions);
-router.route("/get-order-history").get(verifyJWT, getOrderHistory);
+router.route("/history").get(verifyJWT, getOrderHistory);
 export default router;

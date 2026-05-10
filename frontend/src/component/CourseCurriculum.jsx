@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { sectionBaseUrl, lectureBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CourseCurriculum = () => {
   const [sections, setSections] = useState([]);
@@ -40,7 +41,7 @@ const CourseCurriculum = () => {
   const fetchSection = async () => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/v1/section/get-section-by-course/${courseId}`,
+        `${sectionBaseUrl}/${courseId}`,
         {
           withCredentials: true,
         }
@@ -67,7 +68,7 @@ const CourseCurriculum = () => {
     }
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/api/v1/section/add-section`,
+        `${sectionBaseUrl}`,
         {
           title: sectionTitle,
           courseId,
@@ -90,7 +91,7 @@ const CourseCurriculum = () => {
   const handleUpdateSection = async (sectionId) => {
     try {
       const response = await axios.patch(
-        `${API_BASE_URL}/api/v1/section/update-section/${sectionId}`,
+        `${sectionBaseUrl}/${sectionId}`,
         {
           title: editedTitle,
         },
@@ -112,7 +113,7 @@ const CourseCurriculum = () => {
   const handleDeleteSection = async (sectionId) => {
     try {
       const response = await axios.delete(
-        `${API_BASE_URL}/api/v1/section/delete-section/${sectionId}`,
+        `${sectionBaseUrl}/${sectionId}`,
         {
           withCredentials: true,
         }
@@ -160,7 +161,7 @@ const CourseCurriculum = () => {
     try {
       // Step 1: Request signed URL from the backend
       const response = await axios.post(
-        `${API_BASE_URL}/api/v1/lecture/upload-signed-aws-url`,
+        `${lectureBaseUrl}/upload-signed-aws-url`,
         {
           courseId,
           sectionId,
@@ -199,7 +200,7 @@ const CourseCurriculum = () => {
         toast.success("Video uploaded successfully!");
         try {
           const response = await axios.post(
-            `${API_BASE_URL}/api/v1/lecture/add-video-lecture`,
+            `${lectureBaseUrl}/video`,
             {
               videoFileName: file.name,
               duration,
@@ -242,7 +243,7 @@ const CourseCurriculum = () => {
     formData.append("isFree", lectureForms.isFree || false);
     try {
       const response = await axios.post(
-       `${API_BASE_URL}/api/v1/lecture/add-lecture`,
+       `${lectureBaseUrl}`,
         formData,
         {
           withCredentials: true,
@@ -266,7 +267,7 @@ const CourseCurriculum = () => {
   const handleUpdateLecture = async (lectureId) => {
     try {
       const response = await axios.patch(
-        `${API_BASE_URL}/api/v1/lecture/update-lecture/${lectureId}`,
+        `${lectureBaseUrl}/${lectureId}`,
         {
           title: editedLectureTitle,
         },
@@ -287,7 +288,7 @@ const CourseCurriculum = () => {
   const handleDeleteLecture = async (lectureId, sectionId) => {
     try {
       const response = await axios.delete(
-        `${API_BASE_URL}/api/v1/lecture/delete-lecture`,
+        `${lectureBaseUrl}/${lectureId}`,
         {
           params: {
             lectureId,
@@ -308,7 +309,7 @@ const CourseCurriculum = () => {
   const handleFileDelete = async (lectureId, sectionId) => {
     try {
       const response = await axios.delete(
-        `${API_BASE_URL}/api/v1/lecture/delete-video`,
+        `${lectureBaseUrl}/video`,
         {
           params: {
             lectureId,

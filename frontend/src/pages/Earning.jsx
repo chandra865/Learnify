@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { toast } from "react-toastify";
+import { transactionBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const monthNames = [
   "Jan",
@@ -41,7 +42,7 @@ const Earning = () => {
     const fetchInstructorCourseTransaction = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/transaction/get-user-instructor-transactions/${user._id}`,
+          `${transactionBaseUrl}/instructor/${user._id}`,
           { withCredentials: true }
         );
 

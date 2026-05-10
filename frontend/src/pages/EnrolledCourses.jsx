@@ -10,6 +10,7 @@ import { CircularProgressbar } from "react-circular-progressbar";
 import { toast } from "react-toastify";
 import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 import { useDispatch } from "react-redux";
+import { enrollmentBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const EnrolledCourses = () => {
@@ -23,7 +24,7 @@ const EnrolledCourses = () => {
     const fetchEnrolledCourses = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/enrollment/get-enrolled-courses/${userId}`,
+          `${enrollmentBaseUrl}/${userId}`,
           { withCredentials: true }
         );
 

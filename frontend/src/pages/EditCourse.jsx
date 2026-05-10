@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 import { toast } from "react-toastify";
+import { courseBaseUrl, categoryBaseUrl } from "../utils/endpoints";
+
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const EditCourse = () => {
   const [courses, setCourses] = useState([]);
@@ -53,7 +55,7 @@ const EditCourse = () => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/category/get-categories`
+          `${categoryBaseUrl}`
         ); // Adjust API endpoint as needed
         setCategories(response.data.data);
       } catch (error) {
@@ -68,7 +70,7 @@ const EditCourse = () => {
   const fetchCreatedCourses = async () => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/v1/course/fetchcourse/${courseId}`,
+        `${courseBaseUrl}/${courseId}`,
         { withCredentials: true }
       );
       
@@ -146,7 +148,7 @@ const EditCourse = () => {
       formData.append("courseIncludes", courseIncludes.join(","));
       
       const response = await axios.patch(
-        `${API_BASE_URL}/api/v1/course/update-course/${courseId}`,
+        `${courseBaseUrl}/${courseId}`,
         formData,
         {
           withCredentials: true,

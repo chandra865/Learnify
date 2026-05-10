@@ -25,16 +25,13 @@ const updateCourseSchema = z.object({
     certificateOption: z.string().min(1, "Certificate option is required").optional(),
     whatYouWillLearn: z.string().optional(),
     courseIncludes: z.string().optional(),
-    thumbnail: z.string().optional(),
-    videoFile: z.string().optional(),
+    thumbnail: z.string(),
+    videoFile: z.string(),
 })
 
 const addLectureSchema = z.object({
     title: z.string().min(1, "Title is required"),
-    isFree: z.preprocess((val) => {
-        if (typeof val === "string") return val === "true";
-        return val;
-    }, z.boolean().optional()),
+    isFree: z.string(),
     videoFile: z.string().min(1, "Video file is required"),
 })
 

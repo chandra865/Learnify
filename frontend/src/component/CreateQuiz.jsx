@@ -4,6 +4,7 @@ import axios from "axios";
 import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import { FaArrowLeft } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { quizBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CreateQuiz = ({ courseId, lectureId, type }) => {
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ const CreateQuiz = ({ courseId, lectureId, type }) => {
 
     try {
       await axios.post(
-        `${API_BASE_URL}/api/v1/quiz/create-quiz?quizFor=${type}`,
+        `${quizBaseUrl}?quizFor=${type}`,
         {
           title: quizTitle,
           courseId,

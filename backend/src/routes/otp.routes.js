@@ -4,6 +4,6 @@ import { validate } from '../middlewares/validation.js';
 import { sendOtpSchema, verifyOtpSchema } from '../schema/otp.schema.js';
 
 const router = Router();
-router.route('/send-otp').post(validate(sendOtpSchema), sendOtp);
-router.route('/verify-otp').post(validate(verifyOtpSchema), verifyOtp);
+router.route('/send').post(validate(sendOtpSchema), sendOtp);
+router.route('/verify').post(validate(verifyOtpSchema), verifyOtp);
 export default router;

@@ -6,5 +6,5 @@ import { uploadMediaSchema } from '../schema/media.schema.js';
 
 const router = Router();
 
-router.route('/upload-media').post(verifyJWT, validate(uploadMediaSchema), uploadMedia);
+router.route('/upload-media').post(verifyJWT, isAuthorized("instructor"), validate(uploadMediaSchema), uploadMedia);
 export default router;

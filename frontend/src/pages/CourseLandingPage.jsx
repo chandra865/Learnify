@@ -20,6 +20,7 @@ import {
   FaGlobe,
 } from "react-icons/fa";
 import InstructorProfile from "../component/InstructorProfile";
+import { courseBaseUrl, enrollmentBaseUrl, sectionBaseUrl, cartBaseUrl } from "../utils/endpoints";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CourseLandingPage = () => {
@@ -56,7 +57,7 @@ const CourseLandingPage = () => {
   const checkEnrollment = async () => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/v1/enrollment/check-user-enrollment/${user._id}/${course_id}`,
+        `${enrollmentBaseUrl}/${user._id}/${course_id}`,
         {
           withCredentials: true,
         }
@@ -78,7 +79,7 @@ const CourseLandingPage = () => {
     const fetchCourse = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/course/fetchcourse/${course_id}`,
+          `${courseBaseUrl}/${course_id}`,
           { withCredentials: true }
         );   
         setCourse(response.data.data);
@@ -97,7 +98,7 @@ const CourseLandingPage = () => {
     const fetchSection = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/section/get-section-by-course/${course_id}`,
+          `${sectionBaseUrl}/${course_id}`,
           {
             withCredentials: true,
           }
@@ -125,7 +126,7 @@ const CourseLandingPage = () => {
   const handleCart = async (price) => {
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/api/v1/cart/add-cart`,
+        `${cartBaseUrl}`,
         {
           userId: user._id,
           courseId: course_id,

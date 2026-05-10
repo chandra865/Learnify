@@ -17,6 +17,7 @@ import VideoPlayer1 from "../component/VideoPlayer1";
 import GiveQuiz from "../component/GiveQuiz";
 import logo from "../assets/logo.png";
 import { toast } from "react-toastify";
+import { progressBaseUrl, sectionBaseUrl, lectureBaseUrl, quizBaseUrl} from "../utils/endpoints";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -48,7 +49,7 @@ const CoursePlayer = () => {
     const fetchSection = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/section/get-section-by-course/${courseId}`,
+          `${sectionBaseUrl}/${courseId}`,
           { withCredentials: true }
         );
         setCourseContent(response.data.data);
@@ -72,7 +73,7 @@ const CoursePlayer = () => {
     const fetchVideoUrl = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/lecture/get-lecture/${lectureId}`,
+          `${lectureBaseUrl}/${lectureId}`,
           { withCredentials: true }
         );
         setVideoUrl(response.data.data.videoUrl);
@@ -90,7 +91,7 @@ const CoursePlayer = () => {
     const checkQuizTaken = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/quiz/has-completed-quiz`,
+          `${quizBaseUrl}/completed`,
           {
             params: { courseId: courseId },
             withCredentials: true,
@@ -116,7 +117,7 @@ const CoursePlayer = () => {
 
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/progress/get-progress/${userId}/${courseId}`,
+          `${progressBaseUrl}/${userId}/${courseId}`,
           { withCredentials: true }
         );
 
@@ -148,7 +149,7 @@ const CoursePlayer = () => {
     const saveProgress = async () => {
       try {
         const response = await axios.post(
-          `${API_BASE_URL}/api/v1/progress/update-progress`,
+          `${progressBaseUrl}`,
           {
             userId,
             courseId,
@@ -189,7 +190,7 @@ const CoursePlayer = () => {
   const handleMarkUncomplete = async (lectureId) => {
     try {
       await axios.post(
-        `${API_BASE_URL}/api/v1/progress/uncomplete`,
+        `${progressBaseUrl}/uncomplete`,
         {
           userId: user._id,
           courseId,
@@ -219,7 +220,7 @@ const CoursePlayer = () => {
   const handleMarkComplete = async (lectureId) => {
     try {
       await axios.post(
-        `${API_BASE_URL}/api/v1/progress/complete`,
+        `${progressBaseUrl}/complete`,
         {
           userId: user._id,
           courseId,
@@ -251,7 +252,7 @@ const CoursePlayer = () => {
   const handleDownloadCertificate = async () => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/v1/progress/get-certificate/${userId}/${courseId}`,
+        `${progressBaseUrl}/certificate/${userId}/${courseId}`,
         {
           withCredentials: true,
           responseType: "blob",

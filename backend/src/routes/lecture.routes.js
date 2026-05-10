@@ -20,15 +20,15 @@ import {
 
 const router = Router();
 
-router.route("/add-lecture").post(verifyJWT, isAuthorized("instructor"), validate(createLectureSchema), createLecture);
+router.route("/").post(verifyJWT, isAuthorized("instructor"), validate(createLectureSchema), createLecture);
 router
-  .route("/get-lecture-by-section/:sectionId")
+  .route("/:sectionId")
   .get(verifyJWT, getLecturesBySection);
-router.route("/delete-lecture").delete(verifyJWT, isAuthorized("instructor"), deleteLecture);
-router.route("/update-lecture/:lectureId").patch(verifyJWT, isAuthorized("instructor"), validate(updateLectureSchema), updateLecture);
-router.route("/add-video-lecture").post(verifyJWT,isAuthorized("instructor"), validate(addVideoSchema), addVideoToLecture);
+router.route("/:lectureId").delete(verifyJWT, isAuthorized("instructor"), deleteLecture);
+router.route("/:lectureId").patch(verifyJWT, isAuthorized("instructor"), validate(updateLectureSchema), updateLecture);
+router.route("/video").post(verifyJWT,isAuthorized("instructor"), validate(addVideoSchema), addVideoToLecture);
 router.route("/upload-signed-aws-url").post(verifyJWT, validate(uploadAwsSchema), uploadToAwsBucket);
-router.route("/delete-video").delete(verifyJWT, isAuthorized("instructor"), deleteVideo);
-router.route("/get-lecture/:lectureId").get(verifyJWT, getLecture);
+router.route("/video").delete(verifyJWT, isAuthorized("instructor"), deleteVideo);
+router.route("/:lectureId").get(verifyJWT, getLecture);
 
 export default router;

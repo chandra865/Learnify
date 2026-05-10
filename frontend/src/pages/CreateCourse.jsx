@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { courseBaseUrl, categoryBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CreateCourse = () => {
   const defaultPreview =
@@ -50,7 +51,7 @@ const CreateCourse = () => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/category/get-categories`
+          `${categoryBaseUrl}`
         ); // Adjust API endpoint as needed
         setCategories(response.data.data);
       } catch (error) {
@@ -81,7 +82,7 @@ const CreateCourse = () => {
       formData.append("videoFile", videoFile);
       formData.append("certificateOption", certificateOption);
       const response = await axios.post(
-        `${API_BASE_URL}/api/v1/course/Add-course`,
+        `${courseBaseUrl}`,
         formData,
         {
           withCredentials: true,

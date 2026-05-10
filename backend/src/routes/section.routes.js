@@ -6,8 +6,8 @@ import { createSectionSchema, updateSectionSchema } from "../schema/section.sche
 
 const router = Router();
 
-router.route("/add-section").post(verifyJWT, isAuthorized("instructor"), validate(createSectionSchema), createSection);
-router.route("/get-section-by-course/:courseId").get( getSectionsByCourse);
-router.route("/delete-section/:sectionId").delete(verifyJWT, isAuthorized("instructor"), deleteSection);
-router.route("/update-section/:sectionId").patch(verifyJWT, isAuthorized("instructor"), validate(updateSectionSchema), updateSection);
+router.route("/").post(verifyJWT, isAuthorized("instructor"), validate(createSectionSchema), createSection);
+router.route("/:courseId").get( getSectionsByCourse);
+router.route("/:sectionId").delete(verifyJWT, isAuthorized("instructor"), deleteSection);
+router.route("/:sectionId").patch(verifyJWT, isAuthorized("instructor"), validate(updateSectionSchema), updateSection);
 export default router;

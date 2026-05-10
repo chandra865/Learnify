@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import CourseCard from "../component/CourseCard";
 import { toast } from "react-toastify";
+import { courseBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL; //Base URL for API
 
 const SearchPage = () => {
@@ -27,7 +28,7 @@ const SearchPage = () => {
     setLoading(true); //Show loading before fetching
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/v1/course/course-search`,
+        `${courseBaseUrl}/search`,
         {
           params: filters,
         }

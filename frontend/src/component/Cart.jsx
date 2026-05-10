@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import StarRating from "./StarRating";
+import { cartBaseUrl, transactionBaseUrl } from "../utils/endpoints";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const Cart = () => {
   const userId = useSelector((state) => state.user.userData?._id);
@@ -11,7 +12,7 @@ const Cart = () => {
   const fetchCart = async () => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/v1/cart/get-cart/${userId}`,
+        `${cartBaseUrl}/${userId}`,
 
         {
           withCredentials: true,
@@ -33,8 +34,8 @@ const Cart = () => {
 
   const handleRemoveFromCart = async (courseId) => {
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/api/v1/cart/remove-from-cart/${userId}/${courseId}`,
+      const response = await axios.patch(
+        `${cartBaseUrl}/${userId}/${courseId}`,
         {
           withCredentials: true,
         }
@@ -52,7 +53,7 @@ const Cart = () => {
     try {
       // 1. Create Razorpay Order
       const orderResponse = await axios.post(
-        `${API_BASE_URL}/api/v1/transaction/create-order`,
+        `${transactionBaseUrl}/order`,
         { amount: cart.totalAmount },
         { withCredentials: true }
       );
@@ -71,7 +72,7 @@ const Cart = () => {
 
           // 2. Verify Payment
           const verifyResponse = await axios.post(
-            `${API_BASE_URL}/api/v1/transaction/verify-payment`,
+            `${transactionBaseUrl}/payment`,
             {
               razorpay_payment_id,
               razorpay_order_id,

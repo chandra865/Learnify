@@ -14,6 +14,7 @@ import { setSelectedCourse } from "../store/slice/selectedCourseSlice";
 import { FaArrowLeft } from "react-icons/fa";
 import Coupon from "../component/Coupon";
 import CourseCurriculum from "../component/CourseCurriculum";
+import { courseBaseUrl } from "../utils/endpoints";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CreatedCourses = () => {
@@ -31,7 +32,7 @@ const CreatedCourses = () => {
     const fetchCreatedCourses = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/v1/course/inst-courses`,
+          `${courseBaseUrl}/${userId}/instructor`,
           { withCredentials: true }
         );
         console.log(response.data.data);

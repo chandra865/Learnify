@@ -6,11 +6,11 @@ import { createQuizSchema } from "../schema/quiz.schema.js";
 
 const router = Router();
 
-router.route("/create-quiz").post(verifyJWT, isAuthorized("instructor"), validate(createQuizSchema), createQuiz)
-router.route("/delete-quiz/:quizId").delete(verifyJWT, isAuthorized("instructor"), deleteQuiz)
+router.route("/").post(verifyJWT, isAuthorized("instructor"), validate(createQuizSchema), createQuiz)
+router.route("/:quizId").delete(verifyJWT, isAuthorized("instructor"), deleteQuiz)
 router.route("/get-all-quiz/:Id").get(verifyJWT, getAllQuizzes)
-router.route("/get-quiz/:quizId").get(verifyJWT, getQuizById)
-router.route("/has-completed-quiz").get(verifyJWT, hasCompletedQuiz)
+router.route("/:quizId").get(verifyJWT, getQuizById)
+router.route("/completed").get(verifyJWT, hasCompletedQuiz)
 
 
 export default router;

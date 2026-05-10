@@ -80,7 +80,7 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const switchUserRole = asyncHandler(async (req, res) => {
-  const userId = req.user._id;
+  const userId = req.params.userId;
   const { newRole } = req.body;
 
   if (!["student", "instructor"].includes(newRole)) {
@@ -598,7 +598,7 @@ const deleteExpertise = asyncHandler(async (req, res) => {
 
 // get experties
 
-const getExperties = asyncHandler(async (req, res) => {
+const getExpertise = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
   if (!user) {
     throw new ApiError(404, "User not found");
@@ -724,7 +724,7 @@ export {
   deleteExperience,
   addExpertise,
   deleteExpertise,
-  getExperties,
+  getExpertise,
   googleAuthCallback,
   googleAuth,
   generateAccessAndRefreshToken,

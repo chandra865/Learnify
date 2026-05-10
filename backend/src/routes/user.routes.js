@@ -17,7 +17,7 @@ import {
   deleteExperience,
   addExpertise,
   deleteExpertise,
-  getExperties,
+  getExpertise,
   googleAuth,
   googleAuthCallback,
   switchUserRole,
@@ -40,35 +40,42 @@ const router = Router();
 router.route("/register").post(validate(registerSchema), registerUser);
 router.route("/login").post(validate(loginSchema), loginUser);
 router.route("/logout").get(verifyJWT, logoutUser);
-router.route("/getuser").get(verifyJWT, getCurrUser);
-router.route("/add-education").post(verifyJWT, validate(educationSchema), addEducation);
-router.route("/add-experience").post(verifyJWT, validate(experienceSchema), addExperience);
-router.route("/update-education/:educationId").post(verifyJWT, validate(educationSchema), updateEducation);
-router
-  .route("/update-experience/:experienceId")
-  .post(verifyJWT, validate(experienceSchema), updateExperience);
-router.route("/update-profile").post(verifyJWT, validate(updateProfileSchema), updateProfile);
-router.route("/get-education").get(verifyJWT, getEducation);
-router
-  .route("/delete-education/:educationId")
-  .delete(verifyJWT, deleteEducation);
-router.route("/get-experience").get(verifyJWT, getExperience);
-router
-  .route("/delete-experience/:experienceId")
-  .delete(verifyJWT, deleteExperience);
+router.route("/get-user").get(verifyJWT, getCurrUser);
 
-router.route("/get-expertise").get(verifyJWT, getExperties);
-router.route("/add-expertise").post(verifyJWT, validate(expertiseSchema), addExpertise);
-router.route("/delete-expertise").delete(verifyJWT, deleteExpertise);
-router.route("/switch-user-role").put(verifyJWT,switchUserRole);
+router.route("/profile").put(verifyJWT, validate(updateProfileSchema), updateProfile);
 
-router.route("/get-instructor-stats/:instructorId").get(getInstructorStats);
-router.route("/get-instructor-rating-and-reviews/:instructorId").get(getInstructorRatingAndReviews);
 
 router.route("/refresh-token").post(refreshAccessToken);
 router.route("/auth/google").get(googleAuth);
 router
   .route("/auth/google/callback")
   .get(passport.authenticate("google", { session: false }), googleAuthCallback);
+
+router.route("/stats/:instructorId").get(getInstructorStats);
+router.route("/:instructorId/rating-reviews").get(getInstructorRatingAndReviews);
+
+router.route("/educations").post(verifyJWT, validate(educationSchema), addEducation);
+router.route("/educations/:educationId").post(verifyJWT, validate(educationSchema), updateEducation);
+router.route("/educations").get(verifyJWT, getEducation);
+router
+  .route("/educations/:educationId")
+  .delete(verifyJWT, deleteEducation);
+
+
+router.route("/experiences").post(verifyJWT, validate(experienceSchema), addExperience);
+router
+  .route("/experiences/:experienceId")
+  .post(verifyJWT, validate(experienceSchema), updateExperience);
+router.route("/experiences").get(verifyJWT, getExperience);
+router
+  .route("/experiences/:experienceId")
+  .delete(verifyJWT, deleteExperience);
+
+router.route("/expertise").get(verifyJWT, getExpertise);
+router.route("/expertise").patch(verifyJWT, validate(expertiseSchema), addExpertise);
+router.route("/expertise").delete(verifyJWT, deleteExpertise);
+router.route("/:userId/role").patch(verifyJWT,switchUserRole);
+
+
 
 export default router;
